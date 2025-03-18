@@ -16,4 +16,7 @@ router.register(r'mensajes', views.MensajesChatViewSet)
 
 urlpatterns = [
     path('api/', include(router.urls)),
+    path('api-auth/', include('rest_framework.urls')),
+    path('login/', views.login_view, name='login'),
+    path('logout/', views.logout_view, name='logout'),
 ]

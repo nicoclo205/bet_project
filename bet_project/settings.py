@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
 ]
 
+
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.TokenAuthentication',
@@ -66,7 +67,7 @@ MIDDLEWARE = [
 ]
 
 # Permitir solicitudes desde el origen de tu aplicación React
-CORS_ALLOWED_ORIGINS = os.environ.get('CORS_ALLOWED_ORIGINS', 'http://localhost:3000').split(',')
+CORS_ALLOWED_ORIGINS = os.environ.get('CORS_ALLOWED_ORIGINS', 'http://localhost:5173').split(',')
 
 ROOT_URLCONF = 'bet_project.urls'
 

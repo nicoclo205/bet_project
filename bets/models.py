@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.hashers import make_password, check_password
+from django.contrib.auth.models import User
 
 class Pais(models.Model):
     id_pais = models.AutoField(primary_key=True)
@@ -15,12 +16,19 @@ class Pais(models.Model):
 
 
 class Usuario(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='perfil', null=True)
     id_usuario = models.AutoField(primary_key=True)
     nombre_usuario = models.CharField(max_length=100)
     correo = models.CharField(unique=True, max_length=100)
-    contrasena = models.CharField(max_length=255)
+    contrasena = models.CharField(max_length=255)  # Eventualmente podrás eliminar este campo
     fecha_registro = models.DateTimeField(auto_now_add=True)
     puntos_totales = models.IntegerField(default=0)
+
+    # Resto de tu modelo permanece igual
+    nombre = models.CharField(max_length=100, blank=True, null=True)
+    apellido = models.CharField(max_length=100, blank=True, null=True)
+    celular = models.CharField(max_length=15, blank=True, null=True)
+    foto_perfil = models.CharField(max_length=255, blank=True, null=True)
 
     def __str__(self):
         return self.nombre_usuario
