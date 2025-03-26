@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
 from .models import Pais, Usuario, Sala, UsuarioSala, Competiciones, Equipos, Partidos, Apuestas, Ranking, MensajesChat
+from .validators import validate_username, validate_password, validate_email, validate_name, validate_lastname, validate_phoneNum
 
 class PaisSerializer(serializers.ModelSerializer):
     class Meta:
@@ -17,9 +18,12 @@ class UsuarioSerializer(serializers.ModelSerializer):
         read_only_fields = ['fecha_registro']
 
 class UsuarioCreateSerializer(serializers.ModelSerializer):
-    username = serializers.CharField(write_only=True)
-    password = serializers.CharField(write_only=True, style={'input_type': 'password'})
-    email = serializers.EmailField(write_only=True)
+    username = serializers.CharField(write_only=True, validators=[validate_username])
+    password = serializers.CharField(write_only=True, style={'input_type': 'password'}, validators=[validate_password])
+    email = serializers.EmailField(write_only=True, validators=[validate_email])
+    nombre = serializers.CharField(write_only=True, validators=[validate_name])
+    apellido = serializers.CharField(write_only=True, validators=[validate_lastname])
+    celular = serializers.CharField(write_only=True, validators=[validate_phoneNum])
     
     class Meta:
         model = Usuario
@@ -54,8 +58,6 @@ class UsuarioCreateSerializer(serializers.ModelSerializer):
         )
         
         return usuario
-
-# El resto de tus serializers permanecen igual
 class SalaSerializer(serializers.ModelSerializer):
     class Meta:
         model = Sala
