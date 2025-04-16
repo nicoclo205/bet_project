@@ -6,11 +6,19 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.authtoken.models import Token
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
-from .models import Pais, Usuario, Sala, UsuarioSala, Competiciones, Equipos, Partidos, Apuestas, Ranking, MensajesChat
+from .models import (
+    Pais, Escenario, Usuario, Sala, UsuarioSala, Deporte, Competencia, 
+    Equipo, Deportista, Partidos, PartidoFutbol, PartidoTenis, PartidoBaloncesto, 
+    CarreraF1, ApuestaFutbol, ApuestaTenis, ApuestaBaloncesto, ApuestaF1, 
+    Ranking, MensajeChat
+)
 from .serializers import (
-    PaisSerializer, UsuarioSerializer, UsuarioCreateSerializer, SalaSerializer, 
-    UsuarioSalaSerializer, CompeticionesSerializer, EquiposSerializer, 
-    PartidosSerializer, ApuestasSerializer, RankingSerializer, MensajesChatSerializer
+    PaisSerializer, EscenarioSerializer, UsuarioSerializer, UsuarioCreateSerializer, 
+    SalaSerializer, UsuarioSalaSerializer, DeporteSerializer, CompetenciaSerializer, 
+    EquipoSerializer, DeportistaSerializer, PartidosSerializer, PartidoFutbolSerializer, 
+    PartidoTenisSerializer, PartidoBaloncestoSerializer, CarreraF1Serializer, 
+    ApuestaFutbolSerializer, ApuestaTenisSerializer, ApuestaBaloncestoSerializer, 
+    ApuestaF1Serializer, RankingSerializer, MensajeChatSerializer
 )
 
 
@@ -62,6 +70,7 @@ def login_view(request):
         "nombre_usuario": usuario.nombre_usuario
     })
 
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def logout_view(request):
@@ -75,9 +84,22 @@ def logout_view(request):
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+
+# ViewSets para los modelos
 class PaisViewSet(viewsets.ModelViewSet):
     queryset = Pais.objects.all()
     serializer_class = PaisSerializer
+
+
+class EscenarioViewSet(viewsets.ModelViewSet):
+    queryset = Escenario.objects.all()
+    serializer_class = EscenarioSerializer
+
+
+class DeporteViewSet(viewsets.ModelViewSet):
+    queryset = Deporte.objects.all()
+    serializer_class = DeporteSerializer
+
 
 class UsuarioViewSet(viewsets.ModelViewSet):
     queryset = Usuario.objects.all()
@@ -92,39 +114,90 @@ class UsuarioViewSet(viewsets.ModelViewSet):
             return [AllowAny()]
         return [IsAuthenticated()]
 
+
 class SalaViewSet(viewsets.ModelViewSet):
     queryset = Sala.objects.all()
     serializer_class = SalaSerializer
     permission_classes = [IsAuthenticated]
+
 
 class UsuarioSalaViewSet(viewsets.ModelViewSet):
     queryset = UsuarioSala.objects.all()
     serializer_class = UsuarioSalaSerializer
     permission_classes = [IsAuthenticated]
 
-class CompeticionesViewSet(viewsets.ModelViewSet):
-    queryset = Competiciones.objects.all()
-    serializer_class = CompeticionesSerializer
 
-class EquiposViewSet(viewsets.ModelViewSet):
-    queryset = Equipos.objects.all()
-    serializer_class = EquiposSerializer
+class CompetenciaViewSet(viewsets.ModelViewSet):
+    queryset = Competencia.objects.all()
+    serializer_class = CompetenciaSerializer
+
+
+class EquipoViewSet(viewsets.ModelViewSet):
+    queryset = Equipo.objects.all()
+    serializer_class = EquipoSerializer
+
+
+class DeportistaViewSet(viewsets.ModelViewSet):
+    queryset = Deportista.objects.all()
+    serializer_class = DeportistaSerializer
+
 
 class PartidosViewSet(viewsets.ModelViewSet):
     queryset = Partidos.objects.all()
     serializer_class = PartidosSerializer
 
-class ApuestasViewSet(viewsets.ModelViewSet):
-    queryset = Apuestas.objects.all()
-    serializer_class = ApuestasSerializer
+
+class PartidoFutbolViewSet(viewsets.ModelViewSet):
+    queryset = PartidoFutbol.objects.all()
+    serializer_class = PartidoFutbolSerializer
+
+
+class PartidoTenisViewSet(viewsets.ModelViewSet):
+    queryset = PartidoTenis.objects.all()
+    serializer_class = PartidoTenisSerializer
+
+
+class PartidoBaloncestoViewSet(viewsets.ModelViewSet):
+    queryset = PartidoBaloncesto.objects.all()
+    serializer_class = PartidoBaloncestoSerializer
+
+
+class CarreraF1ViewSet(viewsets.ModelViewSet):
+    queryset = CarreraF1.objects.all()
+    serializer_class = CarreraF1Serializer
+
+
+class ApuestaFutbolViewSet(viewsets.ModelViewSet):
+    queryset = ApuestaFutbol.objects.all()
+    serializer_class = ApuestaFutbolSerializer
     permission_classes = [IsAuthenticated]
+
+
+class ApuestaTenisViewSet(viewsets.ModelViewSet):
+    queryset = ApuestaTenis.objects.all()
+    serializer_class = ApuestaTenisSerializer
+    permission_classes = [IsAuthenticated]
+
+
+class ApuestaBaloncestoViewSet(viewsets.ModelViewSet):
+    queryset = ApuestaBaloncesto.objects.all()
+    serializer_class = ApuestaBaloncestoSerializer
+    permission_classes = [IsAuthenticated]
+
+
+class ApuestaF1ViewSet(viewsets.ModelViewSet):
+    queryset = ApuestaF1.objects.all()
+    serializer_class = ApuestaF1Serializer
+    permission_classes = [IsAuthenticated]
+
 
 class RankingViewSet(viewsets.ModelViewSet):
     queryset = Ranking.objects.all()
     serializer_class = RankingSerializer
     permission_classes = [IsAuthenticated]
 
-class MensajesChatViewSet(viewsets.ModelViewSet):
-    queryset = MensajesChat.objects.all()
-    serializer_class = MensajesChatSerializer
+
+class MensajeChatViewSet(viewsets.ModelViewSet):
+    queryset = MensajeChat.objects.all()
+    serializer_class = MensajeChatSerializer
     permission_classes = [IsAuthenticated]
