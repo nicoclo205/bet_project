@@ -512,4 +512,5 @@ class MensajeChat(models.Model):
             models.Index(fields=['id_sala']),
             models.Index(fields=['id_usuario']),
             models.Index(fields=['fecha_envio']),
+# [MermaidChart: b67144a3-89b0-4a02-8112-a740c05d5b93]
         ]
