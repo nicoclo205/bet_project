@@ -168,12 +168,8 @@ class PartidosViewSet(viewsets.ModelViewSet):
         # Filter by sport if provided
         deporte = self.request.query_params.get('deporte', None)
         if deporte is not None:
-            # Get teams that belong to the specified sport
-            # Then filter matches by those teams
-            queryset = queryset.filter(
-                equipo_local__id_deporte=deporte,
-                equipo_visitante__id_deporte=deporte
-            )
+            # Direct sport filtering (much more efficient)
+            queryset = queryset.filter(id_deporte=deporte)
         
         # Filter by competition if provided
         competencia = self.request.query_params.get('competencia', None)

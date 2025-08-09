@@ -181,6 +181,7 @@ class Partidos(models.Model):
     deportista_visitante = models.ForeignKey(Deportista, on_delete=models.CASCADE, db_column='deportista_visitante', related_name='partidos_visitante', blank=True, null=True)
     resultado_local = models.IntegerField(default=0)
     resultado_visitante = models.IntegerField(default=0)
+    id_deporte = models.ForeignKey(Deporte, on_delete=models.CASCADE, db_column='id_deporte', blank=True, null=True)
     id_competencia = models.ForeignKey(Competencia, on_delete=models.CASCADE, db_column='id_competencia', blank=True, null=True)
     fecha_partido = models.DateTimeField(blank=True, null=True)
     estado = models.CharField(max_length=10, choices=PartidoStatus.choices, default=PartidoStatus.PROGRAMADO)
@@ -196,6 +197,7 @@ class Partidos(models.Model):
             models.Index(fields=['estado']),
             models.Index(fields=['fecha_partido']),
             models.Index(fields=['id_competencia']),
+            models.Index(fields=['id_deporte']),
         ]
 
 

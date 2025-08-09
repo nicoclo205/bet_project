@@ -123,6 +123,7 @@ class PartidosSerializer(serializers.ModelSerializer):
     equipo_visitante_nombre = serializers.ReadOnlyField(source='equipo_visitante.nombre')
     deportista_local_nombre = serializers.ReadOnlyField(source='deportista_local.nombre')
     deportista_visitante_nombre = serializers.ReadOnlyField(source='deportista_visitante.nombre')
+    deporte_nombre = serializers.ReadOnlyField(source='id_deporte.nombre')
     competencia_nombre = serializers.ReadOnlyField(source='id_competencia.nombre')
     escenario_nombre = serializers.ReadOnlyField(source='id_escenario.nombre')
     
@@ -131,6 +132,7 @@ class PartidosSerializer(serializers.ModelSerializer):
     equipo_visitante = EquipoSerializer(read_only=True)
     deportista_local = DeportistaSerializer(read_only=True)
     deportista_visitante = DeportistaSerializer(read_only=True)
+    id_deporte = DeporteSerializer(read_only=True)
     id_competencia = CompetenciaSerializer(read_only=True)
     id_escenario = EscenarioSerializer(read_only=True)
     
