@@ -126,6 +126,14 @@ class PartidosSerializer(serializers.ModelSerializer):
     competencia_nombre = serializers.ReadOnlyField(source='id_competencia.nombre')
     escenario_nombre = serializers.ReadOnlyField(source='id_escenario.nombre')
     
+    # Nested objects for better frontend consumption
+    equipo_local = EquipoSerializer(read_only=True)
+    equipo_visitante = EquipoSerializer(read_only=True)
+    deportista_local = DeportistaSerializer(read_only=True)
+    deportista_visitante = DeportistaSerializer(read_only=True)
+    id_competencia = CompetenciaSerializer(read_only=True)
+    id_escenario = EscenarioSerializer(read_only=True)
+    
     class Meta:
         model = Partidos
         fields = '__all__'

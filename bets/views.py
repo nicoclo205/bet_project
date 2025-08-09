@@ -161,6 +161,34 @@ class PartidosViewSet(viewsets.ModelViewSet):
     queryset = Partidos.objects.all()
     serializer_class = PartidosSerializer
     permission_classes = [AllowAny]
+    
+    def get_queryset(self):
+        queryset = Partidos.objects.all()
+        
+        # Filter by sport if provided
+        deporte = self.request.query_params.get('deporte', None)
+        if deporte is not None:
+            # Get teams that belong to the specified sport
+            # Then filter matches by those teams
+            queryset = queryset.filter(
+                equipo_local__id_deporte=deporte,
+                equipo_visitante__id_deporte=deporte
+            )
+        
+        # Filter by competition if provided
+        competencia = self.request.query_params.get('competencia', None)
+        if competencia is not None:
+            queryset = queryset.filter(id_competencia=competencia)
+        
+        # Filter by status if provided
+        estado = self.request.query_params.get('estado', None)
+        if estado is not None:
+            queryset = queryset.filter(estado=estado)
+        
+        # Order by date
+        queryset = queryset.order_by('fecha_partido')
+        
+        return queryset
 
 class PartidoFutbolViewSet(viewsets.ModelViewSet):
     queryset = PartidoFutbol.objects.all()
