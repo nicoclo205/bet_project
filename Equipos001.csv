@@ -1,0 +1,1114 @@
+﻿id_equipo,nombre,logo,tipo,id_deporte,id_pais
+1,Colombia,https://media.api-sports.io/football/teams/8.png,National,1,1
+2,Brazil,https://media.api-sports.io/football/teams/6.png,National,1,3
+3,Argentina,https://media.api-sports.io/football/teams/26.png,National,1,4
+4,Chile,,National,1,5
+5,Real Madrid,https://upload.wikimedia.org/wikipedia/sco/5/56/Real_Madrid_CF.svg,Local,1,2
+6,Barcelona FC,https://upload.wikimedia.org/wikipedia/sco/4/47/FC_Barcelona_%28crest%29.svg,Local,1,2
+7,ATP JoaoFonseca,,Local,2,3
+8,ATP CarlosAlcaraz,,Local,2,2
+9,Millonarios,https://media.api-sports.io/football/teams/1125.png,Local,1,1
+10,Deportivo Pasto,https://media.api-sports.io/football/teams/1126.png,Local,1,1
+11,Deportivo Cali,https://media.api-sports.io/football/teams/1127.png,Local,1,1
+12,Independiente Medellin,https://media.api-sports.io/football/teams/1128.png,Local,1,1
+13,Envigado,https://media.api-sports.io/football/teams/1129.png,Local,1,1
+14,Huila,https://media.api-sports.io/football/teams/1130.png,Local,1,1
+15,Bucaramanga,https://media.api-sports.io/football/teams/1131.png,Local,1,1
+16,Chico,https://media.api-sports.io/football/teams/1132.png,Local,1,1
+17,Jaguares,https://media.api-sports.io/football/teams/1133.png,Local,1,1
+18,La Equidad,https://media.api-sports.io/football/teams/1134.png,Local,1,1
+19,Junior,https://media.api-sports.io/football/teams/1135.png,Local,1,1
+20,Once Caldas,https://media.api-sports.io/football/teams/1136.png,Local,1,1
+21,Atletico Nacional,https://media.api-sports.io/football/teams/1137.png,Local,1,1
+22,America de Cali,https://media.api-sports.io/football/teams/1138.png,Local,1,1
+23,Santa Fe,https://media.api-sports.io/football/teams/1139.png,Local,1,1
+24,Patriotas,https://media.api-sports.io/football/teams/21171.png,Local,1,1
+25,Alianza Petrolera,https://media.api-sports.io/football/teams/1141.png,Local,1,1
+26,Deportes Tolima,https://media.api-sports.io/football/teams/1142.png,Local,1,1
+27,Leones FC,https://media.api-sports.io/football/teams/26097.png,Local,1,1
+28,Rionegro Aguilas,https://media.api-sports.io/football/teams/1144.png,Local,1,1
+29,Tigres FC,https://media.api-sports.io/football/teams/1145.png,Local,1,1
+30,Cortulua,https://media.api-sports.io/football/teams/1146.png,Local,1,1
+31,Fortaleza FC,https://media.api-sports.io/football/teams/1147.png,Local,1,1
+32,Bogota FC,https://media.api-sports.io/football/teams/1458.png,Local,1,1
+33,Manchester United,https://media.api-sports.io/football/teams/33.png,Local,1,8
+34,Newcastle,https://media.api-sports.io/football/teams/34.png,Local,1,8
+35,Bournemouth,https://media.api-sports.io/football/teams/35.png,Local,1,8
+36,Fulham,https://media.api-sports.io/football/teams/36.png,Local,1,8
+37,Real Santander,https://media.api-sports.io/football/teams/1463.png,Local,1,1
+38,Llaneros,https://media.api-sports.io/football/teams/1464.png,Local,1,1
+39,Wolves,https://media.api-sports.io/football/teams/39.png,Local,1,8
+40,Liverpool,https://media.api-sports.io/football/teams/40.png,Local,1,8
+41,Valledupar,https://media.api-sports.io/football/teams/1467.png,Local,1,1
+42,Arsenal,https://media.api-sports.io/football/teams/42.png,Local,1,8
+43,Orsomarso,https://media.api-sports.io/football/teams/1469.png,Local,1,1
+44,Burnley,https://media.api-sports.io/football/teams/44.png,Local,1,8
+45,Everton,https://media.api-sports.io/football/teams/45.png,Local,1,8
+46,Academia,https://media.api-sports.io/football/teams/18862.png,Local,1,1
+47,Tottenham,https://media.api-sports.io/football/teams/47.png,Local,1,8
+48,West Ham,https://media.api-sports.io/football/teams/48.png,Local,1,8
+49,Chelsea,https://media.api-sports.io/football/teams/49.png,Local,1,8
+50,Manchester City,https://media.api-sports.io/football/teams/50.png,Local,1,8
+51,Brighton,https://media.api-sports.io/football/teams/51.png,Local,1,8
+52,Crystal Palace,https://media.api-sports.io/football/teams/52.png,Local,1,8
+53,América de Cali W,https://media.api-sports.io/football/teams/15721.png,Local,1,1
+54,Atlético Nacional W,https://media.api-sports.io/football/teams/15722.png,Local,1,1
+55,Brentford,https://media.api-sports.io/football/teams/55.png,Local,1,8
+56,Deportivo Pasto W,https://media.api-sports.io/football/teams/15724.png,Local,1,1
+57,Independiente Medellín W,https://media.api-sports.io/football/teams/15725.png,Local,1,1
+58,Junior W,https://media.api-sports.io/football/teams/15726.png,Local,1,1
+59,La Equidad W,https://media.api-sports.io/football/teams/15727.png,Local,1,1
+60,Llaneros W,https://media.api-sports.io/football/teams/15728.png,Local,1,1
+61,Millonarios W,https://media.api-sports.io/football/teams/15729.png,Local,1,1
+62,Sheffield Utd,https://media.api-sports.io/football/teams/62.png,Local,1,8
+63,Atlético Huila,https://media.api-sports.io/football/teams/18428.png,Local,1,1
+64,Cortuluá W,https://media.api-sports.io/football/teams/18429.png,Local,1,1
+65,Nottingham Forest,https://media.api-sports.io/football/teams/65.png,Local,1,8
+66,Aston Villa,https://media.api-sports.io/football/teams/66.png,Local,1,8
+67,Orsomarso W,https://media.api-sports.io/football/teams/18432.png,Local,1,1
+68,Colombia U19,https://media.api-sports.io/football/teams/18981.png,Local,1,1
+69,Colombia U20 W,https://media.api-sports.io/football/teams/19081.png,Local,1,1
+70,Colombia U17,https://media.api-sports.io/football/teams/20527.png,Local,1,1
+71,Boyacá Chicó,https://media.api-sports.io/football/teams/20878.png,Local,1,1
+72,Real Soacha,https://media.api-sports.io/football/teams/22099.png,Local,1,1
+73,Cúcuta Deportivo,https://media.api-sports.io/football/teams/22939.png,Local,1,1
+74,Internacional Palmira,https://media.api-sports.io/football/teams/23326.png,Local,1,1
+75,Alianza W,https://media.api-sports.io/football/teams/22941.png,Local,1,1
+76,Colombia U17 W,https://media.api-sports.io/football/teams/23377.png,Local,1,1
+77,Fortaleza CEIF U20,https://media.api-sports.io/football/teams/25697.png,Local,1,1
+78,Once Caldas W,https://media.api-sports.io/football/teams/25713.png,Local,1,1
+79,Bahia,https://media.api-sports.io/football/teams/118.png,Local,1,3
+80,Internacional,https://media.api-sports.io/football/teams/119.png,Local,1,3
+81,Botafogo,https://media.api-sports.io/football/teams/120.png,Local,1,3
+82,Palmeiras,https://media.api-sports.io/football/teams/121.png,Local,1,3
+83,Parana,https://media.api-sports.io/football/teams/122.png,Local,1,3
+84,Sport Recife,https://media.api-sports.io/football/teams/123.png,Local,1,3
+85,Fluminense,https://media.api-sports.io/football/teams/124.png,Local,1,3
+86,America Mineiro,https://media.api-sports.io/football/teams/125.png,Local,1,3
+87,Sao Paulo,https://media.api-sports.io/football/teams/126.png,Local,1,3
+88,Flamengo,https://media.api-sports.io/football/teams/127.png,Local,1,3
+89,Santos,https://media.api-sports.io/football/teams/128.png,Local,1,3
+90,Ceara,https://media.api-sports.io/football/teams/129.png,Local,1,3
+91,Gremio,https://media.api-sports.io/football/teams/130.png,Local,1,3
+92,Corinthians,https://media.api-sports.io/football/teams/131.png,Local,1,3
+93,Chapecoense-sc,https://media.api-sports.io/football/teams/132.png,Local,1,3
+94,Vasco DA Gama,https://media.api-sports.io/football/teams/133.png,Local,1,3
+95,Atletico Paranaense,https://media.api-sports.io/football/teams/134.png,Local,1,3
+96,Cruzeiro,https://media.api-sports.io/football/teams/135.png,Local,1,3
+97,Vitoria,https://media.api-sports.io/football/teams/136.png,Local,1,3
+98,Figueirense,https://media.api-sports.io/football/teams/137.png,Local,1,3
+99,Guarani Campinas,https://media.api-sports.io/football/teams/138.png,Local,1,3
+100,Ponte Preta,https://media.api-sports.io/football/teams/139.png,Local,1,3
+101,Criciuma,https://media.api-sports.io/football/teams/140.png,Local,1,3
+102,Brasil DE Pelotas,https://media.api-sports.io/football/teams/141.png,Local,1,3
+103,Vila Nova,https://media.api-sports.io/football/teams/142.png,Local,1,3
+104,Oeste,https://media.api-sports.io/football/teams/143.png,Local,1,3
+105,Atletico Goianiense,https://media.api-sports.io/football/teams/144.png,Local,1,3
+106,Avai,https://media.api-sports.io/football/teams/145.png,Local,1,3
+107,CRB,https://media.api-sports.io/football/teams/146.png,Local,1,3
+108,Coritiba,https://media.api-sports.io/football/teams/147.png,Local,1,3
+109,Londrina,https://media.api-sports.io/football/teams/148.png,Local,1,3
+110,Paysandu,https://media.api-sports.io/football/teams/149.png,Local,1,3
+111,CSA,https://media.api-sports.io/football/teams/150.png,Local,1,3
+112,Goias,https://media.api-sports.io/football/teams/151.png,Local,1,3
+113,Juventude,https://media.api-sports.io/football/teams/152.png,Local,1,3
+114,BOA,https://media.api-sports.io/football/teams/153.png,Local,1,0
+115,Fortaleza EC,https://media.api-sports.io/football/teams/154.png,Local,1,3
+116,Sampaio Correa,https://media.api-sports.io/football/teams/155.png,Local,1,3
+117,Sao Bento,https://media.api-sports.io/football/teams/156.png,Local,1,3
+118,Luverdense,https://media.api-sports.io/football/teams/752.png,Local,1,3
+119,Santa Cruz,https://media.api-sports.io/football/teams/13974.png,Local,1,3
+120,ABC,https://media.api-sports.io/football/teams/754.png,Local,1,3
+121,Nautico Recife,https://media.api-sports.io/football/teams/755.png,Local,1,3
+122,Real,https://media.api-sports.io/football/teams/760.png,Local,1,0
+123,RB Bragantino,https://media.api-sports.io/football/teams/794.png,Local,1,3
+124,Joinville,https://media.api-sports.io/football/teams/795.png,Local,1,3
+125,Tupi,https://media.api-sports.io/football/teams/796.png,Local,1,3
+126,Atletico-MG,https://media.api-sports.io/football/teams/1062.png,Local,1,3
+127,Cuiaba,https://media.api-sports.io/football/teams/1193.png,Local,1,3
+128,Cianorte,https://media.api-sports.io/football/teams/1194.png,Local,1,3
+129,Ferroviario,https://media.api-sports.io/football/teams/1195.png,Local,1,3
+130,Uberlandia,https://media.api-sports.io/football/teams/1196.png,Local,1,3
+131,Botafogo PB,https://media.api-sports.io/football/teams/1197.png,Local,1,3
+132,remo,https://media.api-sports.io/football/teams/1198.png,Local,1,3
+133,Novo Hamburgo,https://media.api-sports.io/football/teams/1199.png,Local,1,3
+134,Fluminense De Feira,https://media.api-sports.io/football/teams/1200.png,Local,1,3
+135,Inter De Limeira,https://media.api-sports.io/football/teams/1201.png,Local,1,3
+136,Aparecidense,https://media.api-sports.io/football/teams/1202.png,Local,1,3
+137,Altos,https://media.api-sports.io/football/teams/1203.png,Local,1,3
+138,Tubarao,https://media.api-sports.io/football/teams/1204.png,Local,1,3
+139,Salgueiro,https://media.api-sports.io/football/teams/1205.png,Local,1,3
+140,Corumbaense,https://media.api-sports.io/football/teams/1206.png,Local,1,3
+141,ASA,https://media.api-sports.io/football/teams/1207.png,Local,1,3
+142,Gurupi,https://media.api-sports.io/football/teams/1208.png,Local,1,3
+143,Murici Fc,https://media.api-sports.io/football/teams/1210.png,Local,1,3
+144,Brusque,https://media.api-sports.io/football/teams/1211.png,Local,1,3
+145,PSTC Procopense,https://media.api-sports.io/football/teams/1212.png,Local,1,3
+146,Sinop Fc,https://media.api-sports.io/football/teams/1213.png,Local,1,3
+147,Portuguesa,https://media.api-sports.io/football/teams/1214.png,Local,1,3
+148,Guarani De Juazeiro,https://media.api-sports.io/football/teams/1216.png,Local,1,3
+149,Gremio Osasco Audax,https://media.api-sports.io/football/teams/1217.png,Local,1,3
+150,Sao Raimundo,https://media.api-sports.io/football/teams/1218.png,Local,1,3
+151,Sao Francisco,https://media.api-sports.io/football/teams/10855.png,Local,1,3
+152,Sete De Dourados,https://media.api-sports.io/football/teams/1220.png,Local,1,3
+153,Ypiranga-RS,https://media.api-sports.io/football/teams/1221.png,Local,1,3
+154,Gama,https://media.api-sports.io/football/teams/1222.png,Local,1,3
+155,Operario-PR,https://media.api-sports.io/football/teams/1223.png,Local,1,3
+156,Juazeirense,https://media.api-sports.io/football/teams/1224.png,Local,1,3
+157,Vitoria Da Conquista,https://media.api-sports.io/football/teams/1225.png,Local,1,3
+158,Dom Bosco,https://media.api-sports.io/football/teams/1226.png,Local,1,3
+159,River-Pi,https://media.api-sports.io/football/teams/1227.png,Local,1,3
+160,Galvez,https://media.api-sports.io/football/teams/1228.png,Local,1,3
+161,Genus,https://media.api-sports.io/football/teams/1229.png,Local,1,3
+162,Brazil W,https://media.api-sports.io/football/teams/1726.png,Local,1,3
+163,Rio Preto W,https://media.api-sports.io/football/teams/1793.png,Local,1,3
+164,Flamengo W,https://media.api-sports.io/football/teams/1794.png,Local,1,3
+165,Ferroviaria W,https://media.api-sports.io/football/teams/1795.png,Local,1,3
+166,Sao Jose W,https://media.api-sports.io/football/teams/1796.png,Local,1,3
+167,Foz Cataratas W,https://media.api-sports.io/football/teams/1797.png,Local,1,3
+168,Corinthians W,https://media.api-sports.io/football/teams/1798.png,Local,1,3
+169,Iranduba W,https://media.api-sports.io/football/teams/1799.png,Local,1,3
+170,Sao Francisco W,https://media.api-sports.io/football/teams/1800.png,Local,1,3
+171,Portuguesa W,https://media.api-sports.io/football/teams/1801.png,Local,1,3
+172,America Mineiro W,https://media.api-sports.io/football/teams/1802.png,Local,1,3
+173,Vasco Da Gama W,https://media.api-sports.io/football/teams/1803.png,Local,1,3
+174,Ec Vitoria W,https://media.api-sports.io/football/teams/1804.png,Local,1,3
+175,Duque De Caxias W,https://media.api-sports.io/football/teams/1805.png,Local,1,3
+176,Vitoria Das Tab. W,https://media.api-sports.io/football/teams/1806.png,Local,1,3
+177,Tiradentes W,https://media.api-sports.io/football/teams/1807.png,Local,1,3
+178,Caucaia W,https://media.api-sports.io/football/teams/1808.png,Local,1,3
+179,Pinheirense W,https://media.api-sports.io/football/teams/1809.png,Local,1,3
+180,Viana W,https://media.api-sports.io/football/teams/1810.png,Local,1,3
+181,Santos W,https://media.api-sports.io/football/teams/1811.png,Local,1,3
+182,Adeco W,https://media.api-sports.io/football/teams/1812.png,Local,1,3
+183,Gremio Osasco Audax W,https://media.api-sports.io/football/teams/1813.png,Local,1,3
+184,Kindermann W,https://media.api-sports.io/football/teams/1814.png,Local,1,3
+185,Sport Recife W,https://media.api-sports.io/football/teams/1815.png,Local,1,3
+186,Ponte Preta W,https://media.api-sports.io/football/teams/1816.png,Local,1,3
+187,Gremio W,https://media.api-sports.io/football/teams/1817.png,Local,1,3
+188,Santa Rita,https://media.api-sports.io/football/teams/1989.png,Local,1,3
+189,Americano Campos,https://media.api-sports.io/football/teams/2203.png,Local,1,3
+190,AO Itabaiana,https://media.api-sports.io/football/teams/2204.png,Local,1,3
+191,Avenida,https://media.api-sports.io/football/teams/2205.png,Local,1,3
+192,Boavista SC,https://media.api-sports.io/football/teams/2206.png,Local,1,3
+193,Bragantino PA,https://media.api-sports.io/football/teams/2207.png,Local,1,3
+194,Brasiliense,https://media.api-sports.io/football/teams/2208.png,Local,1,3
+195,Campinense,https://media.api-sports.io/football/teams/2209.png,Local,1,3
+196,Central SC,https://media.api-sports.io/football/teams/2210.png,Local,1,3
+197,Fast Clube-Am,https://media.api-sports.io/football/teams/2211.png,Local,1,3
+198,Foz Do Iguacu,https://media.api-sports.io/football/teams/2212.png,Local,1,3
+199,Imperatriz,https://media.api-sports.io/football/teams/2213.png,Local,1,3
+200,Manaus FC,https://media.api-sports.io/football/teams/2214.png,Local,1,3
+201,Mixto,https://media.api-sports.io/football/teams/2215.png,Local,1,3
+202,Moto Club,https://media.api-sports.io/football/teams/2216.png,Local,1,3
+203,Operario Ferroviario,https://media.api-sports.io/football/teams/2217.png,Local,1,3
+204,Palmas,https://media.api-sports.io/football/teams/2218.png,Local,1,3
+205,Real Desportivo Ariquemes,https://media.api-sports.io/football/teams/2219.png,Local,1,3
+206,Rio Branco,https://media.api-sports.io/football/teams/2220.png,Local,1,3
+207,River AC,https://media.api-sports.io/football/teams/2221.png,Local,1,3
+208,Santa Cruz RN,https://media.api-sports.io/football/teams/2222.png,Local,1,3
+209,Sao Raimundo PA,https://media.api-sports.io/football/teams/2223.png,Local,1,3
+210,Sergipe,https://media.api-sports.io/football/teams/2224.png,Local,1,3
+211,Serra Talhada,https://media.api-sports.io/football/teams/2225.png,Local,1,3
+212,Sobradinho EC,https://media.api-sports.io/football/teams/2226.png,Local,1,3
+213,Tombense,https://media.api-sports.io/football/teams/2227.png,Local,1,3
+214,Uniao Trabalhadores,https://media.api-sports.io/football/teams/2228.png,Local,1,3
+215,Uniclinic Atletico Clube,https://media.api-sports.io/football/teams/2229.png,Local,1,3
+216,Votuporanguense,https://media.api-sports.io/football/teams/2230.png,Local,1,3
+217,Ypiranga-PE,https://media.api-sports.io/football/teams/2231.png,Local,1,3
+218,Sao Jose,https://media.api-sports.io/football/teams/2232.png,Local,1,3
+219,America-RN,https://media.api-sports.io/football/teams/2233.png,Local,1,3
+220,Botafogo SP,https://media.api-sports.io/football/teams/2618.png,Local,1,3
+221,Foz-Athletico W,https://media.api-sports.io/football/teams/3825.png,Local,1,3
+222,Internacional RS W,https://media.api-sports.io/football/teams/3826.png,Local,1,3
+223,Minas ICESP W,https://media.api-sports.io/football/teams/3827.png,Local,1,3
+224,Vitória BA W,https://media.api-sports.io/football/teams/3828.png,Local,1,3
+225,Vitória PE W,https://media.api-sports.io/football/teams/3829.png,Local,1,3
+226,Grêmio Barueri,https://media.api-sports.io/football/teams/4655.png,Local,1,3
+227,Resende,https://media.api-sports.io/football/teams/4857.png,Local,1,3
+228,Vasco da Gama AC,https://media.api-sports.io/football/teams/6370.png,Local,1,3
+229,Aimoré,https://media.api-sports.io/football/teams/7767.png,Local,1,3
+230,Atlético Acreano,https://media.api-sports.io/football/teams/7768.png,Local,1,3
+231,Caldense,https://media.api-sports.io/football/teams/7769.png,Local,1,3
+232,Caxias,https://media.api-sports.io/football/teams/7770.png,Local,1,3
+233,Ceilândia,https://media.api-sports.io/football/teams/7771.png,Local,1,3
+234,Confiança,https://media.api-sports.io/football/teams/7772.png,Local,1,3
+235,Cordino,https://media.api-sports.io/football/teams/7773.png,Local,1,3
+236,Floresta,https://media.api-sports.io/football/teams/7774.png,Local,1,3
+237,Globo,https://media.api-sports.io/football/teams/7775.png,Local,1,3
+238,Independente PA,https://media.api-sports.io/football/teams/7776.png,Local,1,3
+239,Interporto,https://media.api-sports.io/football/teams/7777.png,Local,1,3
+240,Itapemirim,https://media.api-sports.io/football/teams/7778.png,Local,1,3
+241,Ituano,https://media.api-sports.io/football/teams/7779.png,Local,1,3
+242,Madureira,https://media.api-sports.io/football/teams/7780.png,Local,1,3
+243,Nacional AM,https://media.api-sports.io/football/teams/7781.png,Local,1,3
+244,Nova Iguaçu,https://media.api-sports.io/football/teams/7782.png,Local,1,3
+245,Novoperário,https://media.api-sports.io/football/teams/7783.png,Local,1,3
+246,Parnahyba,https://media.api-sports.io/football/teams/7784.png,Local,1,3
+247,Santos AP,https://media.api-sports.io/football/teams/7785.png,Local,1,3
+248,São Caetano,https://media.api-sports.io/football/teams/7786.png,Local,1,3
+249,Treze,https://media.api-sports.io/football/teams/7787.png,Local,1,3
+250,União Rondonópolis,https://media.api-sports.io/football/teams/7788.png,Local,1,3
+251,Volta Redonda,https://media.api-sports.io/football/teams/7814.png,Local,1,3
+252,Macaé,https://media.api-sports.io/football/teams/7815.png,Local,1,3
+253,Mogi Mirim,https://media.api-sports.io/football/teams/7816.png,Local,1,3
+254,Guaratinguetá,https://media.api-sports.io/football/teams/7817.png,Local,1,3
+255,Acadêmica Vitória,https://media.api-sports.io/football/teams/7818.png,Local,1,3
+256,América PE,https://media.api-sports.io/football/teams/7819.png,Local,1,3
+257,Anapolina,https://media.api-sports.io/football/teams/7820.png,Local,1,3
+258,Atlético Roraima,https://media.api-sports.io/football/teams/7821.png,Local,1,3
+259,Bahia de Feira,https://media.api-sports.io/football/teams/7822.png,Local,1,3
+260,Barcelona RO,https://media.api-sports.io/football/teams/7823.png,Local,1,3
+261,CAP,https://media.api-sports.io/football/teams/7824.png,Local,1,3
+262,Coruripe,https://media.api-sports.io/football/teams/7825.png,Local,1,3
+263,Ferroviária,https://media.api-sports.io/football/teams/7826.png,Local,1,3
+264,Gaúcho,https://media.api-sports.io/football/teams/7827.png,Local,1,3
+265,Hercílio Luz,https://media.api-sports.io/football/teams/7828.png,Local,1,3
+266,Iporá,https://media.api-sports.io/football/teams/7829.png,Local,1,3
+267,Itaboraí,https://media.api-sports.io/football/teams/7830.png,Local,1,3
+268,Jacuipense,https://media.api-sports.io/football/teams/7831.png,Local,1,3
+269,Maranhão,https://media.api-sports.io/football/teams/7832.png,Local,1,3
+270,Maringá,https://media.api-sports.io/football/teams/7833.png,Local,1,3
+271,Novorizontino,https://media.api-sports.io/football/teams/7834.png,Local,1,3
+272,Portuguesa RJ,https://media.api-sports.io/football/teams/7835.png,Local,1,3
+273,Serrano PB,https://media.api-sports.io/football/teams/7836.png,Local,1,3
+274,Vitória ES,https://media.api-sports.io/football/teams/7837.png,Local,1,3
+275,4 de Julho,https://media.api-sports.io/football/teams/7838.png,Local,1,3
+276,ASSU,https://media.api-sports.io/football/teams/7839.png,Local,1,3
+277,Baré,https://media.api-sports.io/football/teams/7840.png,Local,1,3
+278,Belo Jardim,https://media.api-sports.io/football/teams/7841.png,Local,1,3
+279,Espírito Santo,https://media.api-sports.io/football/teams/7842.png,Local,1,3
+280,Flamengo Arcoverde,https://media.api-sports.io/football/teams/7843.png,Local,1,3
+281,Internacional SC,https://media.api-sports.io/football/teams/7844.png,Local,1,3
+282,Itumbiara,https://media.api-sports.io/football/teams/7845.png,Local,1,3
+283,Linense,https://media.api-sports.io/football/teams/7846.png,Local,1,3
+284,Macapá,https://media.api-sports.io/football/teams/7847.png,Local,1,3
+285,Mirassol,https://media.api-sports.io/football/teams/7848.png,Local,1,3
+286,Plácido de Castro,https://media.api-sports.io/football/teams/7849.png,Local,1,3
+287,Prudentópolis,https://media.api-sports.io/football/teams/7850.png,Local,1,3
+288,Sparta,https://media.api-sports.io/football/teams/7851.png,Local,1,3
+289,Anápolis,https://media.api-sports.io/football/teams/7852.png,Local,1,3
+290,Atlético PE,https://media.api-sports.io/football/teams/7853.png,Local,1,3
+291,Bangu,https://media.api-sports.io/football/teams/7854.png,Local,1,3
+292,Comercial MS,https://media.api-sports.io/football/teams/7855.png,Local,1,3
+293,Desportiva ES,https://media.api-sports.io/football/teams/7856.png,Local,1,3
+294,Guarany de Sobral,https://media.api-sports.io/football/teams/7857.png,Local,1,3
+295,Jacobina,https://media.api-sports.io/football/teams/7858.png,Local,1,3
+296,Luziânia,https://media.api-sports.io/football/teams/7859.png,Local,1,3
+297,Metropolitano,https://media.api-sports.io/football/teams/7860.png,Local,1,3
+298,Potiguar Mossoró,https://media.api-sports.io/football/teams/7861.png,Local,1,3
+299,Princesa Solimões,https://media.api-sports.io/football/teams/7862.png,Local,1,3
+300,RB Brasil,https://media.api-sports.io/football/teams/7863.png,Local,1,3
+301,Sousa,https://media.api-sports.io/football/teams/7864.png,Local,1,3
+302,São Bernardo,https://media.api-sports.io/football/teams/7865.png,Local,1,3
+303,São Paulo RS,https://media.api-sports.io/football/teams/7866.png,Local,1,3
+304,Tocantins Miracema,https://media.api-sports.io/football/teams/7867.png,Local,1,3
+305,Trem,https://media.api-sports.io/football/teams/7868.png,Local,1,3
+306,Villa Nova,https://media.api-sports.io/football/teams/7869.png,Local,1,3
+307,XV de Piracicaba,https://media.api-sports.io/football/teams/7870.png,Local,1,3
+308,Araguaia,https://media.api-sports.io/football/teams/7871.png,Local,1,3
+309,Goianésia,https://media.api-sports.io/football/teams/7873.png,Local,1,3
+310,Icasa,https://media.api-sports.io/football/teams/7874.png,Local,1,3
+311,J. Malucelli,https://media.api-sports.io/football/teams/7875.png,Local,1,3
+312,Náutico RR,https://media.api-sports.io/football/teams/7876.png,Local,1,3
+313,Rondoniense,https://media.api-sports.io/football/teams/7877.png,Local,1,3
+314,Tocantinópolis,https://media.api-sports.io/football/teams/7878.png,Local,1,3
+315,Águia de Marabá,https://media.api-sports.io/football/teams/7879.png,Local,1,3
+316,Vénus,https://media.api-sports.io/football/teams/8136.png,Local,1,3
+317,CEO,https://media.api-sports.io/football/teams/9124.png,Local,1,3
+318,Dimensão Saúde,https://media.api-sports.io/football/teams/9125.png,Local,1,3
+319,Jacyobá,https://media.api-sports.io/football/teams/9126.png,Local,1,3
+320,CSE,https://media.api-sports.io/football/teams/9127.png,Local,1,3
+321,Miguelense,https://media.api-sports.io/football/teams/9128.png,Local,1,3
+322,Sete de Setembro,https://media.api-sports.io/football/teams/9129.png,Local,1,3
+323,Cruzeiro W,https://media.api-sports.io/football/teams/9980.png,Local,1,3
+324,Palmeiras W,https://media.api-sports.io/football/teams/9981.png,Local,1,3
+325,São Paulo W,https://media.api-sports.io/football/teams/9982.png,Local,1,3
+326,Toledo,https://media.api-sports.io/football/teams/9994.png,Local,1,3
+327,Afogados,https://media.api-sports.io/football/teams/9995.png,Local,1,3
+328,Aquidauanense,https://media.api-sports.io/football/teams/9996.png,Local,1,3
+329,Atlético Alagoinhas,https://media.api-sports.io/football/teams/9997.png,Local,1,3
+330,Barbalha,https://media.api-sports.io/football/teams/9998.png,Local,1,3
+331,CEOV Operário,https://media.api-sports.io/football/teams/9999.png,Local,1,3
+332,Caucaia,https://media.api-sports.io/football/teams/10000.png,Local,1,3
+333,Frei Paulistano,https://media.api-sports.io/football/teams/10001.png,Local,1,3
+334,Lagarto,https://media.api-sports.io/football/teams/10002.png,Local,1,3
+335,Santo André,https://media.api-sports.io/football/teams/10003.png,Local,1,3
+336,São Luiz,https://media.api-sports.io/football/teams/10004.png,Local,1,3
+337,Vilhenense,https://media.api-sports.io/football/teams/10005.png,Local,1,3
+338,Águia Negra,https://media.api-sports.io/football/teams/10006.png,Local,1,3
+339,Água Santa,https://media.api-sports.io/football/teams/10018.png,Local,1,3
+340,Juventus,https://media.api-sports.io/football/teams/10019.png,Local,1,3
+341,Atibaia,https://media.api-sports.io/football/teams/10020.png,Local,1,3
+342,Monte Azul,https://media.api-sports.io/football/teams/10021.png,Local,1,3
+343,Penapolense,https://media.api-sports.io/football/teams/10022.png,Local,1,3
+344,Portuguesa Santista,https://media.api-sports.io/football/teams/10023.png,Local,1,3
+345,Rio Claro,https://media.api-sports.io/football/teams/10024.png,Local,1,3
+346,Sertãozinho,https://media.api-sports.io/football/teams/10025.png,Local,1,3
+347,Taubaté,https://media.api-sports.io/football/teams/10026.png,Local,1,3
+348,Olímpia,https://media.api-sports.io/football/teams/10027.png,Local,1,3
+349,Barretos,https://media.api-sports.io/football/teams/10028.png,Local,1,3
+350,Batatais,https://media.api-sports.io/football/teams/10029.png,Local,1,3
+351,Capivariano,https://media.api-sports.io/football/teams/10030.png,Local,1,3
+352,Comercial,https://media.api-sports.io/football/teams/10031.png,Local,1,3
+353,Desportivo Brasil,https://media.api-sports.io/football/teams/10032.png,Local,1,3
+354,EC São Bernardo,https://media.api-sports.io/football/teams/10033.png,Local,1,3
+355,Grêmio Osasco,https://media.api-sports.io/football/teams/10034.png,Local,1,3
+356,Marília,https://media.api-sports.io/football/teams/10035.png,Local,1,3
+357,Nacional SP,https://media.api-sports.io/football/teams/10036.png,Local,1,3
+358,Noroeste,https://media.api-sports.io/football/teams/10037.png,Local,1,3
+359,Paulista,https://media.api-sports.io/football/teams/10038.png,Local,1,3
+360,Primavera SP,https://media.api-sports.io/football/teams/10039.png,Local,1,3
+361,Rio Preto,https://media.api-sports.io/football/teams/10040.png,Local,1,3
+362,Velo Clube,https://media.api-sports.io/football/teams/10041.png,Local,1,3
+363,Esportivo,https://media.api-sports.io/football/teams/10042.png,Local,1,3
+364,Pelotas,https://media.api-sports.io/football/teams/10043.png,Local,1,3
+365,Bagé,https://media.api-sports.io/football/teams/10044.png,Local,1,3
+366,Brasil Farroupilha,https://media.api-sports.io/football/teams/10045.png,Local,1,3
+367,Cruzeiro RS,https://media.api-sports.io/football/teams/10046.png,Local,1,3
+368,Glória,https://media.api-sports.io/football/teams/10047.png,Local,1,3
+369,Guarani RS,https://media.api-sports.io/football/teams/10048.png,Local,1,3
+370,Guarany de Bagé,https://media.api-sports.io/football/teams/10049.png,Local,1,3
+371,Igrejinha,https://media.api-sports.io/football/teams/10050.png,Local,1,3
+372,Inter Santa Maria,https://media.api-sports.io/football/teams/10051.png,Local,1,3
+373,Lajeadense,https://media.api-sports.io/football/teams/10052.png,Local,1,3
+374,Passo Fundo,https://media.api-sports.io/football/teams/10053.png,Local,1,3
+375,São Gabriel,https://media.api-sports.io/football/teams/10054.png,Local,1,3
+376,Tupi RS,https://media.api-sports.io/football/teams/10055.png,Local,1,3
+377,União RS,https://media.api-sports.io/football/teams/10056.png,Local,1,3
+378,Veranópolis,https://media.api-sports.io/football/teams/10057.png,Local,1,3
+379,Brazil U23,https://media.api-sports.io/football/teams/10171.png,Local,1,3
+380,Humaitá,https://media.api-sports.io/football/teams/10478.png,Local,1,3
+381,Atlético Cajazeirense,https://media.api-sports.io/football/teams/10670.png,Local,1,3
+382,CRAC,https://media.api-sports.io/football/teams/10671.png,Local,1,3
+383,Cabofriense,https://media.api-sports.io/football/teams/10672.png,Local,1,3
+384,Cascavel,https://media.api-sports.io/football/teams/10673.png,Local,1,3
+385,Goiânia,https://media.api-sports.io/football/teams/10674.png,Local,1,3
+386,Ji-Paraná,https://media.api-sports.io/football/teams/10675.png,Local,1,3
+387,Juventude MA,https://media.api-sports.io/football/teams/10676.png,Local,1,3
+388,Marcílio Dias,https://media.api-sports.io/football/teams/10677.png,Local,1,3
+389,Nacional PR,https://media.api-sports.io/football/teams/10678.png,Local,1,3
+390,Real Noroeste,https://media.api-sports.io/football/teams/10679.png,Local,1,3
+391,Tupynambás,https://media.api-sports.io/football/teams/10680.png,Local,1,3
+392,Brasília,https://media.api-sports.io/football/teams/10685.png,Local,1,3
+393,Estanciano,https://media.api-sports.io/football/teams/10686.png,Local,1,3
+394,Ivinhema,https://media.api-sports.io/football/teams/10687.png,Local,1,3
+395,Operário MT,https://media.api-sports.io/football/teams/10688.png,Local,1,3
+396,Parauapebas,https://media.api-sports.io/football/teams/10689.png,Local,1,3
+397,Rio Branco ES,https://media.api-sports.io/football/teams/10690.png,Local,1,3
+398,Andirá,https://media.api-sports.io/football/teams/10852.png,Local,1,3
+399,Independência,https://media.api-sports.io/football/teams/10853.png,Local,1,3
+400,Náuas,https://media.api-sports.io/football/teams/10854.png,Local,1,3
+401,Alto Acre,https://media.api-sports.io/football/teams/10856.png,Local,1,3
+402,Amax,https://media.api-sports.io/football/teams/10857.png,Local,1,3
+403,Oratório,https://media.api-sports.io/football/teams/10858.png,Local,1,3
+404,Santana,https://media.api-sports.io/football/teams/10859.png,Local,1,3
+405,São Paulo AP,https://media.api-sports.io/football/teams/10860.png,Local,1,3
+406,Independente AP,https://media.api-sports.io/football/teams/10861.png,Local,1,3
+407,Amazonas,https://media.api-sports.io/football/teams/10862.png,Local,1,3
+408,Iranduba,https://media.api-sports.io/football/teams/10863.png,Local,1,3
+409,São Raimundo AM,https://media.api-sports.io/football/teams/10864.png,Local,1,3
+410,Peñarol,https://media.api-sports.io/football/teams/10865.png,Local,1,13
+411,Rio Negro AM,https://media.api-sports.io/football/teams/10866.png,Local,1,3
+412,Sul América,https://media.api-sports.io/football/teams/10867.png,Local,1,3
+413,Manicoré,https://media.api-sports.io/football/teams/10868.png,Local,1,3
+414,Holanda,https://media.api-sports.io/football/teams/10869.png,Local,1,3
+415,Nacional Borbense,https://media.api-sports.io/football/teams/10870.png,Local,1,3
+416,Flamengo U20,https://media.api-sports.io/football/teams/11054.png,Local,1,3
+417,Ipatinga,https://media.api-sports.io/football/teams/12277.png,Local,1,3
+418,Duque de Caxias,https://media.api-sports.io/football/teams/12278.png,Local,1,3
+419,Baraúnas,https://media.api-sports.io/football/teams/12279.png,Local,1,3
+420,Serrano BA,https://media.api-sports.io/football/teams/12280.png,Local,1,3
+421,Vilhena,https://media.api-sports.io/football/teams/12281.png,Local,1,3
+422,Estrela do Norte,https://media.api-sports.io/football/teams/12282.png,Local,1,3
+423,Guarani de Palhoça,https://media.api-sports.io/football/teams/12283.png,Local,1,3
+424,Itaporã,https://media.api-sports.io/football/teams/12284.png,Local,1,3
+425,Aracruz,https://media.api-sports.io/football/teams/12285.png,Local,1,3
+426,Araxá,https://media.api-sports.io/football/teams/12286.png,Local,1,3
+427,Paragominas,https://media.api-sports.io/football/teams/12287.png,Local,1,3
+428,Tiradentes CE,https://media.api-sports.io/football/teams/12288.png,Local,1,3
+429,Ypiranga PE,https://media.api-sports.io/football/teams/12289.png,Local,1,3
+430,Araguaína,https://media.api-sports.io/football/teams/12290.png,Local,1,3
+431,Arapongas,https://media.api-sports.io/football/teams/12291.png,Local,1,3
+432,CENE,https://media.api-sports.io/football/teams/12292.png,Local,1,3
+433,Cerâmica,https://media.api-sports.io/football/teams/12293.png,Local,1,3
+434,Comercial PI,https://media.api-sports.io/football/teams/12294.png,Local,1,3
+435,Friburguense,https://media.api-sports.io/football/teams/12295.png,Local,1,3
+436,Guarani MG,https://media.api-sports.io/football/teams/12296.png,Local,1,3
+437,Horizonte,https://media.api-sports.io/football/teams/12297.png,Local,1,3
+438,Nacional MG,https://media.api-sports.io/football/teams/12298.png,Local,1,3
+439,Petrolina,https://media.api-sports.io/football/teams/12299.png,Local,1,3
+440,Concórdia,https://media.api-sports.io/football/teams/12300.png,Local,1,3
+441,Feirense,https://media.api-sports.io/football/teams/12301.png,Local,1,3
+442,Brazil U17,https://media.api-sports.io/football/teams/12502.png,Local,1,3
+443,Doce Mel,https://media.api-sports.io/football/teams/12905.png,Local,1,3
+444,Atlanta,https://media.api-sports.io/football/teams/1948.png,Local,1,6
+445,CSP,https://media.api-sports.io/football/teams/12907.png,Local,1,3
+446,Nacional de Patos,https://media.api-sports.io/football/teams/12908.png,Local,1,3
+447,Perilima,https://media.api-sports.io/football/teams/12909.png,Local,1,3
+448,Sport PB,https://media.api-sports.io/football/teams/12910.png,Local,1,3
+449,São Paulo Crystal,https://media.api-sports.io/football/teams/12911.png,Local,1,3
+450,Juventus SC,https://media.api-sports.io/football/teams/12912.png,Local,1,3
+451,Cascavel CR,https://media.api-sports.io/football/teams/12913.png,Local,1,3
+452,Rio Branco PR,https://media.api-sports.io/football/teams/12914.png,Local,1,3
+453,União PR,https://media.api-sports.io/football/teams/12915.png,Local,1,3
+454,GAS,https://media.api-sports.io/football/teams/12916.png,Local,1,3
+455,Rio Negro RR,https://media.api-sports.io/football/teams/12917.png,Local,1,3
+456,Pinheiro,https://media.api-sports.io/football/teams/12918.png,Local,1,3
+457,São José MA,https://media.api-sports.io/football/teams/12919.png,Local,1,3
+458,Pacajus,https://media.api-sports.io/football/teams/12920.png,Local,1,3
+459,Capital Brasilia,https://media.api-sports.io/football/teams/12921.png,Local,1,3
+460,Ceilandense,https://media.api-sports.io/football/teams/12922.png,Local,1,3
+461,Formosa,https://media.api-sports.io/football/teams/12923.png,Local,1,3
+462,Paranoá,https://media.api-sports.io/football/teams/12924.png,Local,1,3
+463,Real FC,https://media.api-sports.io/football/teams/12925.png,Local,1,3
+464,Taguatinga,https://media.api-sports.io/football/teams/12926.png,Local,1,3
+465,Unaí Itapuã,https://media.api-sports.io/football/teams/12927.png,Local,1,3
+466,Linhares,https://media.api-sports.io/football/teams/12928.png,Local,1,3
+467,Rio Branco-VN,https://media.api-sports.io/football/teams/12929.png,Local,1,3
+468,São Mateus,https://media.api-sports.io/football/teams/12930.png,Local,1,3
+469,ABPN Canaã,https://media.api-sports.io/football/teams/12931.png,Local,1,3
+470,Cajazeiras,https://media.api-sports.io/football/teams/12932.png,Local,1,3
+471,Olímpia BA,https://media.api-sports.io/football/teams/12933.png,Local,1,3
+472,UNIRB,https://media.api-sports.io/football/teams/12934.png,Local,1,3
+473,Galícia,https://media.api-sports.io/football/teams/12935.png,Local,1,3
+474,Andraus Brasil,https://media.api-sports.io/football/teams/12936.png,Local,1,3
+475,Apucarana,https://media.api-sports.io/football/teams/12937.png,Local,1,3
+476,Araucária,https://media.api-sports.io/football/teams/12938.png,Local,1,3
+477,Azuriz,https://media.api-sports.io/football/teams/12939.png,Local,1,3
+478,Batel,https://media.api-sports.io/football/teams/12940.png,Local,1,3
+479,Independiente FSJ,https://media.api-sports.io/football/teams/12941.png,Local,1,3
+480,Rolândia,https://media.api-sports.io/football/teams/12942.png,Local,1,3
+481,Guajará,https://media.api-sports.io/football/teams/12943.png,Local,1,3
+482,Guaporé,https://media.api-sports.io/football/teams/12944.png,Local,1,3
+483,Pimentense,https://media.api-sports.io/football/teams/12945.png,Local,1,3
+484,Porto Velho,https://media.api-sports.io/football/teams/12946.png,Local,1,3
+485,União Cacoalense,https://media.api-sports.io/football/teams/12947.png,Local,1,3
+486,Força e Luz,https://media.api-sports.io/football/teams/12948.png,Local,1,3
+487,Lazio,https://media.api-sports.io/football/teams/487.png,Local,1,12
+488,Sassuolo,https://media.api-sports.io/football/teams/488.png,Local,1,12
+489,AC Milan,https://media.api-sports.io/football/teams/489.png,Local,1,12
+490,Cagliari,https://media.api-sports.io/football/teams/490.png,Local,1,12
+491,Avaí U20,https://media.api-sports.io/football/teams/12953.png,Local,1,3
+492,Napoli,https://media.api-sports.io/football/teams/492.png,Local,1,12
+493,Bragantino PA U20,https://media.api-sports.io/football/teams/12955.png,Local,1,3
+494,Udinese,https://media.api-sports.io/football/teams/494.png,Local,1,12
+495,Genoa,https://media.api-sports.io/football/teams/495.png,Local,1,12
+496,Juventus,https://media.api-sports.io/football/teams/496.png,Local,1,12
+497,AS Roma,https://media.api-sports.io/football/teams/497.png,Local,1,12
+498,Gama U20,https://media.api-sports.io/football/teams/12960.png,Local,1,3
+499,Atalanta,https://media.api-sports.io/football/teams/499.png,Local,1,12
+500,Bologna,https://media.api-sports.io/football/teams/500.png,Local,1,12
+501,Jaciobá U20,https://media.api-sports.io/football/teams/12963.png,Local,1,3
+502,Fiorentina,https://media.api-sports.io/football/teams/502.png,Local,1,12
+503,Torino,https://media.api-sports.io/football/teams/503.png,Local,1,12
+504,Verona,https://media.api-sports.io/football/teams/504.png,Local,1,12
+505,Inter,https://media.api-sports.io/football/teams/505.png,Local,1,12
+506,Palmeiras U20,https://media.api-sports.io/football/teams/12968.png,Local,1,3
+507,Perilima U20,https://media.api-sports.io/football/teams/12969.png,Local,1,3
+508,Serra U20,https://media.api-sports.io/football/teams/12970.png,Local,1,3
+509,Sport Recife U20,https://media.api-sports.io/football/teams/12971.png,Local,1,3
+510,São José PA U20,https://media.api-sports.io/football/teams/12972.png,Local,1,3
+511,Empoli,https://media.api-sports.io/football/teams/511.png,Local,1,12
+512,Frosinone,https://media.api-sports.io/football/teams/512.png,Local,1,12
+513,Trem U20,https://media.api-sports.io/football/teams/12975.png,Local,1,3
+514,Salernitana,https://media.api-sports.io/football/teams/514.png,Local,1,12
+515,União ABC U20,https://media.api-sports.io/football/teams/12977.png,Local,1,3
+516,União MT U20,https://media.api-sports.io/football/teams/12978.png,Local,1,3
+517,Vasco da Gama U20,https://media.api-sports.io/football/teams/13143.png,Local,1,3
+518,Vilhenense U20,https://media.api-sports.io/football/teams/12980.png,Local,1,3
+519,América Mineiro U20,https://media.api-sports.io/football/teams/12981.png,Local,1,3
+520,Assisense U20,https://media.api-sports.io/football/teams/12983.png,Local,1,3
+521,Athletico PR U20,https://media.api-sports.io/football/teams/13137.png,Local,1,3
+522,Atlético Cearense U20,https://media.api-sports.io/football/teams/12985.png,Local,1,3
+523,Atlético GO U20,https://media.api-sports.io/football/teams/12986.png,Local,1,3
+524,Botafogo SP U20,https://media.api-sports.io/football/teams/12987.png,Local,1,3
+525,Brasil de Pelotas U20,https://media.api-sports.io/football/teams/12988.png,Local,1,3
+526,CRB U20,https://media.api-sports.io/football/teams/12989.png,Local,1,3
+527,CSA U20,https://media.api-sports.io/football/teams/12990.png,Local,1,3
+528,Canaã U20,https://media.api-sports.io/football/teams/12991.png,Local,1,3
+529,Barcelona,https://media.api-sports.io/football/teams/529.png,Local,1,2
+530,Atletico Madrid,https://media.api-sports.io/football/teams/530.png,Local,1,2
+531,Athletic Club,https://media.api-sports.io/football/teams/531.png,Local,1,2
+532,Valencia,https://media.api-sports.io/football/teams/532.png,Local,1,2
+533,Villarreal,https://media.api-sports.io/football/teams/533.png,Local,1,2
+534,Las Palmas,https://media.api-sports.io/football/teams/534.png,Local,1,2
+535,Corinthians U20,https://media.api-sports.io/football/teams/12998.png,Local,1,3
+536,Sevilla,https://media.api-sports.io/football/teams/536.png,Local,1,2
+537,Cruzeiro U20,https://media.api-sports.io/football/teams/13000.png,Local,1,3
+538,Celta Vigo,https://media.api-sports.io/football/teams/538.png,Local,1,2
+539,Desportiva Paraense U20,https://media.api-sports.io/football/teams/13002.png,Local,1,3
+540,Desportivo Brasil U20,https://media.api-sports.io/football/teams/13003.png,Local,1,3
+541,Real Madrid,https://media.api-sports.io/football/teams/541.png,Local,1,2
+542,Alaves,https://media.api-sports.io/football/teams/542.png,Local,1,2
+543,Real Betis,https://media.api-sports.io/football/teams/543.png,Local,1,2
+544,Flamengo SP U20,https://media.api-sports.io/football/teams/13007.png,Local,1,3
+545,Fluminense U20,https://media.api-sports.io/football/teams/13008.png,Local,1,3
+546,Getafe,https://media.api-sports.io/football/teams/546.png,Local,1,2
+547,Girona,https://media.api-sports.io/football/teams/547.png,Local,1,2
+548,Real Sociedad,https://media.api-sports.io/football/teams/548.png,Local,1,2
+549,Guarani U20,https://media.api-sports.io/football/teams/13012.png,Local,1,3
+550,Guarulhos U20,https://media.api-sports.io/football/teams/13013.png,Local,1,3
+551,Inter Limeira U20,https://media.api-sports.io/football/teams/13014.png,Local,1,3
+552,Itapirense U20,https://media.api-sports.io/football/teams/13015.png,Local,1,3
+553,Ituano U20,https://media.api-sports.io/football/teams/13016.png,Local,1,3
+554,Jacuipense U20,https://media.api-sports.io/football/teams/13017.png,Local,1,3
+555,Jaguariúna U20,https://media.api-sports.io/football/teams/13018.png,Local,1,3
+556,Joinville U20,https://media.api-sports.io/football/teams/13019.png,Local,1,3
+557,Juventude U20,https://media.api-sports.io/football/teams/13020.png,Local,1,3
+558,Juventus U20,https://media.api-sports.io/football/teams/13021.png,Local,1,3
+559,Linense U20,https://media.api-sports.io/football/teams/13022.png,Local,1,3
+560,Linhares U20,https://media.api-sports.io/football/teams/13023.png,Local,1,3
+561,Manthiqueira U20,https://media.api-sports.io/football/teams/13024.png,Local,1,3
+562,Marília U20,https://media.api-sports.io/football/teams/13025.png,Local,1,3
+563,Mauá U20,https://media.api-sports.io/football/teams/13026.png,Local,1,3
+564,Mirassol U20,https://media.api-sports.io/football/teams/13027.png,Local,1,3
+565,Nacional SP U20,https://media.api-sports.io/football/teams/13028.png,Local,1,3
+566,Nautico U20,https://media.api-sports.io/football/teams/13029.png,Local,1,3
+567,Noroeste U20,https://media.api-sports.io/football/teams/13030.png,Local,1,3
+568,Nova Andradina U20,https://media.api-sports.io/football/teams/13031.png,Local,1,3
+569,Nova Iguaçu U20,https://media.api-sports.io/football/teams/13032.png,Local,1,3
+570,Novorizontino U20,https://media.api-sports.io/football/teams/13033.png,Local,1,3
+571,Oeste U20,https://media.api-sports.io/football/teams/13034.png,Local,1,3
+572,Olímpico SE U20,https://media.api-sports.io/football/teams/13035.png,Local,1,3
+573,Operário PR U20,https://media.api-sports.io/football/teams/13036.png,Local,1,3
+574,Osasco Audax U20,https://media.api-sports.io/football/teams/13037.png,Local,1,3
+575,Osvaldo Cruz U20,https://media.api-sports.io/football/teams/13038.png,Local,1,3
+576,Palmeira U20,https://media.api-sports.io/football/teams/13039.png,Local,1,3
+577,Paraná U20,https://media.api-sports.io/football/teams/13040.png,Local,1,3
+578,Paulista U20,https://media.api-sports.io/football/teams/13041.png,Local,1,3
+579,Penapolense U20,https://media.api-sports.io/football/teams/13042.png,Local,1,3
+580,Petrolina U20,https://media.api-sports.io/football/teams/13043.png,Local,1,3
+581,Ponte Preta U20,https://media.api-sports.io/football/teams/13044.png,Local,1,3
+582,Portuguesa U20,https://media.api-sports.io/football/teams/13045.png,Local,1,3
+583,Primavera SP U20,https://media.api-sports.io/football/teams/13046.png,Local,1,3
+584,RB Brasil U20,https://media.api-sports.io/football/teams/13047.png,Local,1,3
+585,Real FC U20,https://media.api-sports.io/football/teams/13048.png,Local,1,3
+586,Resende FC U20,https://media.api-sports.io/football/teams/13049.png,Local,1,3
+587,Retrô U20,https://media.api-sports.io/football/teams/13050.png,Local,1,3
+588,Rio Claro SP U20,https://media.api-sports.io/football/teams/13051.png,Local,1,3
+589,Ríver U20,https://media.api-sports.io/football/teams/13052.png,Local,1,3
+590,Santa Cruz U20,https://media.api-sports.io/football/teams/13053.png,Local,1,3
+591,Santo André U20,https://media.api-sports.io/football/teams/13054.png,Local,1,3
+592,Santos U20,https://media.api-sports.io/football/teams/13055.png,Local,1,3
+593,Sergipe U20,https://media.api-sports.io/football/teams/13056.png,Local,1,3
+594,Sertãozinho U20,https://media.api-sports.io/football/teams/13057.png,Local,1,3
+595,Socorrense U20,https://media.api-sports.io/football/teams/13058.png,Local,1,3
+596,São Bento U20,https://media.api-sports.io/football/teams/13059.png,Local,1,3
+597,São Bernardo FC U20,https://media.api-sports.io/football/teams/13060.png,Local,1,3
+598,São Caetano U20,https://media.api-sports.io/football/teams/13061.png,Local,1,3
+599,Taboão da Serra SP U20,https://media.api-sports.io/football/teams/13062.png,Local,1,3
+600,Tanabi SP U20,https://media.api-sports.io/football/teams/13063.png,Local,1,3
+601,Taubaté U20,https://media.api-sports.io/football/teams/13064.png,Local,1,3
+602,Timon MA U20,https://media.api-sports.io/football/teams/13065.png,Local,1,3
+603,Trindade U20,https://media.api-sports.io/football/teams/13066.png,Local,1,3
+604,União Mogi U20,https://media.api-sports.io/football/teams/13067.png,Local,1,3
+605,União Suzano SP U20,https://media.api-sports.io/football/teams/13068.png,Local,1,3
+606,Velo Clube U20,https://media.api-sports.io/football/teams/13069.png,Local,1,3
+607,Vila Nova U20,https://media.api-sports.io/football/teams/13070.png,Local,1,3
+608,Visão Celeste U20,https://media.api-sports.io/football/teams/13071.png,Local,1,3
+609,Vitória U20,https://media.api-sports.io/football/teams/13072.png,Local,1,3
+610,Vitória da Conquista U20,https://media.api-sports.io/football/teams/13073.png,Local,1,3
+611,Volta Redonda U20,https://media.api-sports.io/football/teams/13074.png,Local,1,3
+612,Votuporanguense U20,https://media.api-sports.io/football/teams/13075.png,Local,1,3
+613,XV de Jaú U20,https://media.api-sports.io/football/teams/13076.png,Local,1,3
+614,XV de Piracicaba U20,https://media.api-sports.io/football/teams/13077.png,Local,1,3
+615,Água Santa U20,https://media.api-sports.io/football/teams/13078.png,Local,1,3
+616,CAP Uberlândia,https://media.api-sports.io/football/teams/13079.png,Local,1,3
+617,Democrata GV,https://media.api-sports.io/football/teams/13080.png,Local,1,3
+618,Democrata SL,https://media.api-sports.io/football/teams/13081.png,Local,1,3
+619,Mamoré,https://media.api-sports.io/football/teams/13082.png,Local,1,3
+620,Nacional AC MG,https://media.api-sports.io/football/teams/13083.png,Local,1,3
+621,Pouso Alegre,https://media.api-sports.io/football/teams/13084.png,Local,1,3
+622,Serranense,https://media.api-sports.io/football/teams/13085.png,Local,1,3
+623,Betim,https://media.api-sports.io/football/teams/13086.png,Local,1,3
+624,Campo Grande,https://media.api-sports.io/football/teams/13087.png,Local,1,3
+625,Esporte Limoeiro,https://media.api-sports.io/football/teams/13088.png,Local,1,3
+626,Maracanã,https://media.api-sports.io/football/teams/13089.png,Local,1,3
+627,Maranguape,https://media.api-sports.io/football/teams/13090.png,Local,1,3
+628,União CE,https://media.api-sports.io/football/teams/13091.png,Local,1,3
+629,Crato,https://media.api-sports.io/football/teams/13092.png,Local,1,3
+630,Flamengo PI,https://media.api-sports.io/football/teams/13093.png,Local,1,3
+631,Piauí,https://media.api-sports.io/football/teams/13094.png,Local,1,3
+632,Picos,https://media.api-sports.io/football/teams/13095.png,Local,1,3
+633,Timon,https://media.api-sports.io/football/teams/13096.png,Local,1,3
+634,Decisão,https://media.api-sports.io/football/teams/13097.png,Local,1,3
+635,Retrô,https://media.api-sports.io/football/teams/13098.png,Local,1,3
+636,Chapadão,https://media.api-sports.io/football/teams/13099.png,Local,1,3
+637,Maracaju,https://media.api-sports.io/football/teams/13100.png,Local,1,3
+638,Nova Andradina,https://media.api-sports.io/football/teams/13101.png,Local,1,3
+639,Ponta Porã,https://media.api-sports.io/football/teams/13102.png,Local,1,3
+640,Costa Rica,https://media.api-sports.io/football/teams/29.png,Local,1,41
+641,América RJ,https://media.api-sports.io/football/teams/13104.png,Local,1,3
+642,Angra dos Reis,https://media.api-sports.io/football/teams/13105.png,Local,1,3
+643,Artsul,https://media.api-sports.io/football/teams/13106.png,Local,1,3
+644,Audax Rio,https://media.api-sports.io/football/teams/13107.png,Local,1,3
+645,Barra da Tijuca,https://media.api-sports.io/football/teams/13108.png,Local,1,3
+646,Bonsucesso,https://media.api-sports.io/football/teams/13109.png,Local,1,3
+647,Campos AA,https://media.api-sports.io/football/teams/13110.png,Local,1,3
+648,Gonçalense,https://media.api-sports.io/football/teams/13111.png,Local,1,3
+649,Goytacaz,https://media.api-sports.io/football/teams/13112.png,Local,1,3
+650,Nova Cidade,https://media.api-sports.io/football/teams/13113.png,Local,1,3
+651,Olaria,https://media.api-sports.io/football/teams/13114.png,Local,1,3
+652,Sampaio Corrêa RJ,https://media.api-sports.io/football/teams/13115.png,Local,1,3
+653,Serra Macaense,https://media.api-sports.io/football/teams/13116.png,Local,1,3
+654,Serrano RJ,https://media.api-sports.io/football/teams/13117.png,Local,1,3
+655,São Gonçalo EC RJ,https://media.api-sports.io/football/teams/13118.png,Local,1,3
+656,Tigres do Brasil,https://media.api-sports.io/football/teams/13119.png,Local,1,3
+657,América de Pedrinhas,https://media.api-sports.io/football/teams/13120.png,Local,1,3
+658,Boca Júnior,https://media.api-sports.io/football/teams/13121.png,Local,1,3
+659,Dorense,https://media.api-sports.io/football/teams/13122.png,Local,1,3
+660,Carajás,https://media.api-sports.io/football/teams/13123.png,Local,1,3
+661,Castanhal,https://media.api-sports.io/football/teams/13124.png,Local,1,3
+662,Itupiranga,https://media.api-sports.io/football/teams/13125.png,Local,1,3
+663,Tapajós,https://media.api-sports.io/football/teams/13126.png,Local,1,3
+664,Grêmio Anápolis,https://media.api-sports.io/football/teams/13127.png,Local,1,3
+665,Jaraguá EC,https://media.api-sports.io/football/teams/13128.png,Local,1,3
+666,Maracanã,https://media.api-sports.io/football/teams/13089.png,Local,1,3
+667,Maranguape,https://media.api-sports.io/football/teams/13090.png,Local,1,3
+668,União CE,https://media.api-sports.io/football/teams/13091.png,Local,1,3
+669,Crato,https://media.api-sports.io/football/teams/13092.png,Local,1,3
+670,Flamengo PI,https://media.api-sports.io/football/teams/13093.png,Local,1,3
+671,Piauí,https://media.api-sports.io/football/teams/13094.png,Local,1,3
+672,Picos,https://media.api-sports.io/football/teams/13095.png,Local,1,3
+673,Timon,https://media.api-sports.io/football/teams/13096.png,Local,1,3
+674,Decisão,https://media.api-sports.io/football/teams/13097.png,Local,1,3
+675,Retrô,https://media.api-sports.io/football/teams/13098.png,Local,1,3
+676,Chapadão,https://media.api-sports.io/football/teams/13099.png,Local,1,3
+677,Maracaju,https://media.api-sports.io/football/teams/13100.png,Local,1,3
+678,Nova Andradina,https://media.api-sports.io/football/teams/13101.png,Local,1,3
+679,Ponta Porã,https://media.api-sports.io/football/teams/13102.png,Local,1,3
+680,Costa Rica,https://media.api-sports.io/football/teams/13103.png,Local,1,36
+681,América RJ,https://media.api-sports.io/football/teams/13104.png,Local,1,3
+682,Angra dos Reis,https://media.api-sports.io/football/teams/13105.png,Local,1,3
+683,Artsul,https://media.api-sports.io/football/teams/13106.png,Local,1,3
+684,Audax Rio,https://media.api-sports.io/football/teams/13107.png,Local,1,3
+685,Barra da Tijuca,https://media.api-sports.io/football/teams/13108.png,Local,1,3
+686,Bonsucesso,https://media.api-sports.io/football/teams/13109.png,Local,1,3
+687,Campos AA,https://media.api-sports.io/football/teams/13110.png,Local,1,3
+688,Gonçalense,https://media.api-sports.io/football/teams/13111.png,Local,1,3
+689,Goytacaz,https://media.api-sports.io/football/teams/13112.png,Local,1,3
+690,Nova Cidade,https://media.api-sports.io/football/teams/13113.png,Local,1,3
+691,Olaria,https://media.api-sports.io/football/teams/13114.png,Local,1,3
+692,Sampaio Corrêa RJ,https://media.api-sports.io/football/teams/13115.png,Local,1,3
+693,Serra Macaense,https://media.api-sports.io/football/teams/13116.png,Local,1,3
+694,Serrano RJ,https://media.api-sports.io/football/teams/13117.png,Local,1,3
+695,São Gonçalo EC RJ,https://media.api-sports.io/football/teams/13118.png,Local,1,3
+696,Tigres do Brasil,https://media.api-sports.io/football/teams/13119.png,Local,1,3
+697,América de Pedrinhas,https://media.api-sports.io/football/teams/13120.png,Local,1,3
+698,Boca Júnior,https://media.api-sports.io/football/teams/13121.png,Local,1,3
+699,Dorense,https://media.api-sports.io/football/teams/13122.png,Local,1,3
+700,Carajás,https://media.api-sports.io/football/teams/13123.png,Local,1,3
+701,Castanhal,https://media.api-sports.io/football/teams/13124.png,Local,1,3
+702,Itupiranga,https://media.api-sports.io/football/teams/13125.png,Local,1,3
+703,Tapajós,https://media.api-sports.io/football/teams/13126.png,Local,1,3
+704,Grêmio Anápolis,https://media.api-sports.io/football/teams/13127.png,Local,1,3
+705,Jaraguá EC,https://media.api-sports.io/football/teams/13128.png,Local,1,3
+706,Coimbra,https://media.api-sports.io/football/teams/13129.png,Local,1,3
+707,Nova Mutum EC,https://media.api-sports.io/football/teams/13130.png,Local,1,3
+708,Poconé,https://media.api-sports.io/football/teams/13131.png,Local,1,3
+709,Araguacema,https://media.api-sports.io/football/teams/13132.png,Local,1,3
+710,Atlético Cerrado,https://media.api-sports.io/football/teams/13133.png,Local,1,3
+711,Capital,https://media.api-sports.io/football/teams/13134.png,Local,1,3
+712,Nova Conquista,https://media.api-sports.io/football/teams/13135.png,Local,1,3
+713,América RJ U20,https://media.api-sports.io/football/teams/13136.png,Local,1,3
+714,Athletic Club,https://media.api-sports.io/football/teams/13975.png,Local,1,2
+715,CFRJ / Maricá,https://media.api-sports.io/football/teams/14000.png,Local,1,3
+716,Rio São Paulo,https://media.api-sports.io/football/teams/14001.png,Local,1,3
+717,Barcelona BA,https://media.api-sports.io/football/teams/15103.png,Local,1,3
+718,Jequié,https://media.api-sports.io/football/teams/15104.png,Local,1,3
+719,Teixeira de Freitas,https://media.api-sports.io/football/teams/15105.png,Local,1,3
+720,Colo Colo,https://media.api-sports.io/football/teams/15106.png,Local,1,5
+721,Iguatu,https://media.api-sports.io/football/teams/15505.png,Local,1,3
+722,Itapipoca,https://media.api-sports.io/football/teams/15506.png,Local,1,3
+723,Pacatuba,https://media.api-sports.io/football/teams/15507.png,Local,1,3
+724,Aliança AL,https://media.api-sports.io/football/teams/15603.png,Local,1,3
+725,Atlético Gloriense,https://media.api-sports.io/football/teams/15604.png,Local,1,3
+726,Maruinense,https://media.api-sports.io/football/teams/15605.png,Local,1,3
+727,IAPE,https://media.api-sports.io/football/teams/15606.png,Local,1,3
+728,Timon MA,https://media.api-sports.io/football/teams/15607.png,Local,1,3
+729,Pinheiros,https://media.api-sports.io/football/teams/15608.png,Local,1,3
+730,Vilavelhense,https://media.api-sports.io/football/teams/15609.png,Local,1,3
+731,Gavião,https://media.api-sports.io/football/teams/15610.png,Local,1,3
+732,Tuna Luso,https://media.api-sports.io/football/teams/15611.png,Local,1,3
+733,Samambaia,https://media.api-sports.io/football/teams/15612.png,Local,1,3
+734,Santa Maria,https://media.api-sports.io/football/teams/15613.png,Local,1,3
+735,Próspera Criciúma,https://media.api-sports.io/football/teams/15614.png,Local,1,3
+736,Ação,https://media.api-sports.io/football/teams/15615.png,Local,1,3
+737,Grêmio Sorriso,https://media.api-sports.io/football/teams/15616.png,Local,1,3
+738,Fluminense PI,https://media.api-sports.io/football/teams/15617.png,Local,1,3
+739,Tiradentes PI,https://media.api-sports.io/football/teams/15618.png,Local,1,3
+740,Bandeirante SP,https://media.api-sports.io/football/teams/15621.png,Local,1,3
+741,São José EC,https://media.api-sports.io/football/teams/15622.png,Local,1,3
+742,Avaí U23,https://media.api-sports.io/football/teams/16042.png,Local,1,3
+743,CRB U23,https://media.api-sports.io/football/teams/16043.png,Local,1,3
+744,Ceará U23,https://media.api-sports.io/football/teams/16044.png,Local,1,3
+745,Corinthians U23,https://media.api-sports.io/football/teams/16045.png,Local,1,3
+746,Coritiba U23,https://media.api-sports.io/football/teams/16046.png,Local,1,3
+747,Fluminense U23,https://media.api-sports.io/football/teams/16047.png,Local,1,3
+748,Fortaleza U23,https://media.api-sports.io/football/teams/16048.png,Local,1,3
+749,Grêmio U23,https://media.api-sports.io/football/teams/16049.png,Local,1,3
+750,Juventude U23,https://media.api-sports.io/football/teams/16050.png,Local,1,3
+751,Paraná U23,https://media.api-sports.io/football/teams/16051.png,Local,1,3
+752,Paysandu U23,https://media.api-sports.io/football/teams/16052.png,Local,1,3
+753,RB Bragantino U23,https://media.api-sports.io/football/teams/16053.png,Local,1,3
+754,Sampaio Corrêa U23,https://media.api-sports.io/football/teams/16054.png,Local,1,3
+755,Granada CF,https://media.api-sports.io/football/teams/715.png,Local,1,2
+756,Santos U23,https://media.api-sports.io/football/teams/16056.png,Local,1,3
+757,Vila Nova U23,https://media.api-sports.io/football/teams/16057.png,Local,1,3
+758,Botafogo SP B,https://media.api-sports.io/football/teams/16058.png,Local,1,3
+759,Guarani B,https://media.api-sports.io/football/teams/16059.png,Local,1,3
+760,Ponte Preta B,https://media.api-sports.io/football/teams/16060.png,Local,1,3
+761,Brazil U20,https://media.api-sports.io/football/teams/16200.png,Local,1,3
+762,Bacabal,https://media.api-sports.io/football/teams/16439.png,Local,1,3
+763,Almeria,https://media.api-sports.io/football/teams/723.png,Local,1,2
+764,Cadiz,https://media.api-sports.io/football/teams/724.png,Local,1,2
+765,JC,https://media.api-sports.io/football/teams/16461.png,Local,1,3
+766,Morrinhos,https://media.api-sports.io/football/teams/18297.png,Local,1,3
+767,América SE,https://media.api-sports.io/football/teams/18298.png,Local,1,3
+768,Falcon,https://media.api-sports.io/football/teams/18299.png,Local,1,3
+769,Matonense,https://media.api-sports.io/football/teams/18303.png,Local,1,3
+770,USAC,https://media.api-sports.io/football/teams/18304.png,Local,1,0
+771,Auto Esporte,https://media.api-sports.io/football/teams/18306.png,Local,1,3
+772,Nova Venécia,https://media.api-sports.io/football/teams/18307.png,Local,1,3
+773,Manauara,https://media.api-sports.io/football/teams/18308.png,Local,1,3
+774,Operário AM,https://media.api-sports.io/football/teams/18309.png,Local,1,3
+775,Potyguar,https://media.api-sports.io/football/teams/18316.png,Local,1,3
+776,Tuntum,https://media.api-sports.io/football/teams/18317.png,Local,1,3
+777,Caruaru City,https://media.api-sports.io/football/teams/18318.png,Local,1,3
+778,Íbis,https://media.api-sports.io/football/teams/18319.png,Local,1,3
+779,ASSU U20,https://media.api-sports.io/football/teams/18320.png,Local,1,3
+780,Andirá U20,https://media.api-sports.io/football/teams/18321.png,Local,1,3
+781,Aparecidense U20,https://media.api-sports.io/football/teams/18322.png,Local,1,3
+782,Aquidauanense U20,https://media.api-sports.io/football/teams/18323.png,Local,1,3
+783,Aster Brasil U20,https://media.api-sports.io/football/teams/18324.png,Local,1,3
+784,CSE U20,https://media.api-sports.io/football/teams/18325.png,Local,1,3
+785,Camaçariense U20,https://media.api-sports.io/football/teams/18326.png,Local,1,3
+786,Castanhal U20,https://media.api-sports.io/football/teams/18327.png,Local,1,3
+787,Chapadinha U20,https://media.api-sports.io/football/teams/18328.png,Local,1,3
+788,Concórdia U20,https://media.api-sports.io/football/teams/18329.png,Local,1,3
+789,Desportiva Aliança U20,https://media.api-sports.io/football/teams/18330.png,Local,1,3
+790,Falcon U20,https://media.api-sports.io/football/teams/18331.png,Local,1,3
+791,Forte U20,https://media.api-sports.io/football/teams/18333.png,Local,1,3
+792,Grêmio São-Carlense U20,https://media.api-sports.io/football/teams/18334.png,Local,1,3
+793,IAPE U20,https://media.api-sports.io/football/teams/18335.png,Local,1,3
+794,Ibrachina U20,https://media.api-sports.io/football/teams/18336.png,Local,1,3
+795,Jaú U20,https://media.api-sports.io/football/teams/18337.png,Local,1,3
+796,Lagarto U20,https://media.api-sports.io/football/teams/18338.png,Local,1,3
+797,Matogrossense U20,https://media.api-sports.io/football/teams/18339.png,Local,1,3
+798,Mallorca,https://media.api-sports.io/football/teams/798.png,Local,1,2
+799,Mauaense U20,https://media.api-sports.io/football/teams/18341.png,Local,1,3
+800,Mixto U20,https://media.api-sports.io/football/teams/18342.png,Local,1,3
+801,Monte Azul U20,https://media.api-sports.io/football/teams/18343.png,Local,1,3
+802,Portuguesa Santista U20,https://media.api-sports.io/football/teams/18344.png,Local,1,3
+803,RB Bragantino U20,https://media.api-sports.io/football/teams/18345.png,Local,1,3
+804,Real Brasília U20,https://media.api-sports.io/football/teams/18346.png,Local,1,3
+805,Rondoniense U20,https://media.api-sports.io/football/teams/18347.png,Local,1,3
+806,SKA Brasil U20,https://media.api-sports.io/football/teams/18348.png,Local,1,3
+807,Santana U20,https://media.api-sports.io/football/teams/18349.png,Local,1,3
+808,Serranense U20,https://media.api-sports.io/football/teams/18350.png,Local,1,3
+809,São Carlos U20,https://media.api-sports.io/football/teams/18351.png,Local,1,3
+810,São José EC U20,https://media.api-sports.io/football/teams/18352.png,Local,1,3
+811,Taguatinga U20,https://media.api-sports.io/football/teams/18353.png,Local,1,3
+812,Taquarussú U20,https://media.api-sports.io/football/teams/18354.png,Local,1,3
+813,União Iacanga U20,https://media.api-sports.io/football/teams/18355.png,Local,1,3
+814,União São João U20,https://media.api-sports.io/football/teams/18356.png,Local,1,3
+815,Batalhão,https://media.api-sports.io/football/teams/18361.png,Local,1,3
+816,União Carmolandense,https://media.api-sports.io/football/teams/18362.png,Local,1,3
+817,Cruzeiro Arapiraca,https://media.api-sports.io/football/teams/18363.png,Local,1,3
+818,Moreninhas,https://media.api-sports.io/football/teams/18364.png,Local,1,3
+819,Naviraiense,https://media.api-sports.io/football/teams/18365.png,Local,1,3
+820,Amazônia PA,https://media.api-sports.io/football/teams/18376.png,Local,1,3
+821,Caeté,https://media.api-sports.io/football/teams/18377.png,Local,1,3
+822,Aliança,https://media.api-sports.io/football/teams/24096.png,Local,1,3
+823,ADESG,https://media.api-sports.io/football/teams/18391.png,Local,1,3
+824,Coxim,https://media.api-sports.io/football/teams/18465.png,Local,1,3
+825,EC Lemense,https://media.api-sports.io/football/teams/18466.png,Local,1,3
+826,CRESSPOM,https://media.api-sports.io/football/teams/18725.png,Local,1,0
+827,ESMAC,https://media.api-sports.io/football/teams/25004.png,Local,1,0
+828,Atlético Mineiro W,https://media.api-sports.io/football/teams/18727.png,Local,1,3
+829,RB Bragantino W,https://media.api-sports.io/football/teams/18728.png,Local,1,3
+830,Aruko Sports,https://media.api-sports.io/football/teams/18745.png,Local,1,0
+831,Laranja Mecânica,https://media.api-sports.io/football/teams/18746.png,Local,1,0
+832,Uberaba,https://media.api-sports.io/football/teams/18795.png,Local,1,3
+833,Varginha EC,https://media.api-sports.io/football/teams/18796.png,Local,1,3
+834,Pague Menos,https://media.api-sports.io/football/teams/18799.png,Local,1,3
+835,CTE Colatina,https://media.api-sports.io/football/teams/18810.png,Local,1,3
+836,Flamengo BA,https://media.api-sports.io/football/teams/18830.png,Local,1,3
+837,Itabuna,https://media.api-sports.io/football/teams/18831.png,Local,1,3
+838,Jacobinense,https://media.api-sports.io/football/teams/18832.png,Local,1,3
+839,Juazeiro BA,https://media.api-sports.io/football/teams/18833.png,Local,1,3
+840,Botafogo U23,https://media.api-sports.io/football/teams/19054.png,Local,1,3
+841,Brasil de Pelotas U23,https://media.api-sports.io/football/teams/19055.png,Local,1,3
+842,CSA U23,https://media.api-sports.io/football/teams/19056.png,Local,1,3
+843,Criciuma U23,https://media.api-sports.io/football/teams/19057.png,Local,1,3
+844,Nautico U23,https://media.api-sports.io/football/teams/19058.png,Local,1,3
+845,Sport Recife U23,https://media.api-sports.io/football/teams/19059.png,Local,1,3
+846,Brazil U20 W,https://media.api-sports.io/football/teams/19079.png,Local,1,3
+847,Atlético Catarinense,https://media.api-sports.io/football/teams/19634.png,Local,1,3
+848,Blumenau,https://media.api-sports.io/football/teams/19635.png,Local,1,3
+849,Carlos Renaux,https://media.api-sports.io/football/teams/19636.png,Local,1,3
+850,Nação,https://media.api-sports.io/football/teams/19637.png,Local,1,3
+851,CEAC / Araruama,https://media.api-sports.io/football/teams/20006.png,Local,1,3
+852,Paduano,https://media.api-sports.io/football/teams/20007.png,Local,1,3
+853,São Gonçalo / Niterói,https://media.api-sports.io/football/teams/20008.png,Local,1,3
+854,Remo U20,https://media.api-sports.io/football/teams/20390.png,Local,1,3
+855,Inhumas,https://media.api-sports.io/football/teams/20708.png,Local,1,3
+856,Queimadense,https://media.api-sports.io/football/teams/20709.png,Local,1,3
+857,Serra Branca,https://media.api-sports.io/football/teams/20710.png,Local,1,3
+858,Chapadinha,https://media.api-sports.io/football/teams/20711.png,Local,1,3
+859,Grêmio Prudente,https://media.api-sports.io/football/teams/20713.png,Local,1,3
+860,Itapirense,https://media.api-sports.io/football/teams/20714.png,Local,1,3
+861,Alecrim,https://media.api-sports.io/football/teams/20715.png,Local,1,3
+862,Cacerense,https://media.api-sports.io/football/teams/20716.png,Local,1,3
+863,Porto Vitória,https://media.api-sports.io/football/teams/20717.png,Local,1,3
+864,Ferroviário PI,https://media.api-sports.io/football/teams/20718.png,Local,1,3
+865,Náutico MS,https://media.api-sports.io/football/teams/20719.png,Local,1,3
+866,Operário AC MS,https://media.api-sports.io/football/teams/20720.png,Local,1,3
+867,Lecce,https://media.api-sports.io/football/teams/867.png,Local,1,12
+868,Parintins,https://media.api-sports.io/football/teams/20724.png,Local,1,3
+869,AC Guaratinguetá U20,https://media.api-sports.io/football/teams/20744.png,Local,1,3
+870,Alecrim U20,https://media.api-sports.io/football/teams/20745.png,Local,1,3
+871,América RN U20,https://media.api-sports.io/football/teams/20746.png,Local,1,3
+872,Barretos U20,https://media.api-sports.io/football/teams/20747.png,Local,1,3
+873,Botafogo PB U20,https://media.api-sports.io/football/teams/20748.png,Local,1,3
+874,CSP U20,https://media.api-sports.io/football/teams/20749.png,Local,1,3
+875,Camboriú U20,https://media.api-sports.io/football/teams/20750.png,Local,1,3
+876,Catanduva U20,https://media.api-sports.io/football/teams/20751.png,Local,1,3
+877,Ceilândia U20,https://media.api-sports.io/football/teams/20752.png,Local,1,3
+878,Comercial MS U20,https://media.api-sports.io/football/teams/20753.png,Local,1,3
+879,Cruzeiro AL U20,https://media.api-sports.io/football/teams/20754.png,Local,1,3
+880,Figueirense U20,https://media.api-sports.io/football/teams/20755.png,Local,1,3
+881,Hercílio Luz U20,https://media.api-sports.io/football/teams/20756.png,Local,1,3
+882,Imperatriz U20,https://media.api-sports.io/football/teams/20757.png,Local,1,3
+883,Inter de Minas U20,https://media.api-sports.io/football/teams/20758.png,Local,1,3
+884,Itabaiana U20,https://media.api-sports.io/football/teams/20759.png,Local,1,3
+885,Juazeirense U20,https://media.api-sports.io/football/teams/20760.png,Local,1,3
+886,Lemense U20,https://media.api-sports.io/football/teams/20761.png,Local,1,3
+887,Madureira U20,https://media.api-sports.io/football/teams/20762.png,Local,1,3
+888,Maringá U20,https://media.api-sports.io/football/teams/20763.png,Local,1,3
+889,Pague Menos U20,https://media.api-sports.io/football/teams/20764.png,Local,1,3
+890,Parauapebas U20,https://media.api-sports.io/football/teams/20765.png,Local,1,3
+891,Picos PI U20,https://media.api-sports.io/football/teams/20766.png,Local,1,3
+892,Pinheirense U20,https://media.api-sports.io/football/teams/20767.png,Local,1,3
+893,Porto Velho EC U20,https://media.api-sports.io/football/teams/20768.png,Local,1,3
+894,Porto Vitória U20,https://media.api-sports.io/football/teams/20769.png,Local,1,3
+895,Rio Preto U20,https://media.api-sports.io/football/teams/20770.png,Local,1,3
+896,Rosário Central U20,https://media.api-sports.io/football/teams/20771.png,Local,1,0
+897,Sampaio Corrêa U20,https://media.api-sports.io/football/teams/20772.png,Local,1,3
+898,Sharjah Brasil U20,https://media.api-sports.io/football/teams/20773.png,Local,1,0
+899,Tupã U20,https://media.api-sports.io/football/teams/20774.png,Local,1,3
+900,União Suzano U20,https://media.api-sports.io/football/teams/20775.png,Local,1,3
+901,VOCEM U20,https://media.api-sports.io/football/teams/20776.png,Local,1,3
+902,Zumbi U20,https://media.api-sports.io/football/teams/20777.png,Local,1,3
+903,Crateús,https://media.api-sports.io/football/teams/20778.png,Local,1,3
+904,Maguary PE,https://media.api-sports.io/football/teams/20781.png,Local,1,3
+905,Porto,https://media.api-sports.io/football/teams/20782.png,Local,1,0
+906,EC Lemense U20,https://media.api-sports.io/football/teams/20816.png,Local,1,3
+907,Athletico Paranaense W,https://media.api-sports.io/football/teams/21006.png,Local,1,3
+908,Real Ariquemes,https://media.api-sports.io/football/teams/21007.png,Local,1,3
+909,Ceará W,https://media.api-sports.io/football/teams/21008.png,Local,1,3
+910,River RR,https://media.api-sports.io/football/teams/21125.png,Local,1,3
+911,Itabirito,https://media.api-sports.io/football/teams/21165.png,Local,1,3
+912,North Esporte,https://media.api-sports.io/football/teams/21166.png,Local,1,0
+913,Leonico,https://media.api-sports.io/football/teams/21169.png,Local,1,0
+914,Grêmio Maringá,https://media.api-sports.io/football/teams/21170.png,Local,1,3
+915,Caçador,https://media.api-sports.io/football/teams/21206.png,Local,1,3
+916,Santa Catarina,https://media.api-sports.io/football/teams/21207.png,Local,1,3
+917,Caravaggio,https://media.api-sports.io/football/teams/21209.png,Local,1,0
+918,Progresso,https://media.api-sports.io/football/teams/21230.png,Local,1,0
+919,Monsoon,https://media.api-sports.io/football/teams/21233.png,Local,1,0
+920,AFA,https://media.api-sports.io/football/teams/21234.png,Local,1,0
+921,Potiguar RN,https://media.api-sports.io/football/teams/21258.png,Local,1,3
+922,Bulgaria U18,https://media.api-sports.io/football/teams/21463.png,Local,1,0
+923,ADH Brasil,https://media.api-sports.io/football/teams/22011.png,Local,1,3
+924,Sparta U20,https://media.api-sports.io/football/teams/22041.png,Local,1,0
+925,São Paulo AP U20,https://media.api-sports.io/football/teams/22042.png,Local,1,3
+926,ASEEV,https://media.api-sports.io/football/teams/22095.png,Local,1,0
+927,Aparecida GO,https://media.api-sports.io/football/teams/22096.png,Local,1,3
+928,Centro Oeste,https://media.api-sports.io/football/teams/22097.png,Local,1,0
+929,Santa Helena,https://media.api-sports.io/football/teams/22098.png,Local,1,3
+930,Mirassol B,https://media.api-sports.io/football/teams/22210.png,Local,1,3
+931,RB Bragantino B,https://media.api-sports.io/football/teams/22211.png,Local,1,3
+932,Santo André B,https://media.api-sports.io/football/teams/22212.png,Local,1,3
+933,Rio de Janeiro,https://media.api-sports.io/football/teams/22353.png,Local,1,0
+934,SE Belford Roxo,https://media.api-sports.io/football/teams/22354.png,Local,1,0
+935,Confianca PB,https://media.api-sports.io/football/teams/22361.png,Local,1,0
+936,EC de Patos,https://media.api-sports.io/football/teams/22362.png,Local,1,0
+937,Guarabira,https://media.api-sports.io/football/teams/22363.png,Local,1,0
+938,Picuiense,https://media.api-sports.io/football/teams/22364.png,Local,1,0
+939,Sabugy,https://media.api-sports.io/football/teams/22365.png,Local,1,0
+940,Spartax,https://media.api-sports.io/football/teams/22366.png,Local,1,0
+941,Pombal EC,https://media.api-sports.io/football/teams/22367.png,Local,1,0
+942,Brazil U23,https://media.api-sports.io/football/teams/22427.png,Local,1,3
+943,Avaí B,https://media.api-sports.io/football/teams/22721.png,Local,1,3
+944,Chapecoense B,https://media.api-sports.io/football/teams/22722.png,Local,1,3
+945,Planaltina DF,https://media.api-sports.io/football/teams/22818.png,Local,1,0
+946,Carmópolis,https://media.api-sports.io/football/teams/22819.png,Local,1,0
+947,Olímpico SE,https://media.api-sports.io/football/teams/22820.png,Local,1,0
+948,Jaguaré,https://media.api-sports.io/football/teams/22821.png,Local,1,0
+949,Penedense,https://media.api-sports.io/football/teams/22822.png,Local,1,0
+950,Primavera MG,https://media.api-sports.io/football/teams/22825.png,Local,1,0
+951,Unidos do Alvorada,https://media.api-sports.io/football/teams/22826.png,Local,1,0
+952,Batalhão,https://media.api-sports.io/football/teams/22827.png,Local,1,0
+953,Portuguesa MS,https://media.api-sports.io/football/teams/22828.png,Local,1,0
+954,Aster Brasil SP U20,https://media.api-sports.io/football/teams/22829.png,Local,1,0
+955,Atlético Gloriense U20,https://media.api-sports.io/football/teams/22830.png,Local,1,0
+956,Bangu U20,https://media.api-sports.io/football/teams/22831.png,Local,1,0
+957,Canaã DF U20,https://media.api-sports.io/football/teams/22832.png,Local,1,0
+958,Coimbra U20,https://media.api-sports.io/football/teams/22833.png,Local,1,0
+959,Comercial de Tietê U20,https://media.api-sports.io/football/teams/22834.png,Local,1,0
+960,Conquista U20,https://media.api-sports.io/football/teams/22835.png,Local,1,0
+961,Inter de Bebedouro U20,https://media.api-sports.io/football/teams/22836.png,Local,1,0
+962,Ivinhema U20,https://media.api-sports.io/football/teams/22837.png,Local,1,0
+963,Macapá U20,https://media.api-sports.io/football/teams/22838.png,Local,1,0
+964,Nova Mutum U20,https://media.api-sports.io/football/teams/22839.png,Local,1,0
+965,Nova Venécia U20,https://media.api-sports.io/football/teams/22840.png,Local,1,0
+966,Patriotas U20,https://media.api-sports.io/football/teams/22841.png,Local,1,0
+967,Portuguesa RJ U20,https://media.api-sports.io/football/teams/22842.png,Local,1,0
+968,Potyguar Seridoense U20,https://media.api-sports.io/football/teams/22843.png,Local,1,0
+969,Queimadense U20,https://media.api-sports.io/football/teams/22844.png,Local,1,0
+970,Rio Branco AC U20,https://media.api-sports.io/football/teams/22845.png,Local,1,0
+971,Santa Cruz SE U20,https://media.api-sports.io/football/teams/22846.png,Local,1,0
+972,Serra Branca U20,https://media.api-sports.io/football/teams/22847.png,Local,1,0
+973,Sfera U20,https://media.api-sports.io/football/teams/22848.png,Local,1,0
+974,Tiradentes PI U20,https://media.api-sports.io/football/teams/22849.png,Local,1,0
+975,CA Lemense,https://media.api-sports.io/football/teams/22850.png,Local,1,0
+976,Catanduva,https://media.api-sports.io/football/teams/22851.png,Local,1,0
+977,União São João,https://media.api-sports.io/football/teams/22852.png,Local,1,0
+978,Canaã,https://media.api-sports.io/football/teams/22872.png,Local,1,0
+979,Santa Rosa,https://media.api-sports.io/football/teams/22873.png,Local,1,0
+980,Botafogo U20,https://media.api-sports.io/football/teams/22875.png,Local,1,0
+981,America SP,https://media.api-sports.io/football/teams/22945.png,Local,1,0
+982,Francana,https://media.api-sports.io/football/teams/22946.png,Local,1,0
+983,Grêmio São-carlense,https://media.api-sports.io/football/teams/22947.png,Local,1,0
+984,Independente SP,https://media.api-sports.io/football/teams/22948.png,Local,1,0
+985,Jabaquara,https://media.api-sports.io/football/teams/22949.png,Local,1,0
+986,Joseense,https://media.api-sports.io/football/teams/22950.png,Local,1,0
+987,Rio Branco SP,https://media.api-sports.io/football/teams/22951.png,Local,1,0
+988,SKA Brasil,https://media.api-sports.io/football/teams/22952.png,Local,1,0
+989,Taquaritinga,https://media.api-sports.io/football/teams/22953.png,Local,1,0
+990,União Barbarense,https://media.api-sports.io/football/teams/22954.png,Local,1,0
+991,Vocem,https://media.api-sports.io/football/teams/22955.png,Local,1,0
+992,XV de Jaú,https://media.api-sports.io/football/teams/22956.png,Local,1,0
+993,Zumbi,https://media.api-sports.io/football/teams/22960.png,Local,1,0
+994,CRB II,https://media.api-sports.io/football/teams/22961.png,Local,1,0
+995,Fluminense W,https://media.api-sports.io/football/teams/23157.png,Local,1,0
+996,Monte Roraima,https://media.api-sports.io/football/teams/23158.png,Local,1,0
+997,Aparecida EC U20,https://media.api-sports.io/football/teams/23197.png,Local,1,0
+998,Cerrado EC U20,https://media.api-sports.io/football/teams/23198.png,Local,1,0
+999,Guanabara City U20,https://media.api-sports.io/football/teams/23199.png,Local,1,0
+1000,Guapo M19 U20,https://media.api-sports.io/football/teams/23200.png,Local,1,0
+1001,Itaberai U20,https://media.api-sports.io/football/teams/23201.png,Local,1,0
+1002,Jataiense U20,https://media.api-sports.io/football/teams/23202.png,Local,1,0
+1003,Royal U20,https://media.api-sports.io/football/teams/23203.png,Local,1,0
+1004,AA Iguacu U20,https://media.api-sports.io/football/teams/23228.png,Local,1,0
+1005,Andraus Brasil U20,https://media.api-sports.io/football/teams/23229.png,Local,1,0
+1006,Apucarana Sports U20,https://media.api-sports.io/football/teams/23230.png,Local,1,0
+1007,Arapongas U20,https://media.api-sports.io/football/teams/23231.png,Local,1,0
+1008,Araucaria U20,https://media.api-sports.io/football/teams/23232.png,Local,1,0
+1009,Azuriz U20,https://media.api-sports.io/football/teams/23233.png,Local,1,0
+1010,Batel U20,https://media.api-sports.io/football/teams/23234.png,Local,1,0
+1011,Cambé U20,https://media.api-sports.io/football/teams/23235.png,Local,1,0
+1012,Campo Mourao U20,https://media.api-sports.io/football/teams/23236.png,Local,1,0
+1013,Cascavel U20,https://media.api-sports.io/football/teams/23237.png,Local,1,0
+1014,Cianorte U20,https://media.api-sports.io/football/teams/23238.png,Local,1,0
+1015,Gremio Maringa U20,https://media.api-sports.io/football/teams/23239.png,Local,1,0
+1016,Hope Internacional U20,https://media.api-sports.io/football/teams/23240.png,Local,1,0
+1017,Independente FSJ U20,https://media.api-sports.io/football/teams/23241.png,Local,1,0
+1018,Iraty U20,https://media.api-sports.io/football/teams/23242.png,Local,1,0
+1019,Parana S.T.C. U20,https://media.api-sports.io/football/teams/23243.png,Local,1,0
+1020,Prudentópolis U20,https://media.api-sports.io/football/teams/23244.png,Local,1,0
+1021,Rio Branco PR U20,https://media.api-sports.io/football/teams/23245.png,Local,1,0
+1022,Rolândia U20,https://media.api-sports.io/football/teams/23246.png,Local,1,0
+1023,Valeriodoce,https://media.api-sports.io/football/teams/23247.png,Local,1,0
+1024,Petrópolis,https://media.api-sports.io/football/teams/23262.png,Local,1,0
+1025,Atlético Alagoinhas U20,https://media.api-sports.io/football/teams/23274.png,Local,1,0
+1026,Bahia de Feira U20,https://media.api-sports.io/football/teams/23275.png,Local,1,0
+1027,Barcelona BA U20,https://media.api-sports.io/football/teams/23276.png,Local,1,0
+1028,Catuense U20,https://media.api-sports.io/football/teams/23277.png,Local,1,0
+1029,Estrela De Marco U20,https://media.api-sports.io/football/teams/23278.png,Local,1,0
+1030,Grapiuna U20,https://media.api-sports.io/football/teams/23279.png,Local,1,0
+1031,Itabuna EC U20,https://media.api-sports.io/football/teams/23280.png,Local,1,0
+1032,Jacobina U20,https://media.api-sports.io/football/teams/23281.png,Local,1,0
+1033,Jequie U20,https://media.api-sports.io/football/teams/23282.png,Local,1,0
+1034,Leonico U20,https://media.api-sports.io/football/teams/23283.png,Local,1,0
+1035,SSA U20,https://media.api-sports.io/football/teams/23284.png,Local,1,0
+1036,Ypiranga BA U20,https://media.api-sports.io/football/teams/23285.png,Local,1,0
+1037,Futebol Com Vida,https://media.api-sports.io/football/teams/23290.png,Local,1,0
+1038,ABECAT Ouvidorense,https://media.api-sports.io/football/teams/23306.png,Local,1,0
+1039,Trindade,https://media.api-sports.io/football/teams/23307.png,Local,1,0
+1040,Paranavaí,https://media.api-sports.io/football/teams/23308.png,Local,1,0
+1041,Barra SC U20,https://media.api-sports.io/football/teams/23321.png,Local,1,0
+1042,Brusque U20,https://media.api-sports.io/football/teams/23322.png,Local,1,0
+1043,Internacional SC U20,https://media.api-sports.io/football/teams/23323.png,Local,1,0
+1044,Marcilio Dias U20,https://media.api-sports.io/football/teams/23324.png,Local,1,0
+1045,Naçăo U20,https://media.api-sports.io/football/teams/23325.png,Local,1,0
+1046,Audax RJ U20,https://media.api-sports.io/football/teams/23385.png,Local,1,0
+1047,Boavista U20,https://media.api-sports.io/football/teams/23386.png,Local,1,0
+1048,Sampaio Correa FE U20,https://media.api-sports.io/football/teams/23387.png,Local,1,0
+1049,Aguai U20,https://media.api-sports.io/football/teams/23465.png,Local,1,0
+1050,Bandeirante U20,https://media.api-sports.io/football/teams/23466.png,Local,1,0
+1051,Brasilis U20,https://media.api-sports.io/football/teams/23467.png,Local,1,0
+1052,CA Joseense U20,https://media.api-sports.io/football/teams/23468.png,Local,1,0
+1053,CA Taquaritinga U20,https://media.api-sports.io/football/teams/23469.png,Local,1,0
+1054,Clube Vital U20,https://media.api-sports.io/football/teams/23470.png,Local,1,0
+1055,Cosmopolitano Sports U20,https://media.api-sports.io/football/teams/23471.png,Local,1,0
+1056,Elosport U20,https://media.api-sports.io/football/teams/23472.png,Local,1,0
+1057,Fernandopolis U20,https://media.api-sports.io/football/teams/23473.png,Local,1,0
+1058,GE Osasco U20,https://media.api-sports.io/football/teams/23474.png,Local,1,0
+1059,Gremio Prudente U20,https://media.api-sports.io/football/teams/23475.png,Local,1,0
+1060,Guacuano U20,https://media.api-sports.io/football/teams/23476.png,Local,1,0
+1061,Independente SP U20,https://media.api-sports.io/football/teams/23477.png,Local,1,0
+1062,Jabaquara U20,https://media.api-sports.io/football/teams/23478.png,Local,1,0
+1063,Jose Bonifacio EC U20,https://media.api-sports.io/football/teams/23479.png,Local,1,0
+1064,Metropolitano FC U20,https://media.api-sports.io/football/teams/23480.png,Local,1,0
+1065,Paulinia FU U20,https://media.api-sports.io/football/teams/23481.png,Local,1,0
+1066,Pinda U20,https://media.api-sports.io/football/teams/23482.png,Local,1,0
+1067,Porto Football U20,https://media.api-sports.io/football/teams/23483.png,Local,1,0
+1068,Presidente Prudente U20,https://media.api-sports.io/football/teams/23484.png,Local,1,0
+1069,Referencia U20,https://media.api-sports.io/football/teams/23485.png,Local,1,0
+1070,Rio Branco U20,https://media.api-sports.io/football/teams/23486.png,Local,1,0
+1071,Aguia FC U20,https://media.api-sports.io/football/teams/23487.png,Local,1,0
+1072,America PE U20,https://media.api-sports.io/football/teams/23488.png,Local,1,0
+1073,Atletico Torres U20,https://media.api-sports.io/football/teams/23489.png,Local,1,0
+1074,Belo Jardim U20,https://media.api-sports.io/football/teams/23490.png,Local,1,0
+1075,CA Porto U20,https://media.api-sports.io/football/teams/23491.png,Local,1,0
+1076,Central SC U20,https://media.api-sports.io/football/teams/23492.png,Local,1,0
+1077,Centro Limoeirense U20,https://media.api-sports.io/football/teams/23493.png,Local,1,0
+1078,Ibis Sport Club U20,https://media.api-sports.io/football/teams/23494.png,Local,1,0
+1079,Ipojuca U20,https://media.api-sports.io/football/teams/23495.png,Local,1,0
+1080,Jaguar U20,https://media.api-sports.io/football/teams/23496.png,Local,1,0
+1081,Santa Fe U20,https://media.api-sports.io/football/teams/23497.png,Local,1,0
+1082,Serrano PE U20,https://media.api-sports.io/football/teams/23498.png,Local,1,0
+1083,Sete de Setembro U20,https://media.api-sports.io/football/teams/23499.png,Local,1,0
+1084,Atlético Matogrossense,https://media.api-sports.io/football/teams/23560.png,Local,1,0
+1085,Campo Novo,https://media.api-sports.io/football/teams/23561.png,Local,1,0
+1086,Cáceres,https://media.api-sports.io/football/teams/23562.png,Local,1,0
+1087,Juara,https://media.api-sports.io/football/teams/23563.png,Local,1,0
+1088,Paulistano MT,https://media.api-sports.io/football/teams/23564.png,Local,1,0
+1089,Rondonopolis EC,https://media.api-sports.io/football/teams/23565.png,Local,1,0
+1090,Santa Cruz MT,https://media.api-sports.io/football/teams/23566.png,Local,1,0
+1091,Capixaba SC,https://media.api-sports.io/football/teams/23567.png,Local,1,0
+1092,Sport Brasil ES,https://media.api-sports.io/football/teams/23568.png,Local,1,0
+1093,AEA,https://media.api-sports.io/football/teams/23569.png,Local,1,0
+1094,Atletico Mogi,https://media.api-sports.io/football/teams/23570.png,Local,1,0
+1095,Barcelona EC,https://media.api-sports.io/football/teams/23571.png,Local,1,0
+1096,Colorado Caieiras,https://media.api-sports.io/football/teams/23572.png,Local,1,0
+1097,ECUS,https://media.api-sports.io/football/teams/23573.png,Local,1,0
+1098,Fernandopolis,https://media.api-sports.io/football/teams/23574.png,Local,1,0
+1099,Flamengo SP,https://media.api-sports.io/football/teams/23575.png,Local,1,0
+1100,Inter de Bebedouro,https://media.api-sports.io/football/teams/23576.png,Local,1,0
+1101,Manthiqueira,https://media.api-sports.io/football/teams/23577.png,Local,1,3
+1102,Maua,https://media.api-sports.io/football/teams/23578.png,Local,1,3
+1103,Mauaense,https://media.api-sports.io/football/teams/23579.png,Local,1,3
+1104,Sao Carlos,https://media.api-sports.io/football/teams/23580.png,Local,1,3
+1105,Tanabi,https://media.api-sports.io/football/teams/23581.png,Local,1,3
+1106,Tupa,https://media.api-sports.io/football/teams/23582.png,Local,1,3
+1107,Uniao Mogi,https://media.api-sports.io/football/teams/23583.png,Local,1,3
+1108,Porto BA,https://media.api-sports.io/football/teams/23591.png,Local,1,3
+1109,SSA,https://media.api-sports.io/football/teams/23592.png,Local,1,3
+1110,Botafogo DF U20,https://media.api-sports.io/football/teams/23608.png,Local,1,3
+1111,Brasiliense U20,https://media.api-sports.io/football/teams/23609.png,Local,1,3
+1112,CFZ Brasilia U20,https://media.api-sports.io/football/teams/23610.png,Local,1,3
+1113,Ceilandense U20,https://media.api-sports.io/football/teams/23611.png,Local,1,3

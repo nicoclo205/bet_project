@@ -104,6 +104,8 @@ class CompetenciaSerializer(serializers.ModelSerializer):
 class EquipoSerializer(serializers.ModelSerializer):
     pais_nombre = serializers.ReadOnlyField(source='id_pais.nombre')
     deporte_nombre = serializers.ReadOnlyField(source='id_deporte.nombre')
+    bandera = serializers.ReadOnlyField(source='id_pais.bandera')
+
     
     class Meta:
         model = Equipo
