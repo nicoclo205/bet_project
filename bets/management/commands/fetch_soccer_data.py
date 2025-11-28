@@ -2,7 +2,7 @@ import os
 import requests
 from django.core.management.base import BaseCommand
 from django.conf import settings
-from bets.models import Pais, Equipo, Competencia, Partidos  # adjust app name if needed
+from bets.models import ApiPais, ApiEquipo, ApiLiga, ApiPartido  # adjust app name if needed
 from datetime import datetime
 
 API_KEY = os.getenv("API_FOOTBALL_KEY", "YOUR_API_KEY")
@@ -47,13 +47,13 @@ class Command(BaseCommand):
         return data.get("response", [])
 
     def find_country(self, country_name, country_code):
-        """Find country in Pais table by ISO2 code first, then by English name."""
+        """Find country in ApiPais table by ISO2 code first, then by English name."""
         if country_code:
-            p = Pais.objects.filter(bandera__iexact=country_code).first()
+            p = ApiPais.objects.filter(codigo__iexact=country_code).first()
             if p:
                 return p
         if country_name:
-            p = Pais.objects.filter(nombre__iexact=country_name).first()
+            p = ApiPais.objects.filter(nombre__iexact=country_name).first()
             if p:
                 return p
         return None
@@ -72,8 +72,8 @@ class Command(BaseCommand):
                     f"No country found for team {team_info.get('name')} ({country_name})"
                 ))
 
-            Equipo.objects.update_or_create(
-                id_equipo=team_info.get("id"),
+            ApiEquipo.objects.update_or_create(
+                api_team_id=team_info.get("id"),
                 defaults={
                     "nombre": team_info.get("name"),
                     "logo": team_info.get("logo"),
@@ -89,13 +89,13 @@ class Command(BaseCommand):
 
             pais = self.find_country(country_info.get("name"), country_info.get("code"))
 
-            Competencia.objects.update_or_create(
-                id_competencia=item.get("league", {}).get("id"),
+            ApiLiga.objects.update_or_create(
+                api_league_id=item.get("league", {}).get("id"),
                 defaults={
                     "nombre": league_info.get("name"),
                     "id_pais": pais,
                     "logo": league_info.get("logo"),
-                    "deporte": "Futbol"  # adjust if your model uses FK or choice field
+                    "tipo": league_info.get("type", "League")
                 }
             )
         self.stdout.write(self.style.SUCCESS("Competitions updated."))
@@ -107,20 +107,20 @@ class Command(BaseCommand):
             teams_info = item.get("teams", {})
 
             # Get competition FK
-            competencia = Competencia.objects.filter(id_competencia=league_info.get("id")).first()
+            liga = ApiLiga.objects.filter(api_league_id=league_info.get("id")).first()
 
             # Get teams FK
-            home_team = Equipo.objects.filter(id_equipo=teams_info.get("home", {}).get("id")).first()
-            away_team = Equipo.objects.filter(id_equipo=teams_info.get("away", {}).get("id")).first()
+            home_team = ApiEquipo.objects.filter(api_team_id=teams_info.get("home", {}).get("id")).first()
+            away_team = ApiEquipo.objects.filter(api_team_id=teams_info.get("away", {}).get("id")).first()
 
             # Parse date
             fecha = fixture.get("date")
             fecha_dt = datetime.fromisoformat(fecha.replace("Z", "+00:00")) if fecha else None
 
-            Partidos.objects.update_or_create(
-                id_partido=fixture.get("id"),
+            ApiPartido.objects.update_or_create(
+                api_fixture_id=fixture.get("id"),
                 defaults={
-                    "id_competencia": competencia,
+                    "id_liga": liga,
                     "equipo_local": home_team,
                     "equipo_visitante": away_team,
                     "fecha": fecha_dt,

@@ -37,9 +37,6 @@ router.register(r'apuestas-f1', views.ApuestaF1ViewSet)
 router.register(r'rankings', views.RankingViewSet)
 router.register(r'mensajes-chat', views.MensajeChatViewSet)
 
-# API synchronization logs
-router.register(r'sync-logs', views.ApiSyncLogViewSet)
-
 urlpatterns = [
     path('api/', include(router.urls)),
     path('api-auth/', include('rest_framework.urls')),

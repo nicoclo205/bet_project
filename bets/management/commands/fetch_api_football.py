@@ -11,7 +11,7 @@ from bets.utils.api_football import (
     search_teams_by_country
 )
 
-from bets.models import Equipo, Competencia, Pais, Deporte
+from bets.models import ApiEquipo, ApiLiga, ApiPais, Deporte
 
 # Default leagues (IDs often used in API-Football; you can override with --leagues)
 DEFAULT_LEAGUES = [
@@ -30,14 +30,14 @@ DEFAULT_COUNTRIES = [
 
 def find_country(country_code: str, country_name: str):
     """
-    Try to find Pais by banda (country code) or by name. Returns Pais or None.
+    Try to find ApiPais by codigo (country code) or by name. Returns ApiPais or None.
     """
     if country_code:
-        p = Pais.objects.filter(bandera__iexact=country_code).first()
+        p = ApiPais.objects.filter(codigo__iexact=country_code).first()
         if p:
             return p
     if country_name:
-        p = Pais.objects.filter(nombre__iexact=country_name).first()
+        p = ApiPais.objects.filter(nombre__iexact=country_name).first()
         if p:
             return p
     return None
@@ -88,21 +88,22 @@ class Command(BaseCommand):
                     comp_country = country_data.get('name')
                     comp_country_code = country_data.get('code')  # ISO2 if available
 
-                    # Match country to Pais
+                    # Match country to ApiPais
                     pais = find_country(comp_country_code, comp_country)
-                    competencia_obj, _ = Competencia.objects.get_or_create(
-                        nombre=comp_name,
-                        id_deporte=deporte,
+                    liga_obj, _ = ApiLiga.objects.get_or_create(
+                        api_league_id=league_id,
                         defaults={
+                            'nombre': comp_name,
                             'logo': comp_logo or None,
-                            'id_pais': pais
+                            'id_pais': pais,
+                            'tipo': league_data.get('type', 'League')
                         }
                     )
                     # update logo if changed
-                    if comp_logo and competencia_obj.logo != comp_logo:
-                        competencia_obj.logo = comp_logo
-                        competencia_obj.save()
-                    self.stdout.write(self.style.SUCCESS(f"Upserted competition: {competencia_obj.nombre}"))
+                    if comp_logo and liga_obj.logo != comp_logo:
+                        liga_obj.logo = comp_logo
+                        liga_obj.save()
+                    self.stdout.write(self.style.SUCCESS(f"Upserted competition: {liga_obj.nombre}"))
                 else:
                     self.stdout.write(self.style.WARNING(f"No league info returned for {league_id}"))
 
@@ -116,13 +117,15 @@ class Command(BaseCommand):
                     team_country = t.get('country', {}).get('name') or team.get('country') or None
                     team_country_code = t.get('country', {}).get('code') or None
 
-                    # find Pais
+                    # find ApiPais
                     pais = find_country(team_country_code, team_country)
-                    # upsert Equipo by name (you may want a more robust matching in production)
-                    eq, created = Equipo.objects.get_or_create(
-                        nombre=team_name,
-                        id_deporte=deporte,
+                    # Get team API ID from response
+                    team_api_id = team.get('id')
+                    # upsert ApiEquipo by api_team_id
+                    eq, created = ApiEquipo.objects.get_or_create(
+                        api_team_id=team_api_id,
                         defaults={
+                            'nombre': team_name,
                             'logo': team_logo or None,
                             'id_pais': pais
                         }
@@ -155,10 +158,11 @@ class Command(BaseCommand):
                     team_country_code = r.get('country', {}).get('code') or None
 
                     pais = find_country(team_country_code, team_country)
-                    eq, created = Equipo.objects.get_or_create(
-                        nombre=team_name,
-                        id_deporte=deporte,
+                    team_api_id = team.get('id')
+                    eq, created = ApiEquipo.objects.get_or_create(
+                        api_team_id=team_api_id,
                         defaults={
+                            'nombre': team_name,
                             'logo': team_logo or None,
                             'id_pais': pais
                         }
