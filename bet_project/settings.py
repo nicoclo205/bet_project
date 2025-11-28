@@ -14,30 +14,11 @@ import os
 from pathlib import Path
 from dotenv import load_dotenv
 
-# Determinar qué archivo .env cargar basado en la variable de entorno DJANGO_ENV
-# Valores posibles: 'local', 'railway_external', 'railway'
-env_mode = os.environ.get('DJANGO_ENV', 'local')
-
-if env_mode == 'local':
-    # Desarrollo local con base de datos local
-    dotenv_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), '.env.local')
-    if not os.path.exists(dotenv_path):
-        dotenv_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), '.env')
-    print("\n🔧 Usando configuración LOCAL\n")
-elif env_mode == 'railway_external':
-    # Conexión a Railway desde máquina local
-    dotenv_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), '.env.railway.external')
-    print("\n🌐 Conectando a RAILWAY desde LOCAL\n")
-else:  # railway
-    # Despliegue en Railway
-    dotenv_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), '.env.railway')
-    print("\n🚂 Ejecutando en RAILWAY\n")
-
-# Cargar el archivo .env correspondiente
-load_dotenv(dotenv_path=dotenv_path)
-
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Cargar variables de entorno desde archivo .env
+load_dotenv(os.path.join(BASE_DIR, '.env'))
 
 
 # Quick-start development settings - unsuitable for production
@@ -162,6 +143,11 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
 STATIC_URL = 'static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
+# Media files (uploaded by users)
+MEDIA_URL = 'media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field

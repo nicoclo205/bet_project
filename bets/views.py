@@ -5,6 +5,8 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.authtoken.models import Token
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
+from django.utils import timezone
+from django.db.models import Q
 from .models import (
     Pais, Escenario, Usuario, Sala, UsuarioSala, Deporte, Competencia,
     Equipo, Deportista, Partidos, PartidoFutbol, PartidoTenis, PartidoBaloncesto,
@@ -136,6 +138,50 @@ class SalaViewSet(viewsets.ModelViewSet):
     queryset = Sala.objects.all()
     serializer_class = SalaSerializer
     permission_classes = [IsAuthenticated]
+    
+    @action(detail=False, methods=['get'])
+    def mis_salas(self, request):
+        """
+        Devuelve las salas a las que pertenece el usuario autenticado
+        """
+        usuario = request.user.perfil
+        salas_propias = Sala.objects.filter(id_usuario=usuario)
+        
+        # Obtener salas a las que el usuario pertenece mediante UsuarioSala
+        pertenencias = UsuarioSala.objects.filter(id_usuario=usuario)
+        salas_miembro = [pertenencia.id_sala for pertenencia in pertenencias]
+        
+        # Combinar ambos conjuntos de salas
+        todas_salas = list(salas_propias) + salas_miembro
+        
+        # Serializar los resultados
+        serializer = self.get_serializer(todas_salas, many=True)
+        return Response(serializer.data)
+    
+    @action(detail=True, methods=['post'])
+    def unirse(self, request, pk=None):
+        """
+        Permite a un usuario unirse a una sala usando su código
+        """
+        codigo = request.data.get('codigo')
+        if not codigo:
+            return Response({"error": "Se requiere el código de sala"}, status=status.HTTP_400_BAD_REQUEST)
+            
+        try:
+            sala = Sala.objects.get(codigo_sala=codigo)
+        except Sala.DoesNotExist:
+            return Response({"error": "Sala no encontrada"}, status=status.HTTP_404_NOT_FOUND)
+        
+        usuario = request.user.perfil
+        
+        # Verificar si ya es miembro
+        if UsuarioSala.objects.filter(id_usuario=usuario, id_sala=sala).exists():
+            return Response({"error": "Ya eres miembro de esta sala"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Crear la relación UsuarioSala
+        UsuarioSala.objects.create(id_usuario=usuario, id_sala=sala)
+        
+        return Response({"success": f"Te has unido a la sala {sala.nombre}"}, status=status.HTTP_201_CREATED)
 
 class UsuarioSalaViewSet(viewsets.ModelViewSet):
     queryset = UsuarioSala.objects.all()
@@ -210,28 +256,159 @@ class ApuestaFutbolViewSet(viewsets.ModelViewSet):
     queryset = ApuestaFutbol.objects.all()
     serializer_class = ApuestaFutbolSerializer
     permission_classes = [IsAuthenticated]
+    
+    @action(detail=False, methods=['get'])
+    def mis_apuestas(self, request):
+        """
+        Obtiene las apuestas de fútbol del usuario autenticado
+        """
+        usuario = request.user.perfil
+        sala_id = request.query_params.get('sala_id')
+        
+        query = Q(id_usuario=usuario)
+        if sala_id:
+            query &= Q(id_sala=sala_id)
+            
+        apuestas = ApuestaFutbol.objects.filter(query).order_by('-fecha_apuesta')
+        serializer = self.get_serializer(apuestas, many=True)
+        return Response(serializer.data)
+    
+    @action(detail=False, methods=['get'])
+    def por_partido(self, request):
+        """
+        Obtiene las apuestas para un partido específico en una sala
+        """
+        partido_id = request.query_params.get('partido_id')
+        sala_id = request.query_params.get('sala_id')
+        
+        if not partido_id or not sala_id:
+            return Response({"error": "Se requieren los IDs del partido y la sala"}, status=status.HTTP_400_BAD_REQUEST)
+            
+        apuestas = ApuestaFutbol.objects.filter(id_partido=partido_id, id_sala=sala_id)
+        serializer = self.get_serializer(apuestas, many=True)
+        return Response(serializer.data)
 
 class ApuestaTenisViewSet(viewsets.ModelViewSet):
     queryset = ApuestaTenis.objects.all()
     serializer_class = ApuestaTenisSerializer
     permission_classes = [IsAuthenticated]
+    
+    @action(detail=False, methods=['get'])
+    def mis_apuestas(self, request):
+        """
+        Obtiene las apuestas de tenis del usuario autenticado
+        """
+        usuario = request.user.perfil
+        sala_id = request.query_params.get('sala_id')
+        
+        query = Q(id_usuario=usuario)
+        if sala_id:
+            query &= Q(id_sala=sala_id)
+            
+        apuestas = ApuestaTenis.objects.filter(query).order_by('-fecha_apuesta')
+        serializer = self.get_serializer(apuestas, many=True)
+        return Response(serializer.data)
 
 class ApuestaBaloncestoViewSet(viewsets.ModelViewSet):
     queryset = ApuestaBaloncesto.objects.all()
     serializer_class = ApuestaBaloncestoSerializer
     permission_classes = [IsAuthenticated]
+    
+    @action(detail=False, methods=['get'])
+    def mis_apuestas(self, request):
+        """
+        Obtiene las apuestas de baloncesto del usuario autenticado
+        """
+        usuario = request.user.perfil
+        sala_id = request.query_params.get('sala_id')
+        
+        query = Q(id_usuario=usuario)
+        if sala_id:
+            query &= Q(id_sala=sala_id)
+            
+        apuestas = ApuestaBaloncesto.objects.filter(query).order_by('-fecha_apuesta')
+        serializer = self.get_serializer(apuestas, many=True)
+        return Response(serializer.data)
 
 class ApuestaF1ViewSet(viewsets.ModelViewSet):
     queryset = ApuestaF1.objects.all()
     serializer_class = ApuestaF1Serializer
     permission_classes = [IsAuthenticated]
+    
+    @action(detail=False, methods=['get'])
+    def mis_apuestas(self, request):
+        """
+        Obtiene las apuestas de F1 del usuario autenticado
+        """
+        usuario = request.user.perfil
+        sala_id = request.query_params.get('sala_id')
+        
+        query = Q(id_usuario=usuario)
+        if sala_id:
+            query &= Q(id_sala=sala_id)
+            
+        apuestas = ApuestaF1.objects.filter(query).order_by('-fecha_apuesta')
+        serializer = self.get_serializer(apuestas, many=True)
+        return Response(serializer.data)
 
 class RankingViewSet(viewsets.ModelViewSet):
     queryset = Ranking.objects.all()
     serializer_class = RankingSerializer
     permission_classes = [IsAuthenticated]
+    
+    @action(detail=False, methods=['get'])
+    def por_sala(self, request):
+        """
+        Obtiene el ranking de una sala específica por periodo
+        """
+        sala_id = request.query_params.get('sala_id')
+        periodo = request.query_params.get('periodo')  # formato YYYY-MM-DD
+        
+        if not sala_id:
+            return Response({"error": "Se requiere el ID de la sala"}, status=status.HTTP_400_BAD_REQUEST)
+            
+        query = Q(id_sala=sala_id)
+        if periodo:
+            query &= Q(periodo=periodo)
+            
+        rankings = Ranking.objects.filter(query).order_by('posicion')
+        serializer = self.get_serializer(rankings, many=True)
+        return Response(serializer.data)
 
 class MensajeChatViewSet(viewsets.ModelViewSet):
     queryset = MensajeChat.objects.all()
     serializer_class = MensajeChatSerializer
     permission_classes = [IsAuthenticated]
+    
+    @action(detail=False, methods=['get'])
+    def por_sala(self, request):
+        """
+        Obtiene los mensajes de una sala específica
+        """
+        sala_id = request.query_params.get('sala_id')
+        limite = request.query_params.get('limite', 50)  # Cantidad de mensajes a devolver
+        
+        if not sala_id:
+            return Response({"error": "Se requiere el ID de la sala"}, status=status.HTTP_400_BAD_REQUEST)
+            
+        mensajes = MensajeChat.objects.filter(
+            id_sala=sala_id
+        ).order_by('-fecha_envio')[:int(limite)]
+        
+        serializer = self.get_serializer(mensajes, many=True)
+        return Response(serializer.data)
+
+
+class ApiSyncLogViewSet(viewsets.ModelViewSet):
+    queryset = ApiSyncLog.objects.all()
+    serializer_class = ApiSyncLogSerializer
+    permission_classes = [IsAuthenticated]
+    
+    @action(detail=False, methods=['get'])
+    def ultimas_sincronizaciones(self, request):
+        """
+        Obtiene las últimas sincronizaciones por tipo
+        """
+        logs = ApiSyncLog.objects.order_by('tipo_sincronizacion', '-fecha_inicio').distinct('tipo_sincronizacion')[:10]
+        serializer = self.get_serializer(logs, many=True)
+        return Response(serializer.data)

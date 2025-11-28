@@ -1,12 +1,17 @@
 from django.db import models
 from django.contrib.auth.hashers import make_password, check_password
 from django.contrib.auth.models import User
+from django.utils import timezone
+import json
 
+# Status enums
 class PartidoStatus(models.TextChoices):
     PROGRAMADO = 'programado', 'Programado'
     EN_CURSO = 'en curso', 'En Curso'
     FINALIZADO = 'finalizado', 'Finalizado'
     CANCELADO = 'cancelado', 'Cancelado'
+    POSPUESTO = 'pospuesto', 'Pospuesto'
+    SUSPENDIDO = 'suspendido', 'Suspendido'
 
 class ApuestaStatus(models.TextChoices):
     PENDIENTE = 'pendiente', 'Pendiente'
@@ -19,33 +24,7 @@ class MensajeStatus(models.TextChoices):
     ELIMINADO = 'eliminado', 'Eliminado'
     REPORTADO = 'reportado', 'Reportado'
 
-class Pais(models.Model):
-    id_pais = models.AutoField(primary_key=True)
-    nombre = models.CharField(max_length=50)
-    continente = models.CharField(max_length=50)
-    bandera = models.CharField(max_length=255, blank=True, null=True)
-
-    def __str__(self):
-        return self.nombre
-
-    class Meta:
-        db_table = 'pais'
-        verbose_name_plural = 'Paises'
-
-class Escenario(models.Model):
-    id_escenario = models.AutoField(primary_key=True)
-    nombre = models.CharField(max_length=100)
-    id_pais = models.ForeignKey(Pais, on_delete=models.SET_NULL, db_column='id_pais', blank=True, null=True)
-    capacidad = models.IntegerField(blank=True, null=True)
-    ciudad = models.CharField(max_length=100, blank=True, null=True)
-
-    def __str__(self):
-        return self.nombre
-
-    class Meta:
-        db_table = 'escenario'
-
-
+# Core user models
 class Usuario(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='perfil', null=True)
     id_usuario = models.AutoField(primary_key=True)
@@ -54,7 +33,6 @@ class Usuario(models.Model):
     contrasena = models.CharField(max_length=255)  
     fecha_registro = models.DateTimeField(auto_now_add=True)
     puntos_totales = models.IntegerField(default=0)
-
     nombre = models.CharField(max_length=100, blank=True, null=True)
     apellido = models.CharField(max_length=100, blank=True, null=True)
     celular = models.CharField(max_length=15, blank=True, null=True)
@@ -75,7 +53,6 @@ class Usuario(models.Model):
     class Meta:
         db_table = 'usuario'
 
-
 class Sala(models.Model):
     id_sala = models.AutoField(primary_key=True)
     nombre = models.CharField(max_length=50)
@@ -90,7 +67,6 @@ class Sala(models.Model):
 
     class Meta:
         db_table = 'sala'
-
 
 class UsuarioSala(models.Model):
     id_usuario_sala = models.AutoField(primary_key=True)
@@ -110,11 +86,12 @@ class UsuarioSala(models.Model):
             models.Index(fields=['id_sala']),
         ]
 
-
+# Reference data tables (minimal data from API)
 class Deporte(models.Model):
     id_deporte = models.AutoField(primary_key=True)
     nombre = models.CharField(max_length=100)
-    descripcion = models.TextField(blank=True, null=True)  # Corregido el typo en "descripcion"
+    descripcion = models.TextField(blank=True, null=True)
+    api_sport_id = models.IntegerField(blank=True, null=True)
 
     def __str__(self):
         return self.nombre
@@ -122,48 +99,73 @@ class Deporte(models.Model):
     class Meta:
         db_table = 'deportes'
 
-
-class Competencia(models.Model):
-    id_competencia = models.AutoField(primary_key=True)
+class ApiPais(models.Model):
+    id_pais = models.AutoField(primary_key=True)
     nombre = models.CharField(max_length=100)
-    id_pais = models.ForeignKey(Pais, on_delete=models.SET_NULL, db_column='id_pais', blank=True, null=True)
-    id_deporte = models.ForeignKey(Deporte, on_delete=models.SET_NULL, db_column='id_deporte', blank=True, null=True)
-    temporada = models.CharField(max_length=10, blank=True, null=True)
-    fecha_inicio = models.DateField(blank=True, null=True)
-    fecha_fin = models.DateField(blank=True, null=True)
-    logo = models.CharField(max_length=255, blank=True, null=True)
+    code = models.CharField(max_length=10, blank=True, null=True) # API country code
+    bandera_url = models.CharField(max_length=255, blank=True, null=True)
+    api_id = models.IntegerField(blank=True, null=True)
+    ultima_actualizacion = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return self.nombre
 
     class Meta:
-        db_table = 'competencias'
-        verbose_name_plural = 'Competencias'
+        db_table = 'api_paises'
+        verbose_name_plural = 'API Paises'
 
+class ApiLiga(models.Model):
+    id_liga = models.AutoField(primary_key=True)
+    nombre = models.CharField(max_length=100)
+    id_pais = models.ForeignKey(ApiPais, on_delete=models.SET_NULL, blank=True, null=True)
+    id_deporte = models.ForeignKey(Deporte, on_delete=models.SET_NULL, blank=True, null=True)
+    tipo = models.CharField(max_length=50, blank=True, null=True)  # 'league' or 'cup'
+    temporada_actual = models.CharField(max_length=10, blank=True, null=True)
+    logo_url = models.CharField(max_length=255, blank=True, null=True)
+    api_id = models.IntegerField(blank=True, null=True)
+    tiene_eventos = models.BooleanField(default=False)
+    tiene_alineaciones = models.BooleanField(default=False)
+    tiene_estadisticas = models.BooleanField(default=False)
+    tiene_clasificacion = models.BooleanField(default=False)
+    ultima_actualizacion = models.DateTimeField(auto_now=True)
 
-class Equipo(models.Model):
+    def __str__(self):
+        return f"{self.nombre} ({self.temporada_actual or 'Sin temporada'})"
+
+    class Meta:
+        db_table = 'api_ligas'
+        verbose_name_plural = 'API Ligas'
+
+class ApiEquipo(models.Model):
     id_equipo = models.AutoField(primary_key=True)
     nombre = models.CharField(max_length=100)
-    id_pais = models.ForeignKey(Pais, on_delete=models.SET_NULL, db_column='id_pais', blank=True, null=True)
-    logo = models.CharField(max_length=255, blank=True, null=True)
-    tipo = models.CharField(max_length=50, blank=True, null=True)
-    id_deporte = models.ForeignKey(Deporte, on_delete=models.SET_NULL, db_column='id_deporte', blank=True, null=True)
+    nombre_corto = models.CharField(max_length=50, blank=True, null=True)
+    id_pais = models.ForeignKey(ApiPais, on_delete=models.SET_NULL, blank=True, null=True)
+    logo_url = models.CharField(max_length=255, blank=True, null=True)
+    api_id = models.IntegerField(blank=True, null=True)
+    id_deporte = models.ForeignKey(Deporte, on_delete=models.SET_NULL, blank=True, null=True)
+    fundado = models.IntegerField(blank=True, null=True)
+    ultima_actualizacion = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return self.nombre
 
     class Meta:
-        db_table = 'equipos'
-        verbose_name_plural = 'Equipos'
+        db_table = 'api_equipos'
+        verbose_name_plural = 'API Equipos'
 
-
-class Deportista(models.Model):
-    id_deportista = models.AutoField(primary_key=True)
+class ApiJugador(models.Model):
+    id_jugador = models.AutoField(primary_key=True)
     nombre = models.CharField(max_length=100)
-    id_pais = models.ForeignKey(Pais, on_delete=models.SET_NULL, db_column='id_pais', blank=True, null=True)
-    foto = models.CharField(max_length=255, blank=True, null=True)
-    id_equipo = models.ForeignKey(Equipo, on_delete=models.SET_NULL, db_column='id_equipo', blank=True, null=True)
-    id_deporte = models.ForeignKey(Deporte, on_delete=models.SET_NULL, db_column='id_deporte', blank=True, null=True)
+    id_pais = models.ForeignKey(ApiPais, on_delete=models.SET_NULL, blank=True, null=True)
+    id_equipo = models.ForeignKey(ApiEquipo, on_delete=models.SET_NULL, blank=True, null=True)
+    id_deporte = models.ForeignKey(Deporte, on_delete=models.SET_NULL, blank=True, null=True)
+    api_id = models.IntegerField(blank=True, null=True)
+    foto_url = models.CharField(max_length=255, blank=True, null=True)
+    posicion = models.CharField(max_length=50, blank=True, null=True)
+    numero = models.IntegerField(blank=True, null=True)
+    edad = models.IntegerField(blank=True, null=True)
+    ultima_actualizacion = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return self.nombre
@@ -188,222 +190,327 @@ class Partidos(models.Model):
     id_escenario = models.ForeignKey(Escenario, on_delete=models.CASCADE, db_column='id_escenario', blank=True, null=True)
 
     def __str__(self):
-        return f"{self.equipo_local.nombre} vs {self.equipo_visitante.nombre}"
+        return self.nombre
 
     class Meta:
-        db_table = 'partidos'
-        verbose_name_plural = 'Partidos'
+        db_table = 'api_venues'
+        verbose_name_plural = 'API Venues'
+
+# Main fixture model with API integration
+class ApiPartido(models.Model):
+    id_partido = models.AutoField(primary_key=True)
+    api_fixture_id = models.IntegerField(unique=True)
+    id_liga = models.ForeignKey(ApiLiga, on_delete=models.CASCADE, db_column='id_liga')
+    temporada = models.CharField(max_length=10)
+    fecha = models.DateTimeField()
+    ronda = models.CharField(max_length=50, blank=True, null=True)
+    
+    # Teams
+    equipo_local = models.ForeignKey(ApiEquipo, on_delete=models.CASCADE, related_name='partidos_local')
+    equipo_visitante = models.ForeignKey(ApiEquipo, on_delete=models.CASCADE, related_name='partidos_visitante')
+    
+    # Scores
+    goles_local = models.IntegerField(null=True, blank=True)
+    goles_visitante = models.IntegerField(null=True, blank=True)
+    
+    # Additional info
+    estado = models.CharField(max_length=20, choices=PartidoStatus.choices, default=PartidoStatus.PROGRAMADO)
+    tiempo_partido = models.CharField(max_length=20, blank=True, null=True)  # For storing halftime, etc
+    id_venue = models.ForeignKey(ApiVenue, on_delete=models.SET_NULL, blank=True, null=True)
+    
+    # Tracking fields
+    eventos_cargados = models.BooleanField(default=False)
+    alineaciones_cargadas = models.BooleanField(default=False)
+    estadisticas_cargadas = models.BooleanField(default=False)
+    ultima_actualizacion = models.DateTimeField(auto_now=True)
+    
+    def __str__(self):
+        return f"{self.equipo_local.nombre} vs {self.equipo_visitante.nombre} ({self.fecha.strftime('%Y-%m-%d')})"
+    
+    def actualizar_estado(self, nuevo_estado):
+        self.estado = nuevo_estado
+        self.ultima_actualizacion = timezone.now()
+        self.save()
+    
+    class Meta:
+        db_table = 'api_partidos'
+        verbose_name_plural = 'API Partidos'
         indexes = [
+            models.Index(fields=['api_fixture_id']),
+            models.Index(fields=['fecha']),
             models.Index(fields=['estado']),
             models.Index(fields=['fecha_partido']),
             models.Index(fields=['id_competencia']),
             models.Index(fields=['id_deporte']),
         ]
 
-
-class PartidoFutbol(models.Model):
-    id_partido_futbol = models.AutoField(primary_key=True)
-    id_partido = models.OneToOneField(Partidos, on_delete=models.CASCADE, db_column='id_partido')
-    goles_local = models.IntegerField(default=0)
-    goles_visitante = models.IntegerField(default=0)
-    tarjeta_amarilla_local = models.IntegerField(default=0)
-    tarjeta_amarilla_visitante = models.IntegerField(default=0)
-    tarjeta_roja_local = models.IntegerField(default=0)
-    tarjeta_roja_visitante = models.IntegerField(default=0)
-    goles_local_1 = models.IntegerField(default=0)
-    goles_visitante_1 = models.IntegerField(default=0)
-    goles_local_2 = models.IntegerField(default=0)
-    goles_visitante_2 = models.IntegerField(default=0)
-    penales_local = models.IntegerField(default=0)
-    penales_visitante = models.IntegerField(default=0)
-    tiros_esquina_local = models.IntegerField(default=0)
-    tiros_esquina_visitante = models.IntegerField(default=0)
-
-    def __str__(self):
-        return f"Partido de Fútbol: {self.id_partido}"
-
-    class Meta:
-        db_table = 'partidos_futbol'
-        verbose_name = 'Partido de Fútbol'
-        verbose_name_plural = 'Partidos de Fútbol'
-
-
-class PartidoTenis(models.Model):
-    id_partido_tenis = models.AutoField(primary_key=True)
-    id_partido = models.OneToOneField(Partidos, on_delete=models.CASCADE, db_column='id_partido')
-    sets_totales = models.IntegerField(default=0)
-    games_totales = models.IntegerField(default=0)
-    marcador_local_1 = models.IntegerField(default=0)
-    marcador_visitante_1 = models.IntegerField(default=0)
-    marcador_local_2 = models.IntegerField(default=0)
-    marcador_visitante_2 = models.IntegerField(default=0)
-    marcador_local_3 = models.IntegerField(default=0)
-    marcador_visitante_3 = models.IntegerField(default=0)
-    marcador_local_4 = models.IntegerField(default=0)
-    marcador_visitante_4 = models.IntegerField(default=0)
-    marcador_local_5 = models.IntegerField(default=0)
-    marcador_visitante_5 = models.IntegerField(default=0)
-    aces_local = models.IntegerField(default=0)
-    aces_visitante = models.IntegerField(default=0)
-    dobles_faltas_local = models.IntegerField(default=0)
-    dobles_faltas_visitante = models.IntegerField(default=0)
-    max_sets = models.IntegerField(default=0)
-    tiebreak_1 = models.IntegerField(default=0)
-    tiebreak_2 = models.IntegerField(default=0)
-    tiebreak_3 = models.IntegerField(default=0)
-    tiebreak_4 = models.IntegerField(default=0)
-    tiebreak_5 = models.IntegerField(default=0)
-
-    def __str__(self):
-        return f"Partido de Tenis: {self.id_partido}"
-
-    class Meta:
-        db_table = 'partidos_tenis'
-        verbose_name = 'Partido de Tenis'
-        verbose_name_plural = 'Partidos de Tenis'
-
-
-class PartidoBaloncesto(models.Model):
-    id_partido_baloncesto = models.AutoField(primary_key=True)
-    id_partido = models.OneToOneField(Partidos, on_delete=models.CASCADE, db_column='id_partido')
-    puntos_local = models.IntegerField(default=0)
-    puntos_visitante = models.IntegerField(default=0)
-    resultado_local_1 = models.IntegerField(default=0)
-    resultado_visitante_1 = models.IntegerField(default=0)
-    resultado_local_2 = models.IntegerField(default=0)
-    resultado_visitante_2 = models.IntegerField(default=0)
-    resultado_local_3 = models.IntegerField(default=0)
-    resultado_visitante_3 = models.IntegerField(default=0)
-    resultado_local_4 = models.IntegerField(default=0)
-    resultado_visitante_4 = models.IntegerField(default=0)
-    rebotes_local = models.IntegerField(default=0)
-    rebotes_visitante = models.IntegerField(default=0)
-    asistencias_local = models.IntegerField(default=0)
-    asistencias_visitante = models.IntegerField(default=0)
-    robos_local = models.IntegerField(default=0)
-    robos_visitante = models.IntegerField(default=0)
-    tapones_local = models.IntegerField(default=0)
-    tapones_visitante = models.IntegerField(default=0)
-    tiros_libres_local = models.IntegerField(default=0)
-    tiros_libres_visitante = models.IntegerField(default=0)
-    tiros_3_local = models.IntegerField(default=0)
-    tiros_3_visitante = models.IntegerField(default=0)
-    faltas_local = models.IntegerField(default=0)
-    faltas_visitante = models.IntegerField(default=0)
-
-    def __str__(self):
-        return f"Partido de Baloncesto: {self.id_partido}"
-
-    class Meta:
-        db_table = 'partidos_baloncesto'
-        verbose_name = 'Partido de Baloncesto'
-        verbose_name_plural = 'Partidos de Baloncesto'
-
-
-class CarreraF1(models.Model):
-    id_carrera_f1 = models.AutoField(primary_key=True)
-    id_escenario = models.ForeignKey(Escenario, on_delete=models.CASCADE, db_column='id_escenario', blank=True, null=True)
-    id_competencia = models.ForeignKey(Competencia, on_delete=models.CASCADE, db_column='id_competencia', blank=True, null=True)
-    fecha_carrera = models.DateTimeField(blank=True, null=True)
-    vueltas = models.IntegerField(default=0)
-    posicion_1 = models.IntegerField(default=0)
-    posicion_2 = models.IntegerField(default=0)
-    posicion_3 = models.IntegerField(default=0)
-    posicion_4 = models.IntegerField(default=0)
-    posicion_5 = models.IntegerField(default=0)
-    posicion_6 = models.IntegerField(default=0)
-    posicion_7 = models.IntegerField(default=0)
-    posicion_8 = models.IntegerField(default=0)
-    posicion_9 = models.IntegerField(default=0)
-    posicion_10 = models.IntegerField(default=0)
-    vuelta_rapida = models.IntegerField(default=0)
-    id_equipo_competencia = models.ForeignKey(Equipo, on_delete=models.SET_NULL, related_name='carreras_equipo', db_column='id_equipo_competencia', blank=True, null=True)
-    id_deportista_competencia = models.ForeignKey(Deportista, on_delete=models.SET_NULL, related_name='competencias_deportista', db_column='id_deportista_competencia', blank=True, null=True)
-    id_pais_competencia = models.ForeignKey(Pais, on_delete=models.SET_NULL, related_name='carreras_pais', db_column='id_pais_competencia', blank=True, null=True)
-    id_deportista = models.ForeignKey(Deportista, on_delete=models.SET_NULL, related_name='carreras', db_column='id_deportista', blank=True, null=True)
+# Detailed entities for cached API data
+class ApiPartidoEstadisticas(models.Model):
+    id_estadistica = models.AutoField(primary_key=True)
+    id_partido = models.ForeignKey(ApiPartido, on_delete=models.CASCADE, related_name='estadisticas')
+    id_equipo = models.ForeignKey(ApiEquipo, on_delete=models.CASCADE)
+    
+    # Common statistics
+    posesion = models.FloatField(blank=True, null=True)
+    tiros_total = models.IntegerField(blank=True, null=True)
+    tiros_a_puerta = models.IntegerField(blank=True, null=True)
+    tiros_fuera = models.IntegerField(blank=True, null=True)
+    tiros_bloqueados = models.IntegerField(blank=True, null=True)
+    corners = models.IntegerField(blank=True, null=True)
+    offsides = models.IntegerField(blank=True, null=True)
+    faltas = models.IntegerField(blank=True, null=True)
+    tarjetas_amarillas = models.IntegerField(blank=True, null=True)
+    tarjetas_rojas = models.IntegerField(blank=True, null=True)
+    
+    # Additional stats as JSON
+    estadisticas_extra = models.JSONField(blank=True, null=True)
+    
+    ultima_actualizacion = models.DateTimeField(auto_now=True)
     
     def __str__(self):
-        return f"Carrera de F1: {self.id_escenario.nombre if self.id_escenario else 'Sin escenario'}"
-
+        return f"Estadísticas: {self.id_partido} - {self.id_equipo.nombre}"
+    
     class Meta:
-        db_table = 'carreras_f1'
-        verbose_name = 'Carrera de F1'
-        verbose_name_plural = 'Carreras de F1'
+        db_table = 'api_partido_estadisticas'
+        verbose_name_plural = 'API Partido Estadísticas'
+        unique_together = (('id_partido', 'id_equipo'),)
 
+class ApiPartidoEvento(models.Model):
+    id_evento = models.AutoField(primary_key=True)
+    id_partido = models.ForeignKey(ApiPartido, on_delete=models.CASCADE, related_name='eventos')
+    
+    tipo_evento = models.CharField(max_length=50)  # goal, card, subst, var
+    minuto = models.IntegerField()
+    id_equipo = models.ForeignKey(ApiEquipo, on_delete=models.CASCADE)
+    id_jugador = models.ForeignKey(ApiJugador, on_delete=models.SET_NULL, blank=True, null=True, related_name='eventos')
+    id_jugador_asistencia = models.ForeignKey(ApiJugador, on_delete=models.SET_NULL, blank=True, null=True, related_name='asistencias')
+    
+    # Additional event details
+    detalles = models.JSONField(blank=True, null=True)
+    
+    def __str__(self):
+        return f"{self.tipo_evento} - {self.id_partido} ({self.minuto}')"
+    
+    class Meta:
+        db_table = 'api_partido_eventos'
+        verbose_name_plural = 'API Partido Eventos'
+        indexes = [
+            models.Index(fields=['id_partido', 'tipo_evento']),
+        ]
 
+class ApiPartidoAlineacion(models.Model):
+    id_alineacion = models.AutoField(primary_key=True)
+    id_partido = models.ForeignKey(ApiPartido, on_delete=models.CASCADE, related_name='alineaciones')
+    id_equipo = models.ForeignKey(ApiEquipo, on_delete=models.CASCADE)
+    
+    formacion = models.CharField(max_length=20, blank=True, null=True)
+    id_entrenador = models.IntegerField(blank=True, null=True)
+    nombre_entrenador = models.CharField(max_length=100, blank=True, null=True)
+    
+    # Starters and substitutes as JSON
+    titulares = models.JSONField(blank=True, null=True)
+    suplentes = models.JSONField(blank=True, null=True)
+    
+    ultima_actualizacion = models.DateTimeField(auto_now=True)
+    
+    def __str__(self):
+        return f"Alineación: {self.id_partido} - {self.id_equipo.nombre}"
+    
+    class Meta:
+        db_table = 'api_partido_alineaciones'
+        verbose_name_plural = 'API Partido Alineaciones'
+        unique_together = (('id_partido', 'id_equipo'),)
+
+# Multi-sport betting models
 class ApuestaFutbol(models.Model):
     id_apuesta = models.AutoField(primary_key=True)
     id_usuario = models.ForeignKey(Usuario, on_delete=models.CASCADE, db_column='id_usuario')
-    id_partido = models.ForeignKey(Partidos, on_delete=models.CASCADE, db_column='id_partido')
+    id_partido = models.ForeignKey(ApiPartido, on_delete=models.CASCADE, db_column='id_partido')
     id_sala = models.ForeignKey(Sala, on_delete=models.CASCADE, db_column='id_sala')
+    
+    # Basic prediction
     prediccion_local = models.IntegerField()
     prediccion_visitante = models.IntegerField()
-    resultado_local_1 = models.IntegerField(default=0)
-    resultado_visitante_1 = models.IntegerField(default=0)
-    resultado_local_2 = models.IntegerField(default=0)
-    resultado_visitante_2 = models.IntegerField(default=0)
-    tarjeta_amarilla_local = models.IntegerField(default=0)
-    tarjeta_amarilla_visitante = models.IntegerField(default=0)
-    tarjeta_roja_local = models.IntegerField(default=0)
-    tarjeta_roja_visitante = models.IntegerField(default=0)
-    tiros_esquina_local = models.IntegerField(default=0)
-    tiros_esquina_visitante = models.IntegerField(default=0)
-    penales_local = models.IntegerField(default=0)
-    penales_visitante = models.IntegerField(default=0)  
+    
+    # Additional predictions
+    primer_tiempo_local = models.IntegerField(blank=True, null=True)
+    primer_tiempo_visitante = models.IntegerField(blank=True, null=True)
+    segundo_tiempo_local = models.IntegerField(blank=True, null=True)
+    segundo_tiempo_visitante = models.IntegerField(blank=True, null=True)
+    tarjetas_amarillas_total = models.IntegerField(blank=True, null=True)
+    tarjetas_rojas_total = models.IntegerField(blank=True, null=True)
+    corners_total = models.IntegerField(blank=True, null=True)
+    
+    # Status and points
     fecha_apuesta = models.DateTimeField(auto_now_add=True)
     estado = models.CharField(max_length=10, choices=ApuestaStatus.choices, default=ApuestaStatus.PENDIENTE)
     puntos_ganados = models.IntegerField(default=0)
-
+    
+    # Optional custom scoring rules for this bet
+    reglas_puntuacion = models.JSONField(blank=True, null=True)
+    
     def __str__(self):
-        return f"Apuesta de {self.id_usuario.nombre_usuario} - {self.id_partido}"
-
+        return f"Apuesta Fútbol: {self.id_usuario.nombre_usuario} - {self.id_partido}"
+    
     class Meta:
-        db_table = 'apuestasFutbol'
-        verbose_name_plural = 'ApuestasFutbol'
+        db_table = 'apuestas_futbol'
+        verbose_name_plural = 'Apuestas Fútbol'
+        unique_together = (('id_usuario', 'id_partido', 'id_sala'),)
         indexes = [
             models.Index(fields=['id_usuario', 'id_sala']),
             models.Index(fields=['id_partido']),
             models.Index(fields=['estado']),
         ]
 
+# Other sport models maintained for compatibility
+class PartidoTenis(models.Model):
+    id_partido_tenis = models.AutoField(primary_key=True)
+    api_fixture_id = models.IntegerField(unique=True, blank=True, null=True)
+    id_liga = models.ForeignKey(ApiLiga, on_delete=models.CASCADE, db_column='id_liga', blank=True, null=True)
+    temporada = models.CharField(max_length=10, blank=True, null=True)
+    
+    # Players
+    jugador_local = models.ForeignKey(ApiJugador, on_delete=models.CASCADE, related_name='partidos_tenis_local')
+    jugador_visitante = models.ForeignKey(ApiJugador, on_delete=models.CASCADE, related_name='partidos_tenis_visitante')
+    
+    # Scores
+    sets_local = models.IntegerField(default=0)
+    sets_visitante = models.IntegerField(default=0)
+    
+    # Set details
+    set1_local = models.IntegerField(blank=True, null=True)
+    set1_visitante = models.IntegerField(blank=True, null=True)
+    set2_local = models.IntegerField(blank=True, null=True)
+    set2_visitante = models.IntegerField(blank=True, null=True)
+    set3_local = models.IntegerField(blank=True, null=True)
+    set3_visitante = models.IntegerField(blank=True, null=True)
+    set4_local = models.IntegerField(blank=True, null=True)
+    set4_visitante = models.IntegerField(blank=True, null=True)
+    set5_local = models.IntegerField(blank=True, null=True)
+    set5_visitante = models.IntegerField(blank=True, null=True)
+    
+    # Additional stats
+    aces_local = models.IntegerField(blank=True, null=True)
+    aces_visitante = models.IntegerField(blank=True, null=True)
+    dobles_faltas_local = models.IntegerField(blank=True, null=True)
+    dobles_faltas_visitante = models.IntegerField(blank=True, null=True)
+    
+    # Status
+    estado = models.CharField(max_length=20, choices=PartidoStatus.choices, default=PartidoStatus.PROGRAMADO)
+    fecha = models.DateTimeField()
+    id_venue = models.ForeignKey(ApiVenue, on_delete=models.SET_NULL, blank=True, null=True)
+    
+    ultima_actualizacion = models.DateTimeField(auto_now=True)
+    
+    def __str__(self):
+        return f"{self.jugador_local.nombre} vs {self.jugador_visitante.nombre} ({self.fecha.strftime('%Y-%m-%d')})"
+    
+    class Meta:
+        db_table = 'partidos_tenis'
+        verbose_name = 'Partido de Tenis'
+        verbose_name_plural = 'Partidos de Tenis'
+
+class PartidoBaloncesto(models.Model):
+    id_partido_baloncesto = models.AutoField(primary_key=True)
+    api_fixture_id = models.IntegerField(unique=True, blank=True, null=True)
+    id_liga = models.ForeignKey(ApiLiga, on_delete=models.CASCADE, db_column='id_liga', blank=True, null=True)
+    temporada = models.CharField(max_length=10, blank=True, null=True)
+    
+    # Teams
+    equipo_local = models.ForeignKey(ApiEquipo, on_delete=models.CASCADE, related_name='partidos_baloncesto_local')
+    equipo_visitante = models.ForeignKey(ApiEquipo, on_delete=models.CASCADE, related_name='partidos_baloncesto_visitante')
+    
+    # Scores
+    puntos_local = models.IntegerField(blank=True, null=True)
+    puntos_visitante = models.IntegerField(blank=True, null=True)
+    
+    # Quarter scores
+    q1_local = models.IntegerField(blank=True, null=True)
+    q1_visitante = models.IntegerField(blank=True, null=True)
+    q2_local = models.IntegerField(blank=True, null=True)
+    q2_visitante = models.IntegerField(blank=True, null=True)
+    q3_local = models.IntegerField(blank=True, null=True)
+    q3_visitante = models.IntegerField(blank=True, null=True)
+    q4_local = models.IntegerField(blank=True, null=True)
+    q4_visitante = models.IntegerField(blank=True, null=True)
+    
+    # Status
+    estado = models.CharField(max_length=20, choices=PartidoStatus.choices, default=PartidoStatus.PROGRAMADO)
+    fecha = models.DateTimeField()
+    id_venue = models.ForeignKey(ApiVenue, on_delete=models.SET_NULL, blank=True, null=True)
+    
+    # Additional stats
+    estadisticas = models.JSONField(blank=True, null=True)
+    
+    ultima_actualizacion = models.DateTimeField(auto_now=True)
+    
+    def __str__(self):
+        return f"{self.equipo_local.nombre} vs {self.equipo_visitante.nombre} ({self.fecha.strftime('%Y-%m-%d')})"
+    
+    class Meta:
+        db_table = 'partidos_baloncesto'
+        verbose_name = 'Partido de Baloncesto'
+        verbose_name_plural = 'Partidos de Baloncesto'
+
+class CarreraF1(models.Model):
+    id_carrera_f1 = models.AutoField(primary_key=True)
+    api_fixture_id = models.IntegerField(unique=True, blank=True, null=True)
+    id_liga = models.ForeignKey(ApiLiga, on_delete=models.CASCADE, db_column='id_liga', blank=True, null=True)
+    temporada = models.CharField(max_length=10, blank=True, null=True)
+    
+    nombre_gp = models.CharField(max_length=100)
+    fecha = models.DateTimeField()
+    id_venue = models.ForeignKey(ApiVenue, on_delete=models.SET_NULL, blank=True, null=True)
+    
+    # Status
+    estado = models.CharField(max_length=20, choices=PartidoStatus.choices, default=PartidoStatus.PROGRAMADO)
+    
+    # Results stored as JSON
+    resultados = models.JSONField(blank=True, null=True)
+    pilotos_puntos = models.JSONField(blank=True, null=True)
+    vuelta_rapida = models.IntegerField(blank=True, null=True)  # ID del piloto
+    
+    ultima_actualizacion = models.DateTimeField(auto_now=True)
+    
+    def __str__(self):
+        return f"GP de {self.nombre_gp} ({self.fecha.strftime('%Y-%m-%d')})"
+    
+    class Meta:
+        db_table = 'carreras_f1'
+        verbose_name = 'Carrera de F1'
+        verbose_name_plural = 'Carreras de F1'
+
+# Apuestas for other sports
 class ApuestaTenis(models.Model):
     id_apuesta = models.AutoField(primary_key=True)
     id_usuario = models.ForeignKey(Usuario, on_delete=models.CASCADE, db_column='id_usuario')
-    id_partido = models.ForeignKey(Partidos, on_delete=models.CASCADE, db_column='id_partido')
+    id_partido = models.ForeignKey(PartidoTenis, on_delete=models.CASCADE, db_column='id_partido')
     id_sala = models.ForeignKey(Sala, on_delete=models.CASCADE, db_column='id_sala')
-    prediccion_local = models.IntegerField()
-    prediccion_visitante = models.IntegerField()
-    marcador_local_1 = models.IntegerField(default=0)
-    marcador_visitante_1 = models.IntegerField(default=0)
-    marcador_local_2 = models.IntegerField(default=0)
-    marcador_visitante_2 = models.IntegerField(default=0)
-    marcador_local_3 = models.IntegerField(default=0)
-    marcador_visitante_3 = models.IntegerField(default=0)
-    marcador_local_4 = models.IntegerField(default=0)
-    marcador_visitante_4 = models.IntegerField(default=0)
-    marcador_local_5 = models.IntegerField(default=0)
-    marcador_visitante_5 = models.IntegerField(default=0)
-    games_totales = models.IntegerField(default=0)
-    sets_totales = models.IntegerField(default=0)
-    aces_local = models.IntegerField(default=0)
-    aces_visitante = models.IntegerField(default=0)
-    dobles_faltas_local = models.IntegerField(default=0)
-    dobles_faltas_visitante = models.IntegerField(default=0)
-    tiebreak_1 = models.IntegerField(default=0)
-    tiebreak_2 = models.IntegerField(default=0)
-    tiebreak_3 = models.IntegerField(default=0)
-    tiebreak_4 = models.IntegerField(default=0)
-    tiebreak_5 = models.IntegerField(default=0)
+    
+    # Sets prediction
+    prediccion_sets_local = models.IntegerField()
+    prediccion_sets_visitante = models.IntegerField()
+    
+    # Optional detailed predictions
+    prediccion_set1_local = models.IntegerField(blank=True, null=True)
+    prediccion_set1_visitante = models.IntegerField(blank=True, null=True)
+    prediccion_set2_local = models.IntegerField(blank=True, null=True)
+    prediccion_set2_visitante = models.IntegerField(blank=True, null=True)
+    prediccion_set3_local = models.IntegerField(blank=True, null=True)
+    prediccion_set3_visitante = models.IntegerField(blank=True, null=True)
+    
+    # Status and points
     fecha_apuesta = models.DateTimeField(auto_now_add=True)
     estado = models.CharField(max_length=10, choices=ApuestaStatus.choices, default=ApuestaStatus.PENDIENTE)
     puntos_ganados = models.IntegerField(default=0)
-
+    
     def __str__(self):
-        return f"Apuesta de {self.id_usuario.nombre_usuario} - {self.id_partido}"
-
+        return f"Apuesta Tenis: {self.id_usuario.nombre_usuario} - {self.id_partido}"
+    
     class Meta:
-        db_table = 'apuestasTenis'
-        verbose_name_plural = 'ApuestasTenis'
+        db_table = 'apuestas_tenis'
+        verbose_name_plural = 'Apuestas Tenis'
+        unique_together = (('id_usuario', 'id_partido', 'id_sala'),)
         indexes = [
             models.Index(fields=['id_usuario', 'id_sala']),
             models.Index(fields=['id_partido']),
@@ -413,87 +520,91 @@ class ApuestaTenis(models.Model):
 class ApuestaBaloncesto(models.Model):
     id_apuesta = models.AutoField(primary_key=True)
     id_usuario = models.ForeignKey(Usuario, on_delete=models.CASCADE, db_column='id_usuario')
-    id_partido = models.ForeignKey(Partidos, on_delete=models.CASCADE, db_column='id_partido')
+    id_partido = models.ForeignKey(PartidoBaloncesto, on_delete=models.CASCADE, db_column='id_partido')
     id_sala = models.ForeignKey(Sala, on_delete=models.CASCADE, db_column='id_sala')
+    
+    # Points prediction
     prediccion_local = models.IntegerField()
     prediccion_visitante = models.IntegerField()
-    resultado_local_1 = models.IntegerField(default=0)
-    resultado_visitante_1 = models.IntegerField(default=0)
-    resultado_local_2 = models.IntegerField(default=0)
-    resultado_visitante_2 = models.IntegerField(default=0)
-    resultado_local_3 = models.IntegerField(default=0)
-    resultado_visitante_3 = models.IntegerField(default=0)
-    resultado_local_4 = models.IntegerField(default=0)
-    resultado_visitante_4 = models.IntegerField(default=0)
+    
+    # Optional quarter predictions
+    prediccion_q1_local = models.IntegerField(blank=True, null=True)
+    prediccion_q1_visitante = models.IntegerField(blank=True, null=True)
+    prediccion_q2_local = models.IntegerField(blank=True, null=True)
+    prediccion_q2_visitante = models.IntegerField(blank=True, null=True)
+    
+    # Status and points
     fecha_apuesta = models.DateTimeField(auto_now_add=True)
     estado = models.CharField(max_length=10, choices=ApuestaStatus.choices, default=ApuestaStatus.PENDIENTE)
     puntos_ganados = models.IntegerField(default=0)
-
+    
     def __str__(self):
-        return f"Apuesta de {self.id_usuario.nombre_usuario} - {self.id_partido}"
-
+        return f"Apuesta Baloncesto: {self.id_usuario.nombre_usuario} - {self.id_partido}"
+    
     class Meta:
-        db_table = 'apuestasBaloncesto'
-        verbose_name_plural = 'ApuestasBaloncesto'
+        db_table = 'apuestas_baloncesto'
+        verbose_name_plural = 'Apuestas Baloncesto'
+        unique_together = (('id_usuario', 'id_partido', 'id_sala'),)
         indexes = [
             models.Index(fields=['id_usuario', 'id_sala']),
             models.Index(fields=['id_partido']),
             models.Index(fields=['estado']),
         ]
-
 class ApuestaF1(models.Model):
     id_apuesta = models.AutoField(primary_key=True)
     id_usuario = models.ForeignKey(Usuario, on_delete=models.CASCADE, db_column='id_usuario')
     id_carrera = models.ForeignKey(CarreraF1, on_delete=models.CASCADE, db_column='id_carrera')
     id_sala = models.ForeignKey(Sala, on_delete=models.CASCADE, db_column='id_sala')
-    prediccion_piloto_1 = models.ForeignKey(Deportista, on_delete=models.CASCADE, db_column='prediccion_piloto', related_name='apuestas_f1')
-    prediccion_piloto_2 = models.ForeignKey(Deportista, on_delete=models.CASCADE, db_column='prediccion_piloto_2', related_name='apuestas_f1_2', blank=True, null=True)
-    prediccion_piloto_3 = models.ForeignKey(Deportista, on_delete=models.CASCADE, db_column='prediccion_piloto_3', related_name='apuestas_f1_3', blank=True, null=True)
-    prediccion_piloto_4 = models.ForeignKey(Deportista, on_delete=models.CASCADE, db_column='prediccion_piloto_4', related_name='apuestas_f1_4', blank=True, null=True)
-    prediccion_piloto_5 = models.ForeignKey(Deportista, on_delete=models.CASCADE, db_column='prediccion_piloto_5', related_name='apuestas_f1_5', blank=True, null=True)
-    prediccion_piloto_6 = models.ForeignKey(Deportista, on_delete=models.CASCADE, db_column='prediccion_piloto_6', related_name='apuestas_f1_6', blank=True, null=True)
-    prediccion_piloto_7 = models.ForeignKey(Deportista, on_delete=models.CASCADE, db_column='prediccion_piloto_7', related_name='apuestas_f1_7', blank=True, null=True)
-    prediccion_piloto_8 = models.ForeignKey(Deportista, on_delete=models.CASCADE, db_column='prediccion_piloto_8', related_name='apuestas_f1_8', blank=True, null=True)
-    prediccion_piloto_9 = models.ForeignKey(Deportista, on_delete=models.CASCADE, db_column='prediccion_piloto_9', related_name='apuestas_f1_9', blank=True, null=True)
-    prediccion_piloto_10 = models.ForeignKey(Deportista, on_delete=models.CASCADE, db_column='prediccion_piloto_10', related_name='apuestas_f1_10', blank=True, null=True)
-    prediccion_vuelta_rapida = models.ForeignKey(Deportista, on_delete=models.CASCADE, db_column='prediccion_vuelta_rapida', related_name='apuestas_f1_vuelta_rapida', blank=True, null=True)  
     
+    # Top 3 predictions
+    prediccion_p1 = models.ForeignKey(ApiJugador, on_delete=models.CASCADE, related_name='apuestas_f1_p1')
+    prediccion_p2 = models.ForeignKey(ApiJugador, on_delete=models.CASCADE, related_name='apuestas_f1_p2', blank=True, null=True)
+    prediccion_p3 = models.ForeignKey(ApiJugador, on_delete=models.CASCADE, related_name='apuestas_f1_p3', blank=True, null=True)
+    
+    # Optional additional predictions
+    prediccion_vuelta_rapida = models.ForeignKey(ApiJugador, on_delete=models.CASCADE, related_name='apuestas_f1_vuelta_rapida', blank=True, null=True)
+    
+    # Store additional position predictions as JSON
+    predicciones_adicionales = models.JSONField(blank=True, null=True)
+    
+    # Status and points
     fecha_apuesta = models.DateTimeField(auto_now_add=True)
     estado = models.CharField(max_length=10, choices=ApuestaStatus.choices, default=ApuestaStatus.PENDIENTE)
     puntos_ganados = models.IntegerField(default=0)
-
+    
     def __str__(self):
-        return f"Apuesta de {self.id_usuario.nombre_usuario} - {self.id_carrera}"
-
+        return f"Apuesta F1: {self.id_usuario.nombre_usuario} - {self.id_carrera}"
+    
     class Meta:
-        db_table = 'apuestasF1'
-        verbose_name_plural = 'ApuestasF1'
+        db_table = 'apuestas_f1'
+        verbose_name_plural = 'Apuestas F1'
+        unique_together = (('id_usuario', 'id_carrera', 'id_sala'),)
         indexes = [
             models.Index(fields=['id_usuario', 'id_sala']),
             models.Index(fields=['id_carrera']),
             models.Index(fields=['estado']),
         ]
 
-
+# Ranking and Chat models
 class Ranking(models.Model):
     id_ranking = models.AutoField(primary_key=True)
     id_usuario = models.ForeignKey(Usuario, on_delete=models.CASCADE, db_column='id_usuario')
     id_sala = models.ForeignKey(Sala, on_delete=models.CASCADE, db_column='id_sala')
     puntos = models.IntegerField(default=0)
     posicion = models.IntegerField(blank=True, null=True)
-    periodo = models.DateField(auto_now_add=True)
-
+    periodo = models.DateField()
+    
     def __str__(self):
-        return f"Ranking de {self.id_usuario.nombre_usuario} en {self.id_sala.nombre}"
-
+        return f"Ranking de {self.id_usuario.nombre_usuario} en {self.id_sala.nombre} ({self.periodo})"
+    
     class Meta:
         db_table = 'ranking'
+        unique_together = (('id_usuario', 'id_sala', 'periodo'),)
         indexes = [
             models.Index(fields=['id_usuario']),
             models.Index(fields=['id_sala']),
             models.Index(fields=['periodo']),
         ]
-
 
 class MensajeChat(models.Model):
     id_mensaje = models.AutoField(primary_key=True)
@@ -502,10 +613,10 @@ class MensajeChat(models.Model):
     contenido = models.TextField()
     fecha_envio = models.DateTimeField(auto_now_add=True)
     estado = models.CharField(max_length=10, choices=MensajeStatus.choices, default=MensajeStatus.ACTIVO)
-
+    
     def __str__(self):
         return f"Mensaje de {self.id_usuario.nombre_usuario} en {self.id_sala.nombre}"
-
+    
     class Meta:
         db_table = 'mensajes_chat'
         verbose_name = 'Mensaje de Chat'

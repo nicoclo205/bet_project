@@ -1,0 +1,73 @@
+services:
+  # Base de datos MySQL
+  db:
+    image: mysql:8.0
+    container_name: bet_mysql
+    restart: always
+    environment:
+      MYSQL_DATABASE: ${DB_NAME:-bet_db}
+      MYSQL_USER: ${DB_USER:-nico}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-C0r4z0n#25}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-rootpassword}
+    ports:
+      - "${DB_PORT:-3306}:3306"
+    volumes:
+      # Volumen persistente para los datos de MySQL
+      - mysql_data:/var/lib/mysql
+      # Configuración personalizada de MySQL (opcional)
+      - ./docker/mysql/my.cnf:/etc/mysql/conf.d/my.cnf:ro
+    networks:
+      - bet_network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_ROOT_PASSWORD:-rootpassword}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Aplicación Django
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: bet_django
+    restart: always
+    command: >
+      sh -c "python manage.py migrate &&
+             python manage.py collectstatic --noinput &&
+             python manage.py runserver 0.0.0.0:8000"
+    volumes:
+      # Montar el código fuente para desarrollo (hot reload)
+      - .:/app
+      # Volumen para archivos estáticos
+      - static_volume:/app/staticfiles
+      # Volumen para archivos media
+      - media_volume:/app/media
+    ports:
+      - "${DJANGO_PORT:-8000}:8000"
+    environment:
+      - DEBUG=${DEBUG:-True}
+      - SECRET_KEY=${SECRET_KEY}
+      - DB_NAME=${DB_NAME:-bet_db}
+      - DB_USER=${DB_USER:-nico}
+      - DB_PASSWORD=${DB_PASSWORD:-C0r4z0n#25}
+      - DB_HOST=db
+      - DB_PORT=3306
+      - ALLOWED_HOSTS=${ALLOWED_HOSTS:-localhost,127.0.0.1}
+      - CORS_ALLOWED_ORIGINS=${CORS_ALLOWED_ORIGINS:-http://localhost:5173}
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - bet_network
+
+# Definición de volúmenes persistentes
+volumes:
+  mysql_data:
+    driver: local
+  static_volume:
+  media_volume:
+
+# Definición de red
+networks:
+  bet_network:
+    driver: bridge
