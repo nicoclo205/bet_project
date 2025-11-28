@@ -2,6 +2,7 @@
 import os
 import requests
 from typing import Optional, Dict, Any, List
+from .api_counter import can_make_request, increment_count, get_remaining_requests, DAILY_LIMIT
 
 API_KEY = os.environ.get('API_FOOTBALL_KEY')
 BASE_URL = 'https://v3.football.api-sports.io'
@@ -12,9 +13,52 @@ HEADERS = {
 }
 
 def _get(endpoint: str, params: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+    """
+    Realiza una petición GET a la API de Football con control de límite diario.
+
+    Args:
+        endpoint: Ruta del endpoint (ej: '/teams', '/leagues')
+        params: Parámetros de la petición
+
+    Returns:
+        Dict con la respuesta JSON de la API
+
+    Raises:
+        Exception: Si se alcanzó el límite diario de peticiones
+    """
+    # Verificar límite ANTES de hacer la petición
+    can_request, current_count = can_make_request()
+
+    if not can_request:
+        raise Exception(
+            f"🚫 LÍMITE DIARIO ALCANZADO\n"
+            f"   Peticiones usadas: {current_count}/{DAILY_LIMIT}\n"
+            f"   No se pueden hacer más peticiones hasta mañana.\n"
+            f"   Para aumentar el límite, actualiza tu plan en: https://www.api-football.com/pricing"
+        )
+
+    # Advertencias progresivas según peticiones restantes
+    remaining = get_remaining_requests()
+
+    if remaining <= 5:
+        print(f"🔴 ALERTA CRÍTICA: Solo quedan {remaining} peticiones disponibles!")
+    elif remaining <= 10:
+        print(f"🟠 ADVERTENCIA: Solo quedan {remaining} peticiones disponibles")
+    elif remaining <= 20:
+        print(f"🟡 ATENCIÓN: Quedan {remaining} peticiones disponibles")
+    else:
+        print(f"✅ Petición {current_count + 1}/{DAILY_LIMIT} (quedan {remaining})")
+
+    # Hacer la petición a la API
     url = f"{BASE_URL}{endpoint}"
     resp = requests.get(url, headers=HEADERS, params=params, timeout=30)
+
+    # Incrementar contador DESPUÉS de petición exitosa
+    new_count = increment_count()
+
+    # Verificar errores HTTP
     resp.raise_for_status()
+
     return resp.json()
 
 def get_league(league_id: int, season: Optional[int] = None) -> Dict[str, Any]:

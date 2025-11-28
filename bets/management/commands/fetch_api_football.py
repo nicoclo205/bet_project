@@ -15,25 +15,30 @@ from bets.models import ApiEquipo, ApiLiga, ApiPais, Deporte
 
 # Default leagues (IDs often used in API-Football; you can override with --leagues)
 DEFAULT_LEAGUES = [
-    # Common league ids used by api-football (these are common but may vary by API plan)
-    39,   # Premier League (England)
-    140,  # LaLiga (Spain) - sometimes 140 or 2019; adjust if necessary
-    135,  # Serie A (Italy)
-    61    # Ligue 1 (France)
+    239,  # Liga Colombiana (Categoría Primera A)
+    140,  # La Liga (España)
+    39,   # Premier League (Inglaterra)
+    135,  # Serie A (Italia)
+    2,    # UEFA Champions League
 ]
+
 
 # Example: Countries for national teams (FIFA)
 DEFAULT_COUNTRIES = [
-    'Colombia', 'Brazil', 'Argentina', 'Uruguay', 'Chile', 'Peru',
-    'Spain', 'Italy', 'France', 'England'
+    # Sudamérica
+    'Colombia', 'Brazil', 'Argentina', 'Uruguay', 'Chile', 'Peru', 'Ecuador', 'Paraguay',
+    # Europa principales
+    'Spain', 'Italy', 'England', 'France', 'Germany', 'Portugal', 'Netherlands', 'Belgium',
+    # Otros
+    'Mexico', 'USA', 'Japan', 'South Korea'
 ]
 
 def find_country(country_code: str, country_name: str):
     """
-    Try to find ApiPais by codigo (country code) or by name. Returns ApiPais or None.
+    Try to find ApiPais by code (country code) or by name. Returns ApiPais or None.
     """
     if country_code:
-        p = ApiPais.objects.filter(codigo__iexact=country_code).first()
+        p = ApiPais.objects.filter(code__iexact=country_code).first()
         if p:
             return p
     if country_name:
@@ -61,10 +66,35 @@ class Command(BaseCommand):
         parser.add_argument('--fixtures_for', nargs='*', type=int, help='League IDs to fetch upcoming fixtures for', default=[])
 
     def handle(self, *args, **options):
+        from bets.utils.api_counter import get_today_count, get_remaining_requests, DAILY_LIMIT, reset_old_counts
+
         leagues = options['leagues']
         season = options['season']
         countries = options['countries'] or []
         fixtures_for = options['fixtures_for'] or []
+
+        # Limpiar conteos antiguos al inicio
+        reset_old_counts()
+
+        # Mostrar estado inicial de peticiones
+        initial_count = get_today_count()
+        initial_remaining = get_remaining_requests()
+
+        self.stdout.write(self.style.WARNING(
+            f"\n{'='*60}\n"
+            f"📊 ESTADO DE PETICIONES API\n"
+            f"{'='*60}\n"
+            f"   Peticiones usadas hoy: {initial_count}/{DAILY_LIMIT}\n"
+            f"   Peticiones disponibles: {initial_remaining}\n"
+            f"   Porcentaje usado: {round((initial_count/DAILY_LIMIT)*100, 1)}%\n"
+            f"{'='*60}\n"
+        ))
+
+        if initial_remaining < 20:
+            self.stdout.write(self.style.WARNING(
+                f"⚠️  ADVERTENCIA: Quedan menos de 20 peticiones disponibles.\n"
+                f"   Considera ejecutar este comando mañana o actualizar tu plan.\n"
+            ))
 
         deporte = get_football_deporte()
         if not deporte:
@@ -91,17 +121,18 @@ class Command(BaseCommand):
                     # Match country to ApiPais
                     pais = find_country(comp_country_code, comp_country)
                     liga_obj, _ = ApiLiga.objects.get_or_create(
-                        api_league_id=league_id,
+                        api_id=league_id,
                         defaults={
                             'nombre': comp_name,
-                            'logo': comp_logo or None,
+                            'logo_url': comp_logo or None,
                             'id_pais': pais,
+                            'id_deporte': deporte,
                             'tipo': league_data.get('type', 'League')
                         }
                     )
                     # update logo if changed
-                    if comp_logo and liga_obj.logo != comp_logo:
-                        liga_obj.logo = comp_logo
+                    if comp_logo and liga_obj.logo_url != comp_logo:
+                        liga_obj.logo_url = comp_logo
                         liga_obj.save()
                     self.stdout.write(self.style.SUCCESS(f"Upserted competition: {liga_obj.nombre}"))
                 else:
@@ -121,19 +152,21 @@ class Command(BaseCommand):
                     pais = find_country(team_country_code, team_country)
                     # Get team API ID from response
                     team_api_id = team.get('id')
-                    # upsert ApiEquipo by api_team_id
+                    # upsert ApiEquipo by api_id
                     eq, created = ApiEquipo.objects.get_or_create(
-                        api_team_id=team_api_id,
+                        api_id=team_api_id,
                         defaults={
                             'nombre': team_name,
-                            'logo': team_logo or None,
-                            'id_pais': pais
+                            'logo_url': team_logo or None,
+                            'id_pais': pais,
+                            'id_deporte': deporte,
+                            'tipo': 'Club'
                         }
                     )
                     # update logo or country if changed
                     changed = False
-                    if team_logo and eq.logo != team_logo:
-                        eq.logo = team_logo
+                    if team_logo and eq.logo_url != team_logo:
+                        eq.logo_url = team_logo
                         changed = True
                     if pais and eq.id_pais != pais:
                         eq.id_pais = pais
@@ -147,7 +180,7 @@ class Command(BaseCommand):
         # Fetch national teams by country (search teams by country)
         for country in countries:
             try:
-                self.stdout.write(self.style.NOTICE(f"Searching teams for country: {country}"))
+                self.stdout.write(self.style.NOTICE(f"Searching national teams for country: {country}"))
                 resp = search_teams_by_country(country)
                 results = resp.get('response', [])
                 for r in results:
@@ -156,27 +189,34 @@ class Command(BaseCommand):
                     team_logo = team.get('logo') or None
                     team_country = r.get('country', {}).get('name') or None
                     team_country_code = r.get('country', {}).get('code') or None
+                    is_national = team.get('national', False)
+
+                    # Only save national teams (skip clubs)
+                    if not is_national:
+                        continue
 
                     pais = find_country(team_country_code, team_country)
                     team_api_id = team.get('id')
                     eq, created = ApiEquipo.objects.get_or_create(
-                        api_team_id=team_api_id,
+                        api_id=team_api_id,
                         defaults={
                             'nombre': team_name,
-                            'logo': team_logo or None,
-                            'id_pais': pais
+                            'logo_url': team_logo or None,
+                            'id_pais': pais,
+                            'id_deporte': deporte,
+                            'tipo': 'National'
                         }
                     )
                     changed = False
-                    if team_logo and eq.logo != team_logo:
-                        eq.logo = team_logo
+                    if team_logo and eq.logo_url != team_logo:
+                        eq.logo_url = team_logo
                         changed = True
                     if pais and eq.id_pais != pais:
                         eq.id_pais = pais
                         changed = True
                     if changed:
                         eq.save()
-                    self.stdout.write(self.style.SUCCESS(f"{'Created' if created else 'Updated'} national/team: {eq.nombre}"))
+                    self.stdout.write(self.style.SUCCESS(f"{'Created' if created else 'Updated'} national team: {eq.nombre}"))
             except Exception as e:
                 self.stdout.write(self.style.ERROR(f"Error fetching teams for country {country}: {e}"))
 
@@ -196,5 +236,31 @@ class Command(BaseCommand):
                 self.stdout.write(self.style.NOTICE(f"Fetched {len(fixtures)} fixtures for competition {comp_id}"))
             except Exception as e:
                 self.stdout.write(self.style.ERROR(f"Error fetching fixtures for {comp_id}: {e}"))
+
+        # Mostrar resumen final de peticiones
+        final_count = get_today_count()
+        final_remaining = get_remaining_requests()
+        used_in_this_run = final_count - initial_count
+
+        self.stdout.write(self.style.SUCCESS(
+            f"\n{'='*60}\n"
+            f"✅ COMANDO COMPLETADO\n"
+            f"{'='*60}\n"
+            f"   Peticiones usadas en esta ejecución: {used_in_this_run}\n"
+            f"   Total usado hoy: {final_count}/{DAILY_LIMIT}\n"
+            f"   Peticiones restantes: {final_remaining}\n"
+            f"   Porcentaje usado: {round((final_count/DAILY_LIMIT)*100, 1)}%\n"
+            f"{'='*60}\n"
+        ))
+
+        if final_remaining <= 10:
+            self.stdout.write(self.style.ERROR(
+                f"🔴 ALERTA: Solo quedan {final_remaining} peticiones!\n"
+                f"   Ten cuidado al ejecutar comandos adicionales.\n"
+            ))
+        elif final_remaining <= 30:
+            self.stdout.write(self.style.WARNING(
+                f"🟡 ATENCIÓN: Quedan {final_remaining} peticiones disponibles.\n"
+            ))
 
         self.stdout.write(self.style.SUCCESS("Done."))

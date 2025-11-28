@@ -144,6 +144,7 @@ class ApiEquipo(models.Model):
     logo_url = models.CharField(max_length=255, blank=True, null=True)
     api_id = models.IntegerField(blank=True, null=True)
     id_deporte = models.ForeignKey(Deporte, on_delete=models.SET_NULL, blank=True, null=True)
+    tipo = models.CharField(max_length=20, choices=[('National', 'Selección Nacional'), ('Club', 'Club')], default='Club', blank=True, null=True)
     fundado = models.IntegerField(blank=True, null=True)
     ultima_actualizacion = models.DateTimeField(auto_now=True)
 
