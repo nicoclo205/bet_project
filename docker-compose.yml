@@ -54,6 +54,7 @@ services:
       - DB_PORT=3306
       - ALLOWED_HOSTS=${ALLOWED_HOSTS:-localhost,127.0.0.1}
       - CORS_ALLOWED_ORIGINS=${CORS_ALLOWED_ORIGINS:-http://localhost:5173}
+      - API_FOOTBALL_KEY=${API_FOOTBALL_KEY}
     depends_on:
       db:
         condition: service_healthy

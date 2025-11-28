@@ -1,125 +1,195 @@
-import mysql.connector
+"""
+Script para poblar la tabla api_paises con países principales.
+Versión corregida para usar con Django y la estructura actual de la BD.
+"""
+import os
+import sys
+import django
 
-# Your database connection config
-config = {
-    'user': 'nico',
-    'password': 'C0r4z0n#25',
-    'host': 'localhost',        # or your DB host
-    'database': 'bet_db_new' # your DB name
-}
+# Configurar Django
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'bet_project.settings')
+django.setup()
 
-# The target table name
-table_name = 'pais'
+from bets.models import ApiPais
 
-# Country data: (Nombre, Continente, Bandera)
-# I’m adding continent names roughly based on common regions for your list
+# Lista de países con su código ISO2
+# Formato: (nombre, code, api_id_opcional)
 countries = [
-    ("France", "Europe", "FR"),
-    ("England", "Europe", "GB"),
-    ("Belgium", "Europe", "BE"),
-    ("Netherlands", "Europe", "NL"),
-    ("Portugal", "Europe", "PT"),
-    ("Italy", "Europe", "IT"),
-    ("Uruguay", "South America", "UY"),
-    ("Croatia", "Europe", "HR"),
-    ("Germany", "Europe", "DE"),
-    ("Morocco", "Africa", "MA"),
-    ("Switzerland", "Europe", "CH"),
-    ("Japan", "Asia", "JP"),
-    ("Mexico", "North America", "MX"),
-    ("Poland", "Europe", "PL"),
-    ("Senegal", "Africa", "SN"),
-    ("Denmark", "Europe", "DK"),
-    ("Sweden", "Europe", "SE"),
-    ("South Korea", "Asia", "KR"),
-    ("Tunisia", "Africa", "TN"),
-    ("Serbia", "Europe", "RS"),
-    ("Cameroon", "Africa", "CM"),
-    ("Austria", "Europe", "AT"),
-    ("Turkey", "Europe", "TR"),
-    ("Nigeria", "Africa", "NG"),
-    ("Wales", "Europe", "GB-WLS"),
-    ("Czech Republic", "Europe", "CZ"),
-    ("Ghana", "Africa", "GH"),
-    ("Romania", "Europe", "RO"),
-    ("Russia", "Europe/Asia", "RU"),
-    ("Canada", "North America", "CA"),
-    ("Northern Ireland", "Europe", "GB-NIR"),
-    ("Ukraine", "Europe", "UA"),
-    ("Iceland", "Europe", "IS"),
-    ("Algeria", "Africa", "DZ"),
-    ("Costa Rica", "Central America", "CR"),
-    ("Hungary", "Europe", "HU"),
-    ("Scotland", "Europe", "GB-SCT"),
-    ("Slovakia", "Europe", "SK"),
-    ("Bosnia and Herzegovina", "Europe", "BA"),
-    ("Ecuador", "South America", "EC"),
-    ("Finland", "Europe", "FI"),
-    ("Bulgaria", "Europe", "BG"),
-    ("Greece", "Europe", "GR"),
-    ("Norway", "Europe", "NO"),
-    ("Slovenia", "Europe", "SI"),
-    ("Republic of Ireland", "Europe", "IE"),
-    ("Israel", "Asia", "IL"),
-    ("United Arab Emirates", "Asia", "AE"),
-    ("Lebanon", "Asia", "LB"),
-    ("New Zealand", "Oceania", "NZ"),
-    ("Luxembourg", "Europe", "LU"),
-    ("Lithuania", "Europe", "LT"),
-    ("Latvia", "Europe", "LV"),
-    ("Estonia", "Europe", "EE"),
-    ("Belarus", "Europe", "BY"),
-    ("Azerbaijan", "Europe/Asia", "AZ"),
-    ("Armenia", "Asia", "AM"),
-    ("Georgia", "Asia", "GE"),
-    ("North Macedonia", "Europe", "MK"),
-    ("Malta", "Europe", "MT"),
-    ("Cyprus", "Europe/Asia", "CY"),
-    ("Moldova", "Europe", "MD"),
-    ("Andorra", "Europe", "AD"),
-    ("Liechtenstein", "Europe", "LI"),
-    ("San Marino", "Europe", "SM"),
-    ("Faroe Islands", "Europe", "FO"),
-    ("Monaco", "Europe", "MC"),
-    ("Gibraltar", "Europe", "GI"),
-    ("Bhutan", "Asia", "BT"),
-    ("Maldives", "Asia", "MV"),
-    ("Cambodia", "Asia", "KH"),
-    ("Timor-Leste", "Asia", "TL"),
-    ("Nepal", "Asia", "NP"),
-    ("Bangladesh", "Asia", "BD"),
-    ("Philippines", "Asia", "PH"),
-    ("Indonesia", "Asia", "ID"),
-    ("Vietnam", "Asia", "VN"),
-    ("Thailand", "Asia", "TH"),
-    ("Myanmar", "Asia", "MM"),
-    ("Pakistan", "Asia", "PK"),
-    ("Sri Lanka", "Asia", "LK"),
-    ("Brunei", "Asia", "BN"),
-    ("Laos", "Asia", "LA"),
+    # Europa principales
+    ("France", "FR", 2),
+    ("England", "GB", 462),
+    ("Belgium", "BE", 1),
+    ("Netherlands", "NL", 34),
+    ("Portugal", "PT", 27),
+    ("Italy", "IT", 768),
+    ("Germany", "DE", 25),
+    ("Spain", "ES", 724),
+    ("Croatia", "HR", 3),
+    ("Switzerland", "CH", 15),
+    ("Poland", "PL", 28),
+    ("Denmark", "DK", 21),
+    ("Sweden", "SE", 113),
+    ("Serbia", "RS", 14),
+    ("Austria", "AT", 17),
+    ("Turkey", "TR", 777),
+    ("Wales", "GB-WLS", 767),
+    ("Czech Republic", "CZ", 333),
+    ("Romania", "RO", 774),
+    ("Russia", "RU", 35),
+    ("Ukraine", "UA", 775),
+    ("Iceland", "IS", 373),
+    ("Hungary", "HU", 18),
+    ("Scotland", "GB-SCT", 1104),
+    ("Slovakia", "SK", 24),
+    ("Bosnia and Herzegovina", "BA", 20),
+    ("Finland", "FI", 101),
+    ("Bulgaria", "BG", 114),
+    ("Greece", "GR", 19),
+    ("Norway", "NO", 23),
+    ("Slovenia", "SI", 13),
+    ("Republic of Ireland", "IE", 10),
+    ("Northern Ireland", "GB-NIR", 1367),
+
+    # América del Sur
+    ("Uruguay", "UY", 7),
+    ("Colombia", "CO", 8),
+    ("Brazil", "BR", 31),
+    ("Argentina", "AR", 26),
+    ("Chile", "CL", 33),
+    ("Peru", "PE", 49),
+    ("Ecuador", "EC", 22),
+    ("Paraguay", "PY", 60),
+    ("Venezuela", "VE", 2383),
+    ("Bolivia", "BO", 2384),
+
+    # América del Norte y Central
+    ("Mexico", "MX", 16),
+    ("USA", "US", 2094),
+    ("Canada", "CA", 1530),
+    ("Costa Rica", "CR", 85),
+    ("Panama", "PA", 660),
+    ("Jamaica", "JM", 2385),
+    ("Honduras", "HN", 86),
+    ("Guatemala", "GT", 2386),
+
+    # África
+    ("Morocco", "MA", 12),
+    ("Senegal", "SN", 5),
+    ("Tunisia", "TN", 30),
+    ("Cameroon", "CM", 1529),
+    ("Nigeria", "NG", 11),
+    ("Ghana", "GH", 2382),
+    ("Algeria", "DZ", 2381),
+    ("Egypt", "EG", 1530),
+    ("South Africa", "ZA", 32),
+    ("Ivory Coast", "CI", 1501),
+
+    # Asia
+    ("Japan", "JP", 50),
+    ("South Korea", "KR", 48),
+    ("Saudi Arabia", "SA", 58),
+    ("Iran", "IR", 22),
+    ("Australia", "AU", 1530),
+    ("Qatar", "QA", 1569),
+    ("Iraq", "IQ", 1567),
+    ("United Arab Emirates", "AE", 1568),
+    ("China", "CN", 51),
+    ("India", "IN", 1530),
+    ("Israel", "IL", 780),
+    ("Lebanon", "LB", 1570),
+    ("Thailand", "TH", 1530),
+    ("Vietnam", "VN", 1530),
+    ("Indonesia", "ID", 1530),
+    ("Philippines", "PH", 1530),
+    ("Pakistan", "PK", 1530),
+    ("Bangladesh", "BD", 1530),
+    ("Sri Lanka", "LK", 1530),
+    ("Myanmar", "MM", 1530),
+    ("Cambodia", "KH", 1530),
+    ("Laos", "LA", 1530),
+    ("Nepal", "NP", 1530),
+    ("Bhutan", "BT", 1530),
+    ("Maldives", "MV", 1530),
+    ("Brunei", "BN", 1530),
+    ("Timor-Leste", "TL", 1530),
+
+    # Oceanía
+    ("New Zealand", "NZ", 1530),
+
+    # Otros pequeños países europeos
+    ("Luxembourg", "LU", 1530),
+    ("Lithuania", "LT", 1530),
+    ("Latvia", "LV", 1530),
+    ("Estonia", "EE", 1530),
+    ("Belarus", "BY", 1530),
+    ("Azerbaijan", "AZ", 1530),
+    ("Armenia", "AM", 1530),
+    ("Georgia", "GE", 1530),
+    ("North Macedonia", "MK", 1530),
+    ("Malta", "MT", 1530),
+    ("Cyprus", "CY", 1530),
+    ("Moldova", "MD", 1530),
+    ("Andorra", "AD", 1530),
+    ("Liechtenstein", "LI", 1530),
+    ("San Marino", "SM", 1530),
+    ("Faroe Islands", "FO", 1530),
+    ("Monaco", "MC", 1530),
+    ("Gibraltar", "GI", 1530),
 ]
 
-try:
-    conn = mysql.connector.connect(**config)
-    cursor = conn.cursor()
+def populate_countries():
+    """
+    Puebla la tabla api_paises con los países definidos.
+    Usa get_or_create para evitar duplicados.
+    """
+    created_count = 0
+    updated_count = 0
 
-    # Optional: Clear existing data (comment out if you want to keep data)
-    # cursor.execute(f"TRUNCATE TABLE {table_name}")
-    # conn.commit()
+    print("🌍 Iniciando carga de países...\n")
 
-    sql_insert = f"INSERT INTO {table_name} (Nombre, Continente, Bandera) VALUES (%s, %s, %s)"
+    for nombre, code, api_id in countries:
+        pais, created = ApiPais.objects.get_or_create(
+            code=code,
+            defaults={
+                'nombre': nombre,
+                'api_id': api_id if api_id else None,
+            }
+        )
 
-    for country in countries:
-        cursor.execute(sql_insert, country)
-    
-    conn.commit()
-    print(f"Inserted {cursor.rowcount} rows successfully!")
+        if created:
+            created_count += 1
+            print(f"✅ Creado: {nombre} ({code})")
+        else:
+            # Actualizar si cambió el nombre o api_id
+            updated = False
+            if pais.nombre != nombre:
+                pais.nombre = nombre
+                updated = True
+            if api_id and pais.api_id != api_id:
+                pais.api_id = api_id
+                updated = True
 
-except mysql.connector.Error as err:
-    print(f"Error: {err}")
+            if updated:
+                pais.save()
+                updated_count += 1
+                print(f"🔄 Actualizado: {nombre} ({code})")
+            else:
+                print(f"⏭️  Ya existe: {nombre} ({code})")
 
-finally:
-    if cursor:
-        cursor.close()
-    if conn:
-        conn.close()
+    print(f"\n{'='*60}")
+    print(f"📊 RESUMEN")
+    print(f"{'='*60}")
+    print(f"   Países creados: {created_count}")
+    print(f"   Países actualizados: {updated_count}")
+    print(f"   Total en BD: {ApiPais.objects.count()}")
+    print(f"{'='*60}\n")
+
+if __name__ == '__main__':
+    try:
+        populate_countries()
+        print("✅ Proceso completado exitosamente!")
+    except Exception as e:
+        print(f"❌ Error: {e}")
+        import traceback
+        traceback.print_exc()
