@@ -1,28 +1,41 @@
 from django.contrib import admin
 from .models import (
-    Usuario, Sala, Partidos, Equipo, Pais, Competencia, 
+    Usuario, Sala, ApiPartido, ApiEquipo, ApiPais, ApiLiga,
     UsuarioSala, Ranking, MensajeChat, 
     ApuestaFutbol, ApuestaTenis, ApuestaBaloncesto, ApuestaF1,
-    Deportista, Deporte, Escenario, CarreraF1
+    ApiJugador, Deporte, ApiVenue, CarreraF1, PartidoTenis, PartidoBaloncesto,
+    ApiPartidoEstadisticas, ApiPartidoEvento, ApiPartidoAlineacion, ApiSyncLog
 )
 
-# You can use the basic admin registration for most models
+# User and Room models
 admin.site.register(Usuario)
 admin.site.register(Sala)
 admin.site.register(UsuarioSala)
-admin.site.register(Partidos)
-admin.site.register(Equipo)
-admin.site.register(Pais)
-admin.site.register(Competencia)
+
+# API data models
+admin.site.register(ApiPartido)
+admin.site.register(ApiEquipo)
+admin.site.register(ApiPais)
+admin.site.register(ApiLiga)
+admin.site.register(ApiJugador)
+admin.site.register(ApiVenue)
+admin.site.register(ApiPartidoEstadisticas)
+admin.site.register(ApiPartidoEvento)
+admin.site.register(ApiPartidoAlineacion)
+admin.site.register(ApiSyncLog)
+
+# Basic models
+admin.site.register(Deporte)
 admin.site.register(Ranking)
 admin.site.register(MensajeChat)
-admin.site.register(Deportista)
-admin.site.register(Deporte)
-admin.site.register(Escenario)
 
-# Register different bet types
+# Sport-specific models
+admin.site.register(PartidoTenis)
+admin.site.register(PartidoBaloncesto)
+admin.site.register(CarreraF1)
+
+# Bet models
 admin.site.register(ApuestaFutbol)
 admin.site.register(ApuestaTenis)
 admin.site.register(ApuestaBaloncesto)
 admin.site.register(ApuestaF1)
-admin.site.register(CarreraF1)

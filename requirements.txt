@@ -1,0 +1,18 @@
+# Django
+Django==5.1.7
+djangorestframework==3.15.2
+
+# Database
+mysqlclient==2.2.4
+
+# CORS
+django-cors-headers==4.3.1
+
+# Environment variables
+python-dotenv==1.0.1
+
+# Timezone support
+pytz==2024.1
+
+# Additional utilities
+requests==2.31.0
