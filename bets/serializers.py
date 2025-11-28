@@ -105,6 +105,8 @@ class ApiLigaSerializer(serializers.ModelSerializer):
 class ApiEquipoSerializer(serializers.ModelSerializer):
     pais_nombre = serializers.ReadOnlyField(source='id_pais.nombre')
     deporte_nombre = serializers.ReadOnlyField(source='id_deporte.nombre')
+    bandera = serializers.ReadOnlyField(source='id_pais.bandera')
+
     
     class Meta:
         model = ApiEquipo
@@ -122,8 +124,20 @@ class ApiJugadorSerializer(serializers.ModelSerializer):
 class ApiPartidoSerializer(serializers.ModelSerializer):
     equipo_local_nombre = serializers.ReadOnlyField(source='equipo_local.nombre')
     equipo_visitante_nombre = serializers.ReadOnlyField(source='equipo_visitante.nombre')
-    liga_nombre = serializers.ReadOnlyField(source='id_liga.nombre')
-    venue_nombre = serializers.ReadOnlyField(source='id_venue.nombre') if 'id_venue' else None
+    deportista_local_nombre = serializers.ReadOnlyField(source='deportista_local.nombre')
+    deportista_visitante_nombre = serializers.ReadOnlyField(source='deportista_visitante.nombre')
+    deporte_nombre = serializers.ReadOnlyField(source='id_deporte.nombre')
+    competencia_nombre = serializers.ReadOnlyField(source='id_competencia.nombre')
+    escenario_nombre = serializers.ReadOnlyField(source='id_escenario.nombre')
+    
+    # Nested objects for better frontend consumption
+    equipo_local = EquipoSerializer(read_only=True)
+    equipo_visitante = EquipoSerializer(read_only=True)
+    deportista_local = DeportistaSerializer(read_only=True)
+    deportista_visitante = DeportistaSerializer(read_only=True)
+    id_deporte = DeporteSerializer(read_only=True)
+    id_competencia = CompetenciaSerializer(read_only=True)
+    id_escenario = EscenarioSerializer(read_only=True)
     
     class Meta:
         model = ApiPartido

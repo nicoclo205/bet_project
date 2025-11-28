@@ -1,233 +1,155 @@
-# Bet Project - Back-end Django
+# FriendlyBet - Backend API
+
+A Django REST API for a sports betting and prediction platform that allows users to create rooms, join competitions, and make predictions on sports matches.
+
+## 🔍 Project Overview
+
+FriendlyBet is a full-stack application consisting of:
+- This Django backend (REST API)
+- A separate [React frontend](https://github.com/nicoclo205/web-nico-project-fe) for the user interface
+
+The backend handles data persistence, business logic, authentication, and provides API endpoints for the frontend to consume.
+
+## 🛠️ Technology Stack
+
+- **Python 3.12+**: Core programming language
+- **Django**: Web framework
+- **Django REST Framework**: For building the REST API
+- **MySQL**: Database engine
+- **Token Authentication**: For secure API access
+
+## 📋 Features
+
+- User registration and authentication
+- Creating and joining betting rooms
+- Sports match data management
+- Making predictions on match outcomes
+- Scoring system based on prediction accuracy
+- Rankings and leaderboards
+- In-app messaging system
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+- Python 3.12+
+- MySQL 8.0+
+- Git
+
+### Installation
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/nicoclo205/bet_project.git
+   cd bet_project
+   ```
+
+2. Create a virtual environment:
+   ```bash
+   python -m venv .venv
+   source .venv/Scripts/activate  # On Windows
+   # OR
+   source .venv/bin/activate      # On Linux/Mac
+   ```
 
-Sistema de apuestas deportivas multideporte con Django REST Framework.
+3. Install dependencies:
+   ```bash
+   pip install -r requirements.txt
+   ```
 
-## Requisitos Previos
+4. Set up your local database:
+   ```sql
+   CREATE DATABASE bet_db;
+   CREATE USER 'nico'@'localhost' IDENTIFIED BY 'C0r4z0n#25';
+   GRANT ALL PRIVILEGES ON bet_db.* TO 'nico'@'localhost';
+   FLUSH PRIVILEGES;
+   ```
 
-- Docker (versión 20.10 o superior)
-- Docker Compose (versión 1.29 o superior)
+5. Create an `.env.local` file in the project root with the following content:
+   ```
+   DJANGO_ENV=local
+   DEBUG=True
+   SECRET_KEY=django-insecure-7byai@vg_-xt#$gi^nlzfp-ccj5*#@zwm%c3w9i8ld4t9!o6)n
+   DB_NAME=bet_db
+   DB_USER=nico
+   DB_PASSWORD=C0r4z0n#25
+   DB_HOST=localhost
+   DB_PORT=3306
+   ALLOWED_HOSTS=localhost,127.0.0.1
+   CORS_ALLOWED_ORIGINS=http://localhost:5173
+   ```
 
-## Configuración Inicial
+6. Run migrations:
+   ```bash
+   python manage.py migrate
+   ```
 
-### 1. Clonar el repositorio y navegar al directorio
+7. Create a superuser:
+   ```bash
+   python manage.py createsuperuser
+   ```
 
-```bash
-cd bet_project
-```
+8. Start the development server:
+   ```bash
+   python manage.py runserver
+   ```
 
-### 2. Crear archivo de variables de entorno
+The API will be available at http://127.0.0.1:8000/
 
-Copia el archivo `.env.example` a `.env` y ajusta los valores según tus necesidades:
+## 📁 Project Structure
 
-```bash
-cp .env.example .env
-```
+- `bet_project/`: Django project settings and configuration
+- `bets/`: Main Django app with models, views, etc.
+- `bets/models.py`: Database schema definitions
+- `bets/views.py`: API endpoint handlers
+- `bets/serializers.py`: Data serialization for API
+- `bets/urls.py`: API routing configuration
 
-Edita el archivo `.env` con tus configuraciones:
+## 🔌 API Endpoints
 
-```env
-DEBUG=True
-SECRET_KEY=tu-secret-key-aqui
-DB_PASSWORD=tu-password-segura
-DB_ROOT_PASSWORD=tu-root-password-segura
-```
+- `/admin/`: Django admin interface
+- `/api/`: API root
+- `/api-auth/`: DRF authentication views
+- `/login/`: Login endpoint
+- `/logout/`: Logout endpoint
+- `/api-token-auth/`: Token authentication
 
-**IMPORTANTE**: Cambia las contraseñas por defecto por unas seguras en producción.
+## 🗄️ Database Configuration
 
-## Uso con Docker
+The project supports multiple database configurations through environment variables:
 
-### Levantar los servicios (MySQL + Django)
+- **Local Development**: Using local MySQL instance
+- **Railway External**: Connecting to Railway DB from local machine
+- **Railway**: Full deployment on Railway platform
 
-```bash
-docker-compose up -d
-```
+Select the environment by setting the `DJANGO_ENV` environment variable to `local`, `railway_external`, or `railway`.
 
-Este comando:
-- Descarga las imágenes de MySQL 8.0 y Python 3.11
-- Crea un volumen persistente para MySQL (`mysql_data`)
-- Levanta el contenedor de base de datos
-- Construye la imagen de Django
-- Ejecuta las migraciones automáticamente
-- Inicia el servidor Django en `http://localhost:8000`
+## 🚢 Deployment
 
-### Ver los logs
+The project is configured for deployment on Railway platform:
 
-```bash
-# Ver todos los logs
-docker-compose logs -f
+1. Push code to the repository
+2. Railway will automatically detect the Django project
+3. Set the required environment variables in Railway dashboard
+4. The deployment will use `railway.json` and `Procfile` for configuration
 
-# Ver logs solo de Django
-docker-compose logs -f web
+## 🔄 Development Workflow
 
-# Ver logs solo de MySQL
-docker-compose logs -f db
-```
+1. Create a feature branch from `master`
+2. Make your changes
+3. Test changes locally
+4. Create a pull request to merge into `master`
+5. After review, merge the pull request
 
-### Detener los servicios
+## 🤝 Contributing
 
-```bash
-# Detener sin eliminar contenedores
-docker-compose stop
+Contributions are welcome! Please feel free to submit a Pull Request.
 
-# Detener y eliminar contenedores (mantiene los datos en el volumen)
-docker-compose down
+## 📄 License
 
-# Detener, eliminar contenedores Y volúmenes (BORRA TODOS LOS DATOS)
-docker-compose down -v
-```
+This project is licensed under the [MIT License](LICENSE).
 
-### Ejecutar comandos Django dentro del contenedor
+## 👥 Authors
 
-```bash
-# Crear migraciones
-docker-compose exec web python manage.py makemigrations
-
-# Aplicar migraciones
-docker-compose exec web python manage.py migrate
-
-# Crear superusuario
-docker-compose exec web python manage.py createsuperuser
-
-# Abrir shell de Django
-docker-compose exec web python manage.py shell
-
-# Ejecutar tests
-docker-compose exec web python manage.py test
-```
-
-### Acceder a MySQL directamente
-
-```bash
-# Conectarse a MySQL desde el contenedor
-docker-compose exec db mysql -u nico -p bet_db
-
-# O como root
-docker-compose exec db mysql -u root -p
-```
-
-### Reconstruir la imagen de Django
-
-Si modificas el `Dockerfile` o `requirements.txt`:
-
-```bash
-docker-compose up -d --build
-```
-
-## Estructura de Volúmenes Persistentes
-
-- **mysql_data**: Almacena todos los datos de la base de datos MySQL
-- **static_volume**: Archivos estáticos de Django
-- **media_volume**: Archivos media subidos por usuarios
-
-Los datos en estos volúmenes persisten incluso si eliminas los contenedores.
-
-## Endpoints Principales
-
-Una vez levantado el servidor, la API estará disponible en:
-
-- **API Root**: http://localhost:8000/api/
-- **Panel Admin**: http://localhost:8000/admin/
-- **Login**: http://localhost:8000/login/
-- **API Auth**: http://localhost:8000/api-auth/
-
-### Endpoints de la API
-
-- `/api/usuarios/` - Gestión de usuarios
-- `/api/salas/` - Gestión de salas
-- `/api/partidos/` - Partidos de fútbol
-- `/api/apuestas-futbol/` - Apuestas de fútbol
-- `/api/rankings/` - Rankings por sala
-- `/api/mensajes-chat/` - Mensajes de chat
-
-Consulta la documentación de la API navegando a http://localhost:8000/api/
-
-## Desarrollo Local (sin Docker)
-
-Si prefieres desarrollar sin Docker:
-
-### 1. Crear entorno virtual
-
-```bash
-python -m venv venv
-source venv/bin/activate  # En Windows: venv\Scripts\activate
-```
-
-### 2. Instalar dependencias
-
-```bash
-pip install -r requirements.txt
-```
-
-### 3. Configurar base de datos local
-
-Instala MySQL localmente y crea la base de datos:
-
-```sql
-CREATE DATABASE bet_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-CREATE USER 'nico'@'localhost' IDENTIFIED BY 'C0r4z0n#25';
-GRANT ALL PRIVILEGES ON bet_db.* TO 'nico'@'localhost';
-FLUSH PRIVILEGES;
-```
-
-### 4. Configurar .env
-
-Cambia `DB_HOST=db` por `DB_HOST=localhost` en tu archivo `.env`
-
-### 5. Ejecutar migraciones y servidor
-
-```bash
-python manage.py migrate
-python manage.py createsuperuser
-python manage.py runserver
-```
-
-## Backup de la Base de Datos
-
-### Crear backup
-
-```bash
-docker-compose exec db mysqldump -u nico -p bet_db > backup_$(date +%Y%m%d).sql
-```
-
-### Restaurar backup
-
-```bash
-docker-compose exec -T db mysql -u nico -p bet_db < backup_20250127.sql
-```
-
-## Troubleshooting
-
-### Error: "Can't connect to MySQL server"
-
-Espera unos segundos a que MySQL termine de inicializarse. Puedes verificar el estado con:
-
-```bash
-docker-compose logs db
-```
-
-Busca el mensaje "ready for connections" en los logs.
-
-### Error: "Access denied for user"
-
-Verifica que las credenciales en `.env` coincidan con las configuradas en MySQL.
-
-### Resetear la base de datos completamente
-
-```bash
-docker-compose down -v
-docker-compose up -d
-```
-
-Esto eliminará todos los datos y creará una base de datos limpia.
-
-## Tecnologías Utilizadas
-
-- Django 5.1.7
-- Django REST Framework 3.15.2
-- MySQL 8.0
-- Docker & Docker Compose
-- Python 3.11
-
-## Licencia
-
-Este proyecto es para uso educativo/personal.
+- nicoclo205 - Initial work and maintenance
+- mikla01 - Collaborator

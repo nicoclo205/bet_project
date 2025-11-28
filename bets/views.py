@@ -1,33 +1,28 @@
-from rest_framework import viewsets
+from rest_framework import viewsets, status
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
-from rest_framework import status
-from rest_framework.decorators import api_view, permission_classes, action
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework.authtoken.models import Token
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
 from django.utils import timezone
 from django.db.models import Q
 from .models import (
-    ApiPais, ApiVenue, Usuario, Sala, UsuarioSala, Deporte, ApiLiga, 
-    ApiEquipo, ApiJugador, ApiPartido, PartidoTenis, PartidoBaloncesto, 
-    CarreraF1, ApuestaFutbol, ApuestaTenis, ApuestaBaloncesto, ApuestaF1, 
-    Ranking, MensajeChat, ApiPartidoEstadisticas, ApiPartidoEvento, ApiPartidoAlineacion,
-    ApiSyncLog, PartidoStatus, ApuestaStatus
+    Pais, Escenario, Usuario, Sala, UsuarioSala, Deporte, Competencia,
+    Equipo, Deportista, Partidos, PartidoFutbol, PartidoTenis, PartidoBaloncesto,
+    CarreraF1, ApuestaFutbol, ApuestaTenis, ApuestaBaloncesto, ApuestaF1,
+    Ranking, MensajeChat
 )
 from .serializers import (
-    ApiPaisSerializer, ApiVenueSerializer, UsuarioSerializer, UsuarioCreateSerializer, 
-    SalaSerializer, UsuarioSalaSerializer, DeporteSerializer, ApiLigaSerializer, 
-    ApiEquipoSerializer, ApiJugadorSerializer, ApiPartidoSerializer, 
-    PartidoTenisSerializer, PartidoBaloncestoSerializer, CarreraF1Serializer, 
-    ApuestaFutbolSerializer, ApuestaTenisSerializer, ApuestaBaloncestoSerializer, 
-    ApuestaF1Serializer, RankingSerializer, MensajeChatSerializer,
-    ApiPartidoEstadisticasSerializer, ApiPartidoEventoSerializer, ApiPartidoAlineacionSerializer,
-    ApiSyncLogSerializer
+    PaisSerializer, EscenarioSerializer, UsuarioSerializer, UsuarioCreateSerializer,
+    SalaSerializer, UsuarioSalaSerializer, DeporteSerializer, CompetenciaSerializer,
+    EquipoSerializer, DeportistaSerializer, PartidosSerializer, PartidoFutbolSerializer,
+    PartidoTenisSerializer, PartidoBaloncestoSerializer, CarreraF1Serializer,
+    ApuestaFutbolSerializer, ApuestaTenisSerializer, ApuestaBaloncestoSerializer,
+    ApuestaF1Serializer, RankingSerializer, MensajeChatSerializer
 )
 
-
-# Vista de autenticación
+# Authentication endpoints
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def login_view(request):
@@ -58,12 +53,12 @@ def login_view(request):
     # Obtiene el perfil de Usuario asociado
     try:
         usuario = Usuario.objects.get(user=user)
+        nombre_usuario = usuario.nombre_usuario
+        id_usuario = usuario.id_usuario
     except Usuario.DoesNotExist:
-        # Si no existe el perfil, puedes crearlo o manejar el error
-        return Response(
-            {"error": "Perfil de usuario no encontrado"}, 
-            status=status.HTTP_404_NOT_FOUND,
-        )
+        # Si no existe el perfil, usa los datos del User de Django
+        nombre_usuario = user.username
+        id_usuario = user.id
     
     # Devuelve el token y datos básicos del usuario
     return Response({
@@ -71,10 +66,9 @@ def login_view(request):
         "user_id": user.id,
         "username": user.username,
         "email": user.email,
-        "id_usuario": usuario.id_usuario,
-        "nombre_usuario": usuario.nombre_usuario
+        "id_usuario": id_usuario,
+        "nombre_usuario": nombre_usuario
     })
-
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
@@ -89,22 +83,43 @@ def logout_view(request):
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def usuario_me(request):
+    """
+    API endpoint para obtener el usuario actual
+    """
+    try:
+        usuario = Usuario.objects.get(user=request.user)
+        nombre_usuario = usuario.nombre_usuario
+        id_usuario = usuario.id_usuario
+    except Usuario.DoesNotExist:
+        nombre_usuario = request.user.username
+        id_usuario = request.user.id
+    
+    return Response({
+        "id": request.user.id,
+        "username": request.user.username,
+        "email": request.user.email,
+        "id_usuario": id_usuario,
+        "nombre_usuario": nombre_usuario
+    })
 
-# ViewSets para los modelos
-class ApiPaisViewSet(viewsets.ModelViewSet):
-    queryset = ApiPais.objects.all()
-    serializer_class = ApiPaisSerializer
+# ViewSets for all models
+class PaisViewSet(viewsets.ModelViewSet):
+    queryset = Pais.objects.all()
+    serializer_class = PaisSerializer
+    permission_classes = [AllowAny]
 
-
-class ApiVenueViewSet(viewsets.ModelViewSet):
-    queryset = ApiVenue.objects.all()
-    serializer_class = ApiVenueSerializer
-
+class EscenarioViewSet(viewsets.ModelViewSet):
+    queryset = Escenario.objects.all()
+    serializer_class = EscenarioSerializer
+    permission_classes = [AllowAny]
 
 class DeporteViewSet(viewsets.ModelViewSet):
     queryset = Deporte.objects.all()
     serializer_class = DeporteSerializer
-
+    permission_classes = [AllowAny]
 
 class UsuarioViewSet(viewsets.ModelViewSet):
     queryset = Usuario.objects.all()
@@ -118,7 +133,6 @@ class UsuarioViewSet(viewsets.ModelViewSet):
         if self.action in ['create']:
             return [AllowAny()]
         return [IsAuthenticated()]
-
 
 class SalaViewSet(viewsets.ModelViewSet):
     queryset = Sala.objects.all()
@@ -169,228 +183,74 @@ class SalaViewSet(viewsets.ModelViewSet):
         
         return Response({"success": f"Te has unido a la sala {sala.nombre}"}, status=status.HTTP_201_CREATED)
 
-
 class UsuarioSalaViewSet(viewsets.ModelViewSet):
     queryset = UsuarioSala.objects.all()
     serializer_class = UsuarioSalaSerializer
     permission_classes = [IsAuthenticated]
+
+class CompetenciaViewSet(viewsets.ModelViewSet):
+    queryset = Competencia.objects.all()
+    serializer_class = CompetenciaSerializer
+    permission_classes = [AllowAny]
+
+class EquipoViewSet(viewsets.ModelViewSet):
+    queryset = Equipo.objects.all()
+    serializer_class = EquipoSerializer
+    permission_classes = [AllowAny]
+
+class DeportistaViewSet(viewsets.ModelViewSet):
+    queryset = Deportista.objects.all()
+    serializer_class = DeportistaSerializer
+    permission_classes = [AllowAny]
+
+class PartidosViewSet(viewsets.ModelViewSet):
+    queryset = Partidos.objects.all()
+    serializer_class = PartidosSerializer
+    permission_classes = [AllowAny]
     
-    @action(detail=False, methods=['get'])
-    def miembros_sala(self, request):
-        """
-        Obtiene todos los miembros de una sala específica
-        """
-        sala_id = request.query_params.get('sala_id')
-        if not sala_id:
-            return Response({"error": "Se requiere el ID de la sala"}, status=status.HTTP_400_BAD_REQUEST)
-            
-        miembros = UsuarioSala.objects.filter(id_sala=sala_id)
-        serializer = self.get_serializer(miembros, many=True)
-        return Response(serializer.data)
-
-
-class ApiLigaViewSet(viewsets.ModelViewSet):
-    queryset = ApiLiga.objects.all()
-    serializer_class = ApiLigaSerializer
-    
-    @action(detail=False, methods=['get'])
-    def por_deporte(self, request):
-        """
-        Filtra ligas por deporte
-        """
-        deporte_id = request.query_params.get('deporte_id')
-        if not deporte_id:
-            return Response({"error": "Se requiere el ID del deporte"}, status=status.HTTP_400_BAD_REQUEST)
-            
-        ligas = ApiLiga.objects.filter(id_deporte=deporte_id)
-        serializer = self.get_serializer(ligas, many=True)
-        return Response(serializer.data)
-
-
-class ApiEquipoViewSet(viewsets.ModelViewSet):
-    queryset = ApiEquipo.objects.all()
-    serializer_class = ApiEquipoSerializer
-    
-    @action(detail=False, methods=['get'])
-    def por_deporte(self, request):
-        """
-        Filtra equipos por deporte
-        """
-        deporte_id = request.query_params.get('deporte_id')
-        if not deporte_id:
-            return Response({"error": "Se requiere el ID del deporte"}, status=status.HTTP_400_BAD_REQUEST)
-            
-        equipos = ApiEquipo.objects.filter(id_deporte=deporte_id)
-        serializer = self.get_serializer(equipos, many=True)
-        return Response(serializer.data)
-
-
-class ApiJugadorViewSet(viewsets.ModelViewSet):
-    queryset = ApiJugador.objects.all()
-    serializer_class = ApiJugadorSerializer
-    
-    @action(detail=False, methods=['get'])
-    def por_equipo(self, request):
-        """
-        Filtra jugadores por equipo
-        """
-        equipo_id = request.query_params.get('equipo_id')
-        if not equipo_id:
-            return Response({"error": "Se requiere el ID del equipo"}, status=status.HTTP_400_BAD_REQUEST)
-            
-        jugadores = ApiJugador.objects.filter(id_equipo=equipo_id)
-        serializer = self.get_serializer(jugadores, many=True)
-        return Response(serializer.data)
-
-
-class ApiPartidoViewSet(viewsets.ModelViewSet):
-    queryset = ApiPartido.objects.all()
-    serializer_class = ApiPartidoSerializer
-    
-    @action(detail=False, methods=['get'])
-    def proximos(self, request):
-        """
-        Obtiene los próximos partidos programados
-        """
-        ahora = timezone.now()
-        partidos = ApiPartido.objects.filter(
-            fecha__gte=ahora,
-            estado=PartidoStatus.PROGRAMADO
-        ).order_by('fecha')[:20]  # Limitar a 20 resultados
+    def get_queryset(self):
+        queryset = Partidos.objects.all()
         
-        serializer = self.get_serializer(partidos, many=True)
-        return Response(serializer.data)
-    
-    @action(detail=False, methods=['get'])
-    def por_liga(self, request):
-        """
-        Filtra partidos por liga y opcionalmente por temporada
-        """
-        liga_id = request.query_params.get('liga_id')
-        temporada = request.query_params.get('temporada')
+        # Filter by sport if provided
+        deporte = self.request.query_params.get('deporte', None)
+        if deporte is not None:
+            # Direct sport filtering (much more efficient)
+            queryset = queryset.filter(id_deporte=deporte)
         
-        if not liga_id:
-            return Response({"error": "Se requiere el ID de la liga"}, status=status.HTTP_400_BAD_REQUEST)
-            
-        query = Q(id_liga=liga_id)
-        if temporada:
-            query &= Q(temporada=temporada)
-            
-        partidos = ApiPartido.objects.filter(query).order_by('fecha')
-        serializer = self.get_serializer(partidos, many=True)
-        return Response(serializer.data)
+        # Filter by competition if provided
+        competencia = self.request.query_params.get('competencia', None)
+        if competencia is not None:
+            queryset = queryset.filter(id_competencia=competencia)
+        
+        # Filter by status if provided
+        estado = self.request.query_params.get('estado', None)
+        if estado is not None:
+            queryset = queryset.filter(estado=estado)
+        
+        # Order by date
+        queryset = queryset.order_by('fecha_partido')
+        
+        return queryset
 
-
-class ApiPartidoEstadisticasViewSet(viewsets.ModelViewSet):
-    queryset = ApiPartidoEstadisticas.objects.all()
-    serializer_class = ApiPartidoEstadisticasSerializer
-    
-    @action(detail=False, methods=['get'])
-    def por_partido(self, request):
-        """
-        Obtiene las estadísticas de un partido específico
-        """
-        partido_id = request.query_params.get('partido_id')
-        if not partido_id:
-            return Response({"error": "Se requiere el ID del partido"}, status=status.HTTP_400_BAD_REQUEST)
-            
-        estadisticas = ApiPartidoEstadisticas.objects.filter(id_partido=partido_id)
-        serializer = self.get_serializer(estadisticas, many=True)
-        return Response(serializer.data)
-
-
-class ApiPartidoEventoViewSet(viewsets.ModelViewSet):
-    queryset = ApiPartidoEvento.objects.all()
-    serializer_class = ApiPartidoEventoSerializer
-    
-    @action(detail=False, methods=['get'])
-    def por_partido(self, request):
-        """
-        Obtiene los eventos de un partido específico
-        """
-        partido_id = request.query_params.get('partido_id')
-        if not partido_id:
-            return Response({"error": "Se requiere el ID del partido"}, status=status.HTTP_400_BAD_REQUEST)
-            
-        eventos = ApiPartidoEvento.objects.filter(id_partido=partido_id).order_by('minuto')
-        serializer = self.get_serializer(eventos, many=True)
-        return Response(serializer.data)
-
-
-class ApiPartidoAlineacionViewSet(viewsets.ModelViewSet):
-    queryset = ApiPartidoAlineacion.objects.all()
-    serializer_class = ApiPartidoAlineacionSerializer
-    
-    @action(detail=False, methods=['get'])
-    def por_partido(self, request):
-        """
-        Obtiene las alineaciones de un partido específico
-        """
-        partido_id = request.query_params.get('partido_id')
-        if not partido_id:
-            return Response({"error": "Se requiere el ID del partido"}, status=status.HTTP_400_BAD_REQUEST)
-            
-        alineaciones = ApiPartidoAlineacion.objects.filter(id_partido=partido_id)
-        serializer = self.get_serializer(alineaciones, many=True)
-        return Response(serializer.data)
-
+class PartidoFutbolViewSet(viewsets.ModelViewSet):
+    queryset = PartidoFutbol.objects.all()
+    serializer_class = PartidoFutbolSerializer
+    permission_classes = [AllowAny]
 
 class PartidoTenisViewSet(viewsets.ModelViewSet):
     queryset = PartidoTenis.objects.all()
     serializer_class = PartidoTenisSerializer
-    
-    @action(detail=False, methods=['get'])
-    def proximos(self, request):
-        """
-        Obtiene los próximos partidos de tenis programados
-        """
-        ahora = timezone.now()
-        partidos = PartidoTenis.objects.filter(
-            fecha__gte=ahora,
-            estado=PartidoStatus.PROGRAMADO
-        ).order_by('fecha')[:20]
-        
-        serializer = self.get_serializer(partidos, many=True)
-        return Response(serializer.data)
-
+    permission_classes = [AllowAny]
 
 class PartidoBaloncestoViewSet(viewsets.ModelViewSet):
     queryset = PartidoBaloncesto.objects.all()
     serializer_class = PartidoBaloncestoSerializer
-    
-    @action(detail=False, methods=['get'])
-    def proximos(self, request):
-        """
-        Obtiene los próximos partidos de baloncesto programados
-        """
-        ahora = timezone.now()
-        partidos = PartidoBaloncesto.objects.filter(
-            fecha__gte=ahora,
-            estado=PartidoStatus.PROGRAMADO
-        ).order_by('fecha')[:20]
-        
-        serializer = self.get_serializer(partidos, many=True)
-        return Response(serializer.data)
-
+    permission_classes = [AllowAny]
 
 class CarreraF1ViewSet(viewsets.ModelViewSet):
     queryset = CarreraF1.objects.all()
     serializer_class = CarreraF1Serializer
-    
-    @action(detail=False, methods=['get'])
-    def proximas(self, request):
-        """
-        Obtiene las próximas carreras de F1 programadas
-        """
-        ahora = timezone.now()
-        carreras = CarreraF1.objects.filter(
-            fecha__gte=ahora,
-            estado=PartidoStatus.PROGRAMADO
-        ).order_by('fecha')[:10]
-        
-        serializer = self.get_serializer(carreras, many=True)
-        return Response(serializer.data)
-
+    permission_classes = [AllowAny]
 
 class ApuestaFutbolViewSet(viewsets.ModelViewSet):
     queryset = ApuestaFutbol.objects.all()
@@ -428,7 +288,6 @@ class ApuestaFutbolViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(apuestas, many=True)
         return Response(serializer.data)
 
-
 class ApuestaTenisViewSet(viewsets.ModelViewSet):
     queryset = ApuestaTenis.objects.all()
     serializer_class = ApuestaTenisSerializer
@@ -449,7 +308,6 @@ class ApuestaTenisViewSet(viewsets.ModelViewSet):
         apuestas = ApuestaTenis.objects.filter(query).order_by('-fecha_apuesta')
         serializer = self.get_serializer(apuestas, many=True)
         return Response(serializer.data)
-
 
 class ApuestaBaloncestoViewSet(viewsets.ModelViewSet):
     queryset = ApuestaBaloncesto.objects.all()
@@ -472,7 +330,6 @@ class ApuestaBaloncestoViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(apuestas, many=True)
         return Response(serializer.data)
 
-
 class ApuestaF1ViewSet(viewsets.ModelViewSet):
     queryset = ApuestaF1.objects.all()
     serializer_class = ApuestaF1Serializer
@@ -493,7 +350,6 @@ class ApuestaF1ViewSet(viewsets.ModelViewSet):
         apuestas = ApuestaF1.objects.filter(query).order_by('-fecha_apuesta')
         serializer = self.get_serializer(apuestas, many=True)
         return Response(serializer.data)
-
 
 class RankingViewSet(viewsets.ModelViewSet):
     queryset = Ranking.objects.all()
@@ -518,7 +374,6 @@ class RankingViewSet(viewsets.ModelViewSet):
         rankings = Ranking.objects.filter(query).order_by('posicion')
         serializer = self.get_serializer(rankings, many=True)
         return Response(serializer.data)
-
 
 class MensajeChatViewSet(viewsets.ModelViewSet):
     queryset = MensajeChat.objects.all()

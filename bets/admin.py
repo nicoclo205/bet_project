@@ -3,8 +3,8 @@ from .models import (
     Usuario, Sala, ApiPartido, ApiEquipo, ApiPais, ApiLiga,
     UsuarioSala, Ranking, MensajeChat, 
     ApuestaFutbol, ApuestaTenis, ApuestaBaloncesto, ApuestaF1,
-    ApiJugador, Deporte, ApiVenue, CarreraF1, PartidoTenis, PartidoBaloncesto,
-    ApiPartidoEstadisticas, ApiPartidoEvento, ApiPartidoAlineacion, ApiSyncLog
+    Deportista, Deporte, Escenario, CarreraF1,
+    PartidoFutbol, PartidoTenis, PartidoBaloncesto
 )
 
 # User and Room models
@@ -39,3 +39,9 @@ admin.site.register(ApuestaFutbol)
 admin.site.register(ApuestaTenis)
 admin.site.register(ApuestaBaloncesto)
 admin.site.register(ApuestaF1)
+admin.site.register(CarreraF1)
+
+# Register specific sport match types
+admin.site.register(PartidoFutbol)
+admin.site.register(PartidoTenis)
+admin.site.register(PartidoBaloncesto)

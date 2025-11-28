@@ -171,20 +171,23 @@ class ApiJugador(models.Model):
         return self.nombre
 
     class Meta:
-        db_table = 'api_jugadores'
-        verbose_name_plural = 'API Jugadores'
+        db_table = 'deportista'
 
-class ApiVenue(models.Model):
-    id_venue = models.AutoField(primary_key=True)
-    nombre = models.CharField(max_length=100)
-    id_pais = models.ForeignKey(ApiPais, on_delete=models.SET_NULL, blank=True, null=True)
-    ciudad = models.CharField(max_length=100, blank=True, null=True)
-    capacidad = models.IntegerField(blank=True, null=True)
-    superficie = models.CharField(max_length=50, blank=True, null=True)
-    api_id = models.IntegerField(blank=True, null=True)
-    imagen_url = models.CharField(max_length=255, blank=True, null=True)
-    direccion = models.CharField(max_length=255, blank=True, null=True)
-    ultima_actualizacion = models.DateTimeField(auto_now=True)
+
+class Partidos(models.Model):
+    # En esta tabla se almacenarán equipos (para deportes colectivos) o deportistas (para deportes individuales)
+    id_partidos = models.AutoField(primary_key=True)
+    equipo_local = models.ForeignKey(Equipo, on_delete=models.CASCADE, db_column='equipo_local', related_name='partidos_local')
+    equipo_visitante = models.ForeignKey(Equipo, on_delete=models.CASCADE, db_column='equipo_visitante', related_name='partidos_visitante')
+    deportista_local = models.ForeignKey(Deportista, on_delete=models.CASCADE, db_column='deportista_local', related_name='partidos_local', blank=True, null=True)
+    deportista_visitante = models.ForeignKey(Deportista, on_delete=models.CASCADE, db_column='deportista_visitante', related_name='partidos_visitante', blank=True, null=True)
+    resultado_local = models.IntegerField(default=0)
+    resultado_visitante = models.IntegerField(default=0)
+    id_deporte = models.ForeignKey(Deporte, on_delete=models.CASCADE, db_column='id_deporte', blank=True, null=True)
+    id_competencia = models.ForeignKey(Competencia, on_delete=models.CASCADE, db_column='id_competencia', blank=True, null=True)
+    fecha_partido = models.DateTimeField(blank=True, null=True)
+    estado = models.CharField(max_length=10, choices=PartidoStatus.choices, default=PartidoStatus.PROGRAMADO)
+    id_escenario = models.ForeignKey(Escenario, on_delete=models.CASCADE, db_column='id_escenario', blank=True, null=True)
 
     def __str__(self):
         return self.nombre
@@ -236,7 +239,9 @@ class ApiPartido(models.Model):
             models.Index(fields=['api_fixture_id']),
             models.Index(fields=['fecha']),
             models.Index(fields=['estado']),
-            models.Index(fields=['id_liga', 'temporada']),
+            models.Index(fields=['fecha_partido']),
+            models.Index(fields=['id_competencia']),
+            models.Index(fields=['id_deporte']),
         ]
 
 # Detailed entities for cached API data
@@ -620,43 +625,5 @@ class MensajeChat(models.Model):
             models.Index(fields=['id_sala']),
             models.Index(fields=['id_usuario']),
             models.Index(fields=['fecha_envio']),
-        ]
-
-# API cache tracking
-class ApiSyncLog(models.Model):
-    id_sync = models.AutoField(primary_key=True)
-    tipo_sincronizacion = models.CharField(max_length=50)  # fixtures, events, lineups, etc.
-    fecha_inicio = models.DateTimeField(auto_now_add=True)
-    fecha_fin = models.DateTimeField(blank=True, null=True)
-    estado = models.CharField(max_length=20)
-    detalles = models.TextField(blank=True, null=True)
-    registros_procesados = models.IntegerField(default=0)
-    id_liga = models.IntegerField(blank=True, null=True)
-    temporada = models.CharField(max_length=10, blank=True, null=True)
-    
-    def __str__(self):
-        return f"{self.tipo_sincronizacion} - {self.fecha_inicio}"
-    
-    def completar(self, registros, detalles=None):
-        self.fecha_fin = timezone.now()
-        self.estado = 'completado'
-        self.registros_procesados = registros
-        if detalles:
-            self.detalles = detalles
-        self.save()
-    
-    def fallar(self, detalles):
-        self.fecha_fin = timezone.now()
-        self.estado = 'fallido'
-        self.detalles = detalles
-        self.save()
-    
-    class Meta:
-        db_table = 'api_sync_log'
-        verbose_name = 'API Sync Log'
-        verbose_name_plural = 'API Sync Logs'
-        indexes = [
-            models.Index(fields=['tipo_sincronizacion']),
-            models.Index(fields=['fecha_inicio']),
-            models.Index(fields=['estado']),
+# [MermaidChart: b67144a3-89b0-4a02-8112-a740c05d5b93]
         ]
