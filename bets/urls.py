@@ -43,5 +43,6 @@ urlpatterns = [
     # Authentication endpoints
     path('api/login', views.login_view, name='login'),
     path('api/logout', views.logout_view, name='logout'),
+    path('api/validate-token', views.validate_token, name='validate_token'),
     path('api/usuario/me', views.usuario_me, name='usuario_me'),
 ]

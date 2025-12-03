@@ -317,7 +317,7 @@ class Command(BaseCommand):
         # Actualizar timestamp
         timestamp = event.get('startTimestamp')
         if timestamp:
-            nueva_fecha = datetime.fromtimestamp(timestamp)
+            nueva_fecha = timezone.make_aware(datetime.fromtimestamp(timestamp))
             if partido.fecha != nueva_fecha:
                 partido.fecha = nueva_fecha
                 changed = True
@@ -352,7 +352,7 @@ class Command(BaseCommand):
                     'nombre': 'La Liga',
                     'id_pais': spain,
                     'id_deporte': futbol,
-                    'temporada_actual': '2024-25',
+                    'temporada_actual': '2025-26',
                     'tipo': 'League',
                 }
             )
@@ -382,8 +382,10 @@ class Command(BaseCommand):
 
             # Extraer fecha
             timestamp = event.get('startTimestamp')
-            from datetime import datetime
-            fecha = datetime.fromtimestamp(timestamp) if timestamp else timezone.now()
+            if timestamp:
+                fecha = timezone.make_aware(datetime.fromtimestamp(timestamp))
+            else:
+                fecha = timezone.now()
 
             # Crear partido
             partido = ApiPartido.objects.create(
@@ -392,7 +394,7 @@ class Command(BaseCommand):
                 equipo_local=home_team,
                 equipo_visitante=away_team,
                 fecha=fecha,
-                temporada='2024-25',
+                temporada='2025-26',
                 estado=estado,
                 goles_local=goles_local,
                 goles_visitante=goles_visitante,

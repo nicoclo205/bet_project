@@ -39,6 +39,7 @@ from bets.models import (
 # IDs de SofaScore para La Liga
 LA_LIGA_TOURNAMENT_ID = 8
 LA_LIGA_SEASON_2024_25 = 61642
+LA_LIGA_SEASON_2025_26 = 77559
 
 
 class Command(BaseCommand):
@@ -69,8 +70,8 @@ class Command(BaseCommand):
         parser.add_argument(
             '--season-id',
             type=int,
-            default=LA_LIGA_SEASON_2024_25,
-            help='ID de la temporada en SofaScore (default: 61642 - 2024/25)',
+            default=LA_LIGA_SEASON_2025_26,
+            help='ID de la temporada en SofaScore (default: 77559 - 2025/26)',
         )
 
     def handle(self, *args, **options):
@@ -112,7 +113,7 @@ class Command(BaseCommand):
                 'nombre': 'La Liga',
                 'id_pais': spain,
                 'id_deporte': futbol,
-                'temporada_actual': '2024-25',
+                'temporada_actual': '2025-26',
                 'tipo': 'League',
             }
         )
@@ -155,51 +156,90 @@ class Command(BaseCommand):
         """Carga los equipos de La Liga desde SofaScore"""
 
         try:
-            # Obtener información de la temporada
-            self.stdout.write("   Obteniendo datos de la temporada...")
-            season_data = get_football_tournament_season(tournament_id, season_id)
-
-            # Extraer equipos de la temporada
-            # La estructura puede variar, intentamos múltiples formas
             teams = []
 
-            # Opción 1: standings
-            if 'standings' in season_data:
-                standings = season_data['standings']
-                if isinstance(standings, list) and len(standings) > 0:
-                    if 'rows' in standings[0]:
-                        for row in standings[0]['rows']:
-                            if 'team' in row:
-                                teams.append(row['team'])
+            # Intentar obtener equipos desde la temporada
+            try:
+                self.stdout.write("   Obteniendo datos de la temporada...")
+                season_data = get_football_tournament_season(tournament_id, season_id)
 
-            # Opción 2: participants
-            if not teams and 'participants' in season_data:
-                teams = season_data['participants']
+                # Opción 1: standings
+                if 'standings' in season_data:
+                    standings = season_data['standings']
+                    if isinstance(standings, list) and len(standings) > 0:
+                        if 'rows' in standings[0]:
+                            for row in standings[0]['rows']:
+                                if 'team' in row:
+                                    teams.append(row['team'])
+
+                # Opción 2: participants
+                if not teams and 'participants' in season_data:
+                    teams = season_data['participants']
+            except Exception as season_error:
+                self.stdout.write(self.style.WARNING(
+                    f"   No se pudo obtener datos de temporada: {season_error}"
+                ))
 
             # Si no hay equipos, obtener de eventos/partidos
             if not teams:
                 self.stdout.write(self.style.WARNING(
-                    "   No se encontraron equipos en datos de temporada.\n"
                     "   Obteniendo equipos desde partidos..."
                 ))
-                events_data = get_football_tournament_events(tournament_id, season_id)
-                events = events_data.get('events', [])
 
-                # Extraer equipos únicos de los partidos
-                team_ids = set()
+                # Intentar obtener de todas las jornadas
                 teams_dict = {}
 
-                for event in events:
-                    home_team = event.get('homeTeam', {})
-                    away_team = event.get('awayTeam', {})
+                try:
+                    events_data = get_football_tournament_events(tournament_id, season_id)
+                    events = events_data.get('events', [])
 
-                    if home_team.get('id'):
-                        team_ids.add(home_team['id'])
-                        teams_dict[home_team['id']] = home_team
+                    for event in events:
+                        home_team = event.get('homeTeam', {})
+                        away_team = event.get('awayTeam', {})
 
-                    if away_team.get('id'):
-                        team_ids.add(away_team['id'])
-                        teams_dict[away_team['id']] = away_team
+                        if home_team.get('id'):
+                            teams_dict[home_team['id']] = home_team
+
+                        if away_team.get('id'):
+                            teams_dict[away_team['id']] = away_team
+                except Exception as events_error:
+                    self.stdout.write(self.style.WARNING(
+                        f"   Error obteniendo eventos: {events_error}"
+                    ))
+
+                # Si no funciona, obtener de partidos por fecha
+                if not teams_dict:
+                    from datetime import datetime, timedelta
+                    from bets.utils.sofascore_api import get_football_matches_by_date
+
+                    self.stdout.write("   Obteniendo equipos de partidos recientes...")
+
+                    # Buscar partidos en los últimos 30 días
+                    for days_back in range(30):
+                        date = (datetime.now() - timedelta(days=days_back)).strftime('%Y-%m-%d')
+                        try:
+                            matches_data = get_football_matches_by_date(date)
+                            events = matches_data.get('events', [])
+
+                            # Filtrar solo partidos de La Liga
+                            laliga_events = [e for e in events
+                                           if e.get('tournament', {}).get('uniqueTournament', {}).get('id') == tournament_id]
+
+                            for event in laliga_events:
+                                home_team = event.get('homeTeam', {})
+                                away_team = event.get('awayTeam', {})
+
+                                if home_team.get('id'):
+                                    teams_dict[home_team['id']] = home_team
+
+                                if away_team.get('id'):
+                                    teams_dict[away_team['id']] = away_team
+
+                            # Si ya encontramos al menos 15 equipos, suficiente
+                            if len(teams_dict) >= 15:
+                                break
+                        except:
+                            continue
 
                 teams = list(teams_dict.values())
 
@@ -348,7 +388,11 @@ class Command(BaseCommand):
 
             # Extraer datos del evento
             timestamp = event.get('startTimestamp')
-            fecha = datetime.fromtimestamp(timestamp) if timestamp else timezone.now()
+            if timestamp:
+                from datetime import datetime as dt
+                fecha = timezone.make_aware(dt.fromtimestamp(timestamp))
+            else:
+                fecha = timezone.now()
 
             status_data = event.get('status', {})
             status_type = status_data.get('type', 'notstarted')
@@ -380,7 +424,7 @@ class Command(BaseCommand):
                     'equipo_visitante': away_team,
                     'fecha': fecha,
                     'ronda': f"Regular - {round_num}",
-                    'temporada': '2024-25',
+                    'temporada': '2025-26',
                     'estado': estado,
                     'goles_local': goles_local,
                     'goles_visitante': goles_visitante,

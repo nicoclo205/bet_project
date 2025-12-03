@@ -8,6 +8,8 @@ from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
 from django.utils import timezone
 from django.db.models import Q
+from django.conf import settings
+from datetime import timedelta
 from .models import (
     ApiPais, ApiVenue, Usuario, Sala, UsuarioSala, Deporte, ApiLiga,
     ApiEquipo, ApiJugador, ApiPartido, PartidoTenis, PartidoBaloncesto,
@@ -54,6 +56,11 @@ def login_view(request):
     # Genera o obtiene el token para el usuario autenticado
     token, created = Token.objects.get_or_create(user=user)
 
+    # Si el token no es nuevo, lo eliminamos y creamos uno nuevo para resetear el tiempo
+    if not created:
+        token.delete()
+        token = Token.objects.create(user=user)
+
     # Obtiene el perfil de Usuario asociado
     try:
         usuario = Usuario.objects.get(user=user)
@@ -64,6 +71,10 @@ def login_view(request):
             status=status.HTTP_404_NOT_FOUND,
         )
 
+    # Calcula el tiempo de expiración del token
+    expiration_hours = getattr(settings, 'TOKEN_EXPIRATION_HOURS', 24)
+    expires_at = timezone.now() + timedelta(hours=expiration_hours)
+
     # Devuelve el token y datos básicos del usuario
     return Response({
         "token": token.key,
@@ -71,7 +82,9 @@ def login_view(request):
         "username": user.username,
         "email": user.email,
         "id_usuario": usuario.id_usuario,
-        "nombre_usuario": usuario.nombre_usuario
+        "nombre_usuario": usuario.nombre_usuario,
+        "expires_at": expires_at.isoformat(),
+        "expires_in_seconds": expiration_hours * 3600
     })
 
 
@@ -87,6 +100,19 @@ def logout_view(request):
         return Response({"success": "Sesión cerrada correctamente"}, status=status.HTTP_200_OK)
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def validate_token(request):
+    """
+    API endpoint para validar si el token es válido
+    """
+    return Response({
+        "valid": True,
+        "user_id": request.user.id,
+        "username": request.user.username
+    }, status=status.HTTP_200_OK)
 
 
 @api_view(['GET'])

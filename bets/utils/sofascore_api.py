@@ -49,7 +49,7 @@ class SofaScoreSport:
 class SofaScoreTournaments:
     """IDs de torneos principales en SofaScore"""
     # Fútbol
-    LA_LIGA = {'tournament_id': 8, 'season_2024_25': 61642}
+    LA_LIGA = {'tournament_id': 8, 'season_2024_25': 61642, 'season_2025_26': 77559}
     PREMIER_LEAGUE = {'tournament_id': 17, 'season_2024_25': 61627}
     SERIE_A = {'tournament_id': 23, 'season_2024_25': 61644}
     BUNDESLIGA = {'tournament_id': 35, 'season_2024_25': 61643}
