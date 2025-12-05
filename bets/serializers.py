@@ -123,8 +123,51 @@ class ApiJugadorSerializer(serializers.ModelSerializer):
 class ApiPartidoSerializer(serializers.ModelSerializer):
     equipo_local_nombre = serializers.ReadOnlyField(source='equipo_local.nombre')
     equipo_visitante_nombre = serializers.ReadOnlyField(source='equipo_visitante.nombre')
+    equipo_local_logo = serializers.SerializerMethodField()
+    equipo_visitante_logo = serializers.SerializerMethodField()
     liga_nombre = serializers.ReadOnlyField(source='id_liga.nombre')
+    liga_logo = serializers.ReadOnlyField(source='id_liga.logo_url')
     venue_nombre = serializers.ReadOnlyField(source='id_venue.nombre', allow_null=True)
+    venue_ciudad = serializers.ReadOnlyField(source='id_venue.ciudad', allow_null=True)
+
+    def get_equipo_local_logo(self, obj):
+        """Convertir URL de SofaScore a usar nuestro proxy"""
+        logo_url = obj.equipo_local.logo_url if obj.equipo_local else None
+        if logo_url and 'sofascore.app' in logo_url:
+            # Extraer el team_id de la URL de SofaScore
+            # Formato: https://api.sofascore.app/api/v1/team/{team_id}/image
+            parts = logo_url.split('/')
+            if 'team' in parts:
+                try:
+                    team_index = parts.index('team')
+                    team_id = parts[team_index + 1]
+                    # Retornar URL del proxy
+                    request = self.context.get('request')
+                    if request:
+                        return request.build_absolute_uri(f'/api/proxy/sofascore/team/{team_id}/image')
+                    return f'http://localhost:8000/api/proxy/sofascore/team/{team_id}/image'
+                except (ValueError, IndexError):
+                    pass
+        return logo_url
+
+    def get_equipo_visitante_logo(self, obj):
+        """Convertir URL de SofaScore a usar nuestro proxy"""
+        logo_url = obj.equipo_visitante.logo_url if obj.equipo_visitante else None
+        if logo_url and 'sofascore.app' in logo_url:
+            # Extraer el team_id de la URL de SofaScore
+            parts = logo_url.split('/')
+            if 'team' in parts:
+                try:
+                    team_index = parts.index('team')
+                    team_id = parts[team_index + 1]
+                    # Retornar URL del proxy
+                    request = self.context.get('request')
+                    if request:
+                        return request.build_absolute_uri(f'/api/proxy/sofascore/team/{team_id}/image')
+                    return f'http://localhost:8000/api/proxy/sofascore/team/{team_id}/image'
+                except (ValueError, IndexError):
+                    pass
+        return logo_url
 
     class Meta:
         model = ApiPartido

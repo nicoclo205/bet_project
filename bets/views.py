@@ -10,6 +10,8 @@ from django.utils import timezone
 from django.db.models import Q
 from django.conf import settings
 from datetime import timedelta
+from django.http import HttpResponse
+import requests
 from .models import (
     ApiPais, ApiVenue, Usuario, Sala, UsuarioSala, Deporte, ApiLiga,
     ApiEquipo, ApiJugador, ApiPartido, PartidoTenis, PartidoBaloncesto,
@@ -308,6 +310,8 @@ class ApiPartidoViewSet(viewsets.ModelViewSet):
 
         serializer = self.get_serializer(partidos, many=True)
         return Response(serializer.data)
+    
+    
 
     @action(detail=False, methods=['get'])
     def por_liga(self, request):
@@ -327,6 +331,25 @@ class ApiPartidoViewSet(viewsets.ModelViewSet):
         partidos = ApiPartido.objects.filter(query).order_by('fecha')
         serializer = self.get_serializer(partidos, many=True)
         return Response(serializer.data)
+    
+    @action(detail=False, methods=['get'])
+    def por_deporte(self, request):
+        """
+        Filtra partidos por deporte (a través de las ligas)
+        """
+        deporte_id = request.query_params.get('deporte_id')
+        if not deporte_id:
+            return Response({"error": "Se requiere el ID del deporte"}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Buscar las ligas que pertenecen a ese deporte
+        ligas = ApiLiga.objects.filter(id_deporte=deporte_id).values_list('id_liga', flat=True)
+
+        # Buscar los partidos de esas ligas
+        partidos = ApiPartido.objects.filter(id_liga__in=ligas).order_by('fecha')
+
+        serializer = self.get_serializer(partidos, many=True)
+        return Response(serializer.data)
+
 
 
 class ApiPartidoEstadisticasViewSet(viewsets.ModelViewSet):
@@ -590,3 +613,35 @@ class MensajeChatViewSet(viewsets.ModelViewSet):
 
         serializer = self.get_serializer(mensajes, many=True)
         return Response(serializer.data)
+
+
+# Proxy para imágenes de SofaScore (evita problemas de CORS)
+@api_view(['GET'])
+@permission_classes([AllowAny])  # Permitir acceso sin autenticación para las imágenes
+def sofascore_image_proxy(request, team_id):
+    """
+    Proxy para servir imágenes de equipos desde SofaScore
+    Evita problemas de CORS en el navegador
+    """
+    try:
+        # URL de la imagen en SofaScore
+        image_url = f'https://api.sofascore.app/api/v1/team/{team_id}/image'
+
+        # Hacer la petición al servidor de SofaScore
+        response = requests.get(image_url, timeout=5)
+
+        # Si la petición fue exitosa, devolver la imagen
+        if response.status_code == 200:
+            # Crear respuesta HTTP con la imagen
+            return HttpResponse(
+                response.content,
+                content_type=response.headers.get('Content-Type', 'image/png')
+            )
+        else:
+            # Si falla, devolver error 404
+            return HttpResponse(status=404)
+
+    except Exception as e:
+        # En caso de error, devolver 404
+        print(f"Error al obtener imagen de SofaScore: {e}")
+        return HttpResponse(status=404)

@@ -45,4 +45,6 @@ urlpatterns = [
     path('api/logout', views.logout_view, name='logout'),
     path('api/validate-token', views.validate_token, name='validate_token'),
     path('api/usuario/me', views.usuario_me, name='usuario_me'),
+    # Image proxy
+    path('api/proxy/sofascore/team/<int:team_id>/image', views.sofascore_image_proxy, name='sofascore_image_proxy'),
 ]
