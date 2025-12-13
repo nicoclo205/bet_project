@@ -78,6 +78,8 @@ class UsuarioCreateSerializer(serializers.ModelSerializer):
         
         return usuario
 
+
+#Relacionado con las salas
 class SalaSerializer(serializers.ModelSerializer):
     creador_nombre = serializers.ReadOnlyField(source='id_usuario.nombre_usuario')
     
@@ -93,6 +95,34 @@ class UsuarioSalaSerializer(serializers.ModelSerializer):
         model = UsuarioSala
         fields = '__all__'
 
+class SalaCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Sala
+        fields = ['nombre', 'descripcion']
+
+class SalaDetailSerializer(serializers.ModelSerializer):
+    creador_nombre = serializers.ReadOnlyField(source='id_usuario.nombre_usuario')
+    miembros = serializers.SerializerMethodField()
+
+    def get_miembros(self, obj):
+        usuarios_sala = UsuarioSala.objects.filter(id_sala=obj)
+        return UsuarioSalaSerializer(usuarios_sala, many=True).data
+
+    class Meta:
+        model = Sala
+        fields = ['id_sala', 'nombre', 'descripcion', 'fecha_creacion', 
+                  'estado', 'codigo_sala', 'creador_nombre', 'miembros']
+
+class UsuarioSalaCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UsuarioSala
+        fields = ['id_sala']
+
+class UnirseASalaSerializer(serializers.Serializer):
+    codigo_sala = serializers.CharField(max_length=100)
+
+
+# Relacionado con las APIs deportivas
 class ApiLigaSerializer(serializers.ModelSerializer):
     pais_nombre = serializers.ReadOnlyField(source='id_pais.nombre')
     deporte_nombre = serializers.ReadOnlyField(source='id_deporte.nombre')

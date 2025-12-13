@@ -21,7 +21,8 @@ from .models import (
 )
 from .serializers import (
     ApiPaisSerializer, ApiVenueSerializer, UsuarioSerializer, UsuarioCreateSerializer,
-    SalaSerializer, UsuarioSalaSerializer, DeporteSerializer, ApiLigaSerializer,
+    SalaSerializer, SalaCreateSerializer, SalaDetailSerializer, UsuarioSalaSerializer,
+    UnirseASalaSerializer, DeporteSerializer, ApiLigaSerializer,
     ApiEquipoSerializer, ApiJugadorSerializer, ApiPartidoSerializer,
     PartidoTenisSerializer, PartidoBaloncestoSerializer, CarreraF1Serializer,
     ApuestaFutbolSerializer, ApuestaTenisSerializer, ApuestaBaloncestoSerializer,
@@ -170,10 +171,80 @@ class UsuarioViewSet(viewsets.ModelViewSet):
         return [IsAuthenticated()]
 
 
+
+#gestión de salas
 class SalaViewSet(viewsets.ModelViewSet):
     queryset = Sala.objects.all()
     serializer_class = SalaSerializer
     permission_classes = [IsAuthenticated]
+
+    def get_serializer_class(self):
+        """Usar diferentes serializers según la acción"""
+        if self.action == 'create':
+            return SalaCreateSerializer
+        elif self.action == 'retrieve':
+            return SalaDetailSerializer
+        return SalaSerializer
+
+    def create(self, request, *args, **kwargs):
+        """
+        Crear sala y auto-agregar al creador como admin
+        """
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        
+        # Asignar el usuario autenticado como creador
+        usuario = request.user.perfil
+        sala = serializer.save(id_usuario=usuario)
+        
+        # Generar código único para la sala (si no existe)
+        if not sala.codigo_sala:
+            import uuid
+            sala.codigo_sala = str(uuid.uuid4())[:8].upper()
+            sala.save()
+        
+        # Auto-agregar al creador como admin en UsuarioSala
+        UsuarioSala.objects.create(
+            id_usuario=usuario,
+            id_sala=sala,
+            rol='admin'
+        )
+        
+        # Retornar la sala creada con todos los detalles
+        response_serializer = SalaDetailSerializer(sala)
+        return Response(response_serializer.data, status=status.HTTP_201_CREATED)
+
+    def update(self, request, *args, **kwargs):
+        """
+        Permitir editar solo al creador de la sala
+        """
+        sala = self.get_object()
+        usuario = request.user.perfil
+        
+        # Verificar que el usuario sea el creador
+        if sala.id_usuario != usuario:
+            return Response(
+                {"error": "Solo el creador puede editar la sala"}, 
+                status=status.HTTP_403_FORBIDDEN
+            )
+        
+        return super().update(request, *args, **kwargs)
+
+    def destroy(self, request, *args, **kwargs):
+        """
+        Permitir eliminar solo al creador de la sala
+        """
+        sala = self.get_object()
+        usuario = request.user.perfil
+        
+        # Verificar que el usuario sea el creador
+        if sala.id_usuario != usuario:
+            return Response(
+                {"error": "Solo el creador puede eliminar la sala"}, 
+                status=status.HTTP_403_FORBIDDEN
+            )
+        
+        return super().destroy(request, *args, **kwargs)
 
     @action(detail=False, methods=['get'])
     def mis_salas(self, request):
@@ -181,17 +252,13 @@ class SalaViewSet(viewsets.ModelViewSet):
         Devuelve las salas a las que pertenece el usuario autenticado
         """
         usuario = request.user.perfil
-        salas_propias = Sala.objects.filter(id_usuario=usuario)
-
-        # Obtener salas a las que el usuario pertenece mediante UsuarioSala
-        pertenencias = UsuarioSala.objects.filter(id_usuario=usuario)
-        salas_miembro = [pertenencia.id_sala for pertenencia in pertenencias]
-
-        # Combinar ambos conjuntos de salas
-        todas_salas = list(salas_propias) + salas_miembro
-
+        
+        # Obtener salas donde el usuario es miembro (vía UsuarioSala)
+        salas_ids = UsuarioSala.objects.filter(id_usuario=usuario).values_list('id_sala', flat=True)
+        salas = Sala.objects.filter(id_sala__in=salas_ids)
+        
         # Serializar los resultados
-        serializer = self.get_serializer(todas_salas, many=True)
+        serializer = SalaDetailSerializer(salas, many=True)
         return Response(serializer.data)
 
     @action(detail=True, methods=['post'])
@@ -199,26 +266,89 @@ class SalaViewSet(viewsets.ModelViewSet):
         """
         Permite a un usuario unirse a una sala usando su código
         """
-        codigo = request.data.get('codigo')
+        codigo = request.data.get('codigo_sala')
         if not codigo:
-            return Response({"error": "Se requiere el código de sala"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"error": "Se requiere el código de sala"}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
         try:
             sala = Sala.objects.get(codigo_sala=codigo)
         except Sala.DoesNotExist:
-            return Response({"error": "Sala no encontrada"}, status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                {"error": "Código de sala inválido"}, 
+                status=status.HTTP_404_NOT_FOUND
+            )
 
         usuario = request.user.perfil
 
         # Verificar si ya es miembro
         if UsuarioSala.objects.filter(id_usuario=usuario, id_sala=sala).exists():
-            return Response({"error": "Ya eres miembro de esta sala"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"error": "Ya eres miembro de esta sala"}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
-        # Crear la relación UsuarioSala
-        UsuarioSala.objects.create(id_usuario=usuario, id_sala=sala)
+        # Crear la relación UsuarioSala con rol 'participante'
+        UsuarioSala.objects.create(
+            id_usuario=usuario, 
+            id_sala=sala,
+            rol='participante'  
+        )
 
-        return Response({"success": f"Te has unido a la sala {sala.nombre}"}, status=status.HTTP_201_CREATED)
+        response_data = {
+            "message": f"Te has unido a la sala '{sala.nombre}'",
+            "sala": SalaDetailSerializer(sala).data
+        }
+        return Response(response_data, status=status.HTTP_201_CREATED)
 
+    @action(detail=True, methods=['post'])
+    def salir(self, request, pk=None):
+        """
+        Permite a un usuario salir de una sala
+        """
+        sala = self.get_object()
+        usuario = request.user.perfil
+        
+        # Verificar que no sea el creador
+        if sala.id_usuario == usuario:
+            return Response(
+                {"error": "El creador no puede salir de su propia sala. Debe eliminarla."}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        try:
+            usuario_sala = UsuarioSala.objects.get(id_usuario=usuario, id_sala=sala)
+            usuario_sala.delete()
+            return Response(
+                {"message": f"Has salido de la sala '{sala.nombre}'"}, 
+                status=status.HTTP_200_OK
+            )
+        except UsuarioSala.DoesNotExist:
+            return Response(
+                {"error": "No eres miembro de esta sala"}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+    @action(detail=True, methods=['get'])
+    def miembros(self, request, pk=None):
+        """
+        Ver todos los miembros de una sala
+        """
+        sala = self.get_object()
+        usuario = request.user.perfil
+        
+        # Verificar que el usuario sea miembro de la sala
+        if not UsuarioSala.objects.filter(id_usuario=usuario, id_sala=sala).exists():
+            return Response(
+                {"error": "No tienes acceso a esta sala"}, 
+                status=status.HTTP_403_FORBIDDEN
+            )
+        
+        miembros = UsuarioSala.objects.filter(id_sala=sala)
+        serializer = UsuarioSalaSerializer(miembros, many=True)
+        return Response(serializer.data)
 
 class UsuarioSalaViewSet(viewsets.ModelViewSet):
     queryset = UsuarioSala.objects.all()
