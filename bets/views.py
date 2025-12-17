@@ -598,6 +598,54 @@ class ApuestaFutbolViewSet(viewsets.ModelViewSet):
     serializer_class = ApuestaFutbolSerializer
     permission_classes = [IsAuthenticated]
 
+    def create(self, request, *args, **kwargs):
+        """
+        Crea una nueva apuesta validando que el partido no haya comenzado
+        """
+        # Obtener el ID del partido del request
+        partido_id = request.data.get('id_partido')
+
+        if not partido_id:
+            return Response(
+                {"error": "Se requiere el ID del partido"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            # Buscar el partido
+            partido = ApiPartido.objects.get(id_partido=partido_id)
+
+            # Validar que el partido no haya comenzado
+            ahora = timezone.now()
+            if partido.fecha <= ahora:
+                return Response(
+                    {
+                        "error": "No se pueden realizar apuestas para partidos que ya han comenzado o finalizado",
+                        "fecha_partido": partido.fecha,
+                        "fecha_actual": ahora
+                    },
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            # Validar que el partido no esté finalizado o en curso
+            if partido.estado in [PartidoStatus.FINALIZADO, PartidoStatus.EN_CURSO]:
+                return Response(
+                    {
+                        "error": f"No se pueden realizar apuestas para partidos en estado '{partido.estado}'",
+                        "estado_partido": partido.estado
+                    },
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+        except ApiPartido.DoesNotExist:
+            return Response(
+                {"error": "El partido especificado no existe"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        # Si pasa las validaciones, crear la apuesta normalmente
+        return super().create(request, *args, **kwargs)
+
     @action(detail=False, methods=['get'])
     def mis_apuestas(self, request):
         """
@@ -719,6 +767,84 @@ class RankingViewSet(viewsets.ModelViewSet):
         rankings = Ranking.objects.filter(query).order_by('posicion')
         serializer = self.get_serializer(rankings, many=True)
         return Response(serializer.data)
+
+    @action(detail=False, methods=['get'])
+    def actual(self, request):
+        """
+        Obtiene el ranking actual de una sala basado en los puntos totales
+        de todas las apuestas ganadas (no usa la tabla Ranking)
+        """
+        from django.db.models import Sum, Count
+
+        sala_id = request.query_params.get('sala_id')
+
+        if not sala_id:
+            return Response(
+                {"error": "Se requiere el ID de la sala"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            sala = Sala.objects.get(id_sala=sala_id)
+        except Sala.DoesNotExist:
+            return Response(
+                {"error": "La sala especificada no existe"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        # Obtener miembros de la sala con sus estadísticas
+        miembros = UsuarioSala.objects.filter(id_sala=sala).select_related('id_usuario')
+
+        ranking_data = []
+        for miembro in miembros:
+            usuario = miembro.id_usuario
+
+            # Calcular estadísticas del usuario en esta sala
+            apuestas_stats = ApuestaFutbol.objects.filter(
+                id_usuario=usuario,
+                id_sala=sala
+            ).aggregate(
+                total_puntos=Sum('puntos_ganados'),
+                total_apuestas=Count('id_apuesta'),
+                apuestas_ganadas=Count('id_apuesta', filter=Q(estado=ApuestaStatus.GANADA)),
+                apuestas_perdidas=Count('id_apuesta', filter=Q(estado=ApuestaStatus.PERDIDA))
+            )
+
+            ranking_data.append({
+                'usuario': {
+                    'id_usuario': usuario.id_usuario,
+                    'nombre_usuario': usuario.nombre_usuario,
+                    'nombre': usuario.nombre,
+                    'apellido': usuario.apellido,
+                    'foto_perfil': usuario.foto_perfil,
+                },
+                'puntos': apuestas_stats['total_puntos'] or 0,
+                'total_apuestas': apuestas_stats['total_apuestas'],
+                'apuestas_ganadas': apuestas_stats['apuestas_ganadas'],
+                'apuestas_perdidas': apuestas_stats['apuestas_perdidas'],
+                'efectividad': round(
+                    (apuestas_stats['apuestas_ganadas'] / apuestas_stats['total_apuestas'] * 100)
+                    if apuestas_stats['total_apuestas'] > 0 else 0,
+                    2
+                )
+            })
+
+        # Ordenar por puntos descendente
+        ranking_data.sort(key=lambda x: x['puntos'], reverse=True)
+
+        # Asignar posiciones
+        for idx, item in enumerate(ranking_data, start=1):
+            item['posicion'] = idx
+
+        return Response({
+            'sala': {
+                'id_sala': sala.id_sala,
+                'nombre': sala.nombre,
+                'descripcion': sala.descripcion,
+            },
+            'ranking': ranking_data,
+            'total_participantes': len(ranking_data)
+        })
 
 
 class MensajeChatViewSet(viewsets.ModelViewSet):

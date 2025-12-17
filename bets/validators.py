@@ -34,7 +34,6 @@ def validate_phoneNum(value):
 def validate_name(value):
     if len(value) < 4:
         raise serializers.ValidationError("El nombre debe tener al menos 4 caracteres")
-    return value
 
     if len(value) > 100:
         raise serializers.ValidationError("El nombre no puede tener más de 100 caracteres")
@@ -47,7 +46,6 @@ def validate_name(value):
 def validate_lastname(value):
     if len(value) < 4:
         raise serializers.ValidationError("El nombre debe tener al menos 4 caracteres")
-    return value
 
     if len(value) > 100:
         raise serializers.ValidationError("El nombre no puede tener más de 100 caracteres")

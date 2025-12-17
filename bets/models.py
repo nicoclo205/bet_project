@@ -348,6 +348,38 @@ class ApuestaFutbol(models.Model):
     def __str__(self):
         return f"Apuesta Fútbol: {self.id_usuario.nombre_usuario} - {self.id_partido}"
     
+    # En models.py, dentro de la clase ApuestaFutbol, después del __str__ (línea 349)
+
+    def calcular_y_actualizar_puntos(self):
+        """
+        Calcula los puntos ganados en esta apuesta y actualiza el registro
+
+        Returns:
+            int: Puntos ganados
+        """
+        from .points_management.scoring import calcular_puntos_futbol, determinar_estado_apuesta
+        
+        # Verificar que el partido esté finalizado
+        if self.id_partido.estado != PartidoStatus.FINALIZADO:
+            return 0
+        
+        # Calcular puntos
+        puntos = calcular_puntos_futbol(
+            self.prediccion_local,
+            self.prediccion_visitante,
+            self.id_partido.goles_local,
+            self.id_partido.goles_visitante,
+            self.reglas_puntuacion
+        )
+        
+        # Actualizar apuesta
+        self.puntos_ganados = puntos
+        self.estado = determinar_estado_apuesta(puntos)
+        self.save()
+        
+        return puntos
+
+    
     class Meta:
         db_table = 'apuestas_futbol'
         verbose_name_plural = 'Apuestas Fútbol'
