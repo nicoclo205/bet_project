@@ -655,3 +655,67 @@ class MensajeChat(models.Model):
             models.Index(fields=['fecha_envio']),
 # [MermaidChart: b67144a3-89b0-4a02-8112-a740c05d5b93]
         ]
+
+
+# =============================================================================
+# CONFIGURACIÓN DE SALA - Filtros de Deportes, Ligas y Partidos
+# =============================================================================
+
+class SalaDeporte(models.Model):
+    """Deportes habilitados para una sala"""
+    id_sala_deporte = models.AutoField(primary_key=True)
+    id_sala = models.ForeignKey(Sala, on_delete=models.CASCADE, db_column='id_sala', related_name='deportes_habilitados')
+    id_deporte = models.ForeignKey(Deporte, on_delete=models.CASCADE, db_column='id_deporte')
+    fecha_activacion = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.id_sala.nombre} - {self.id_deporte.nombre}"
+
+    class Meta:
+        db_table = 'sala_deporte'
+        unique_together = (('id_sala', 'id_deporte'),)
+        verbose_name = 'Deporte de Sala'
+        verbose_name_plural = 'Deportes de Sala'
+
+
+class SalaLiga(models.Model):
+    """Ligas/Torneos habilitados para una sala"""
+    id_sala_liga = models.AutoField(primary_key=True)
+    id_sala = models.ForeignKey(Sala, on_delete=models.CASCADE, db_column='id_sala', related_name='ligas_habilitadas')
+    id_liga = models.ForeignKey(ApiLiga, on_delete=models.CASCADE, db_column='id_liga')
+    fecha_activacion = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.id_sala.nombre} - {self.id_liga.nombre}"
+
+    class Meta:
+        db_table = 'sala_liga'
+        unique_together = (('id_sala', 'id_liga'),)
+        verbose_name = 'Liga de Sala'
+        verbose_name_plural = 'Ligas de Sala'
+        indexes = [
+            models.Index(fields=['id_sala']),
+            models.Index(fields=['id_liga']),
+        ]
+
+
+class SalaPartido(models.Model):
+    """Partidos individuales habilitados manualmente por el administrador"""
+    id_sala_partido = models.AutoField(primary_key=True)
+    id_sala = models.ForeignKey(Sala, on_delete=models.CASCADE, db_column='id_sala', related_name='partidos_habilitados')
+    id_partido = models.ForeignKey(ApiPartido, on_delete=models.CASCADE, db_column='id_partido')
+    fecha_activacion = models.DateTimeField(auto_now_add=True)
+    agregado_por = models.ForeignKey(Usuario, on_delete=models.SET_NULL, null=True, db_column='agregado_por')
+
+    def __str__(self):
+        return f"{self.id_sala.nombre} - {self.id_partido}"
+
+    class Meta:
+        db_table = 'sala_partido'
+        unique_together = (('id_sala', 'id_partido'),)
+        verbose_name = 'Partido de Sala'
+        verbose_name_plural = 'Partidos de Sala'
+        indexes = [
+            models.Index(fields=['id_sala']),
+            models.Index(fields=['id_partido']),
+        ]

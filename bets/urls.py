@@ -37,6 +37,11 @@ router.register(r'apuestas-f1', views.ApuestaF1ViewSet)
 router.register(r'rankings', views.RankingViewSet)
 router.register(r'mensajes-chat', views.MensajeChatViewSet)
 
+# Room configuration models
+router.register(r'sala-deportes', views.SalaDeporteViewSet)
+router.register(r'sala-ligas', views.SalaLigaViewSet)
+router.register(r'sala-partidos', views.SalaPartidoViewSet)
+
 urlpatterns = [
     path('api/', include(router.urls)),
     path('api-auth/', include('rest_framework.urls')),

@@ -4,7 +4,8 @@ from .models import (
     ApiPais, ApiVenue, Usuario, Sala, UsuarioSala, Deporte, ApiLiga,
     ApiEquipo, ApiJugador, ApiPartido, PartidoTenis, PartidoBaloncesto,
     CarreraF1, ApuestaFutbol, ApuestaTenis, ApuestaBaloncesto, ApuestaF1,
-    Ranking, MensajeChat, ApiPartidoEstadisticas, ApiPartidoEvento, ApiPartidoAlineacion
+    Ranking, MensajeChat, ApiPartidoEstadisticas, ApiPartidoEvento, ApiPartidoAlineacion,
+    SalaDeporte, SalaLiga, SalaPartido
 )
 from .validators import validate_username, validate_password, validate_email, validate_name, validate_lastname, validate_phoneNum
 
@@ -110,8 +111,8 @@ class SalaDetailSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Sala
-        fields = ['id_sala', 'nombre', 'descripcion', 'fecha_creacion', 
-                  'estado', 'codigo_sala', 'creador_nombre', 'miembros']
+        fields = ['id_sala', 'nombre', 'descripcion', 'fecha_creacion',
+                  'estado', 'codigo_sala', 'id_usuario', 'creador_nombre', 'miembros']
 
 class UsuarioSalaCreateSerializer(serializers.ModelSerializer):
     class Meta:
@@ -309,4 +310,44 @@ class MensajeChatSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = MensajeChat
+        fields = '__all__'
+
+
+# =============================================================================
+# SERIALIZERS DE CONFIGURACIÓN DE SALA
+# =============================================================================
+
+class SalaDeporteSerializer(serializers.ModelSerializer):
+    deporte_nombre = serializers.ReadOnlyField(source='id_deporte.nombre')
+    sala_nombre = serializers.ReadOnlyField(source='id_sala.nombre')
+
+    class Meta:
+        model = SalaDeporte
+        fields = '__all__'
+
+
+class SalaLigaSerializer(serializers.ModelSerializer):
+    liga_nombre = serializers.ReadOnlyField(source='id_liga.nombre')
+    liga_pais = serializers.ReadOnlyField(source='id_liga.id_pais.nombre')
+    liga_logo = serializers.ReadOnlyField(source='id_liga.logo_url')
+    sala_nombre = serializers.ReadOnlyField(source='id_sala.nombre')
+    deporte_id = serializers.ReadOnlyField(source='id_liga.id_deporte.id_deporte')
+    deporte_nombre = serializers.ReadOnlyField(source='id_liga.id_deporte.nombre')
+
+    class Meta:
+        model = SalaLiga
+        fields = '__all__'
+
+
+class SalaPartidoSerializer(serializers.ModelSerializer):
+    partido_info = serializers.ReadOnlyField(source='id_partido.__str__')
+    equipo_local = serializers.ReadOnlyField(source='id_partido.equipo_local.nombre')
+    equipo_visitante = serializers.ReadOnlyField(source='id_partido.equipo_visitante.nombre')
+    fecha_partido = serializers.ReadOnlyField(source='id_partido.fecha')
+    liga_nombre = serializers.ReadOnlyField(source='id_partido.id_liga.nombre')
+    sala_nombre = serializers.ReadOnlyField(source='id_sala.nombre')
+    agregado_por_nombre = serializers.ReadOnlyField(source='agregado_por.nombre_usuario')
+
+    class Meta:
+        model = SalaPartido
         fields = '__all__'

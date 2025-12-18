@@ -17,7 +17,7 @@ from .models import (
     ApiEquipo, ApiJugador, ApiPartido, PartidoTenis, PartidoBaloncesto,
     CarreraF1, ApuestaFutbol, ApuestaTenis, ApuestaBaloncesto, ApuestaF1,
     Ranking, MensajeChat, ApiPartidoEstadisticas, ApiPartidoEvento, ApiPartidoAlineacion,
-    PartidoStatus, ApuestaStatus
+    PartidoStatus, ApuestaStatus, SalaDeporte, SalaLiga, SalaPartido
 )
 from .serializers import (
     ApiPaisSerializer, ApiVenueSerializer, UsuarioSerializer, UsuarioCreateSerializer,
@@ -27,7 +27,8 @@ from .serializers import (
     PartidoTenisSerializer, PartidoBaloncestoSerializer, CarreraF1Serializer,
     ApuestaFutbolSerializer, ApuestaTenisSerializer, ApuestaBaloncestoSerializer,
     ApuestaF1Serializer, RankingSerializer, MensajeChatSerializer,
-    ApiPartidoEstadisticasSerializer, ApiPartidoEventoSerializer, ApiPartidoAlineacionSerializer
+    ApiPartidoEstadisticasSerializer, ApiPartidoEventoSerializer, ApiPartidoAlineacionSerializer,
+    SalaDeporteSerializer, SalaLigaSerializer, SalaPartidoSerializer
 )
 
 
@@ -430,14 +431,38 @@ class ApiPartidoViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['get'])
     def proximos(self, request):
         """
-        Obtiene los próximos partidos programados
+        Obtiene los próximos partidos programados.
+        Si se proporciona sala_id, filtra según la configuración de la sala:
+        - Partidos de deportes habilitados
+        - Partidos de ligas habilitadas
+        - Partidos agregados manualmente por el admin
         """
         ahora = timezone.now()
+        sala_id = request.query_params.get('sala_id')
+
+        # Query base: partidos próximos programados
         partidos = ApiPartido.objects.filter(
             fecha__gte=ahora,
             estado=PartidoStatus.PROGRAMADO
-        ).order_by('fecha')[:20]  # Limitar a 20 resultados
+        )
 
+        # Si se especifica una sala, filtrar según configuración
+        if sala_id:
+            # Obtener ligas habilitadas en la sala
+            ligas_habilitadas = SalaLiga.objects.filter(id_sala=sala_id).values_list('id_liga', flat=True)
+
+            # Obtener partidos agregados manualmente
+            partidos_manuales = SalaPartido.objects.filter(id_sala=sala_id).values_list('id_partido', flat=True)
+
+            # Si hay configuración, filtrar
+            if ligas_habilitadas.exists() or partidos_manuales.exists():
+                # Partidos que pertenecen a ligas habilitadas O fueron agregados manualmente
+                partidos = partidos.filter(
+                    Q(id_liga__in=ligas_habilitadas) | Q(id_partido__in=partidos_manuales)
+                )
+            # Si no hay configuración, mostrar todos los partidos (sala sin configurar)
+
+        partidos = partidos.order_by('fecha')[:50]  # Limitar a 50 resultados
         serializer = self.get_serializer(partidos, many=True)
         return Response(serializer.data)
     
@@ -909,3 +934,202 @@ def sofascore_image_proxy(request, team_id):
         # En caso de error, devolver 404
         print(f"Error al obtener imagen de SofaScore: {e}")
         return HttpResponse(status=404)
+
+
+# =============================================================================
+# VIEWSETS DE CONFIGURACIÓN DE SALA
+# =============================================================================
+
+class SalaDeporteViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet para gestionar deportes habilitados en una sala.
+    Solo el administrador de la sala puede agregar/quitar deportes.
+    """
+    queryset = SalaDeporte.objects.all()
+    serializer_class = SalaDeporteSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        """Filtrar por sala si se proporciona sala_id"""
+        queryset = super().get_queryset()
+        sala_id = self.request.query_params.get('sala_id')
+        if sala_id:
+            queryset = queryset.filter(id_sala=sala_id)
+        return queryset
+
+    def create(self, request, *args, **kwargs):
+        """Solo el admin de la sala puede agregar deportes"""
+        sala_id = request.data.get('id_sala')
+        try:
+            sala = Sala.objects.get(id_sala=sala_id)
+            # Verificar que el usuario es el creador de la sala
+            if sala.id_usuario.user != request.user:
+                return Response(
+                    {"error": "Solo el administrador de la sala puede agregar deportes"},
+                    status=status.HTTP_403_FORBIDDEN
+                )
+        except Sala.DoesNotExist:
+            return Response(
+                {"error": "La sala especificada no existe"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        return super().create(request, *args, **kwargs)
+
+    def destroy(self, request, *args, **kwargs):
+        """Solo el admin de la sala puede quitar deportes"""
+        instance = self.get_object()
+        if instance.id_sala.id_usuario.user != request.user:
+            return Response(
+                {"error": "Solo el administrador de la sala puede quitar deportes"},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        return super().destroy(request, *args, **kwargs)
+
+
+class SalaLigaViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet para gestionar ligas/torneos habilitados en una sala.
+    Solo el administrador de la sala puede agregar/quitar ligas.
+    """
+    queryset = SalaLiga.objects.all()
+    serializer_class = SalaLigaSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        """Filtrar por sala si se proporciona sala_id"""
+        queryset = super().get_queryset()
+        sala_id = self.request.query_params.get('sala_id')
+        if sala_id:
+            queryset = queryset.filter(id_sala=sala_id)
+        return queryset.select_related('id_liga', 'id_liga__id_pais', 'id_liga__id_deporte')
+
+    def create(self, request, *args, **kwargs):
+        """Solo el admin de la sala puede agregar ligas"""
+        sala_id = request.data.get('id_sala')
+        try:
+            sala = Sala.objects.get(id_sala=sala_id)
+            if sala.id_usuario.user != request.user:
+                return Response(
+                    {"error": "Solo el administrador de la sala puede agregar ligas"},
+                    status=status.HTTP_403_FORBIDDEN
+                )
+        except Sala.DoesNotExist:
+            return Response(
+                {"error": "La sala especificada no existe"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        return super().create(request, *args, **kwargs)
+
+    def destroy(self, request, *args, **kwargs):
+        """Solo el admin de la sala puede quitar ligas"""
+        instance = self.get_object()
+        if instance.id_sala.id_usuario.user != request.user:
+            return Response(
+                {"error": "Solo el administrador de la sala puede quitar ligas"},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        return super().destroy(request, *args, **kwargs)
+
+    @action(detail=False, methods=['get'])
+    def disponibles(self, request):
+        """
+        Obtiene ligas disponibles para agregar a una sala (aún no agregadas)
+        """
+        sala_id = request.query_params.get('sala_id')
+        if not sala_id:
+            return Response(
+                {"error": "Se requiere el parámetro sala_id"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Ligas ya agregadas a la sala
+        ligas_en_sala = SalaLiga.objects.filter(id_sala=sala_id).values_list('id_liga', flat=True)
+
+        # Ligas disponibles (no agregadas)
+        ligas_disponibles = ApiLiga.objects.exclude(id_liga__in=ligas_en_sala)
+
+        serializer = ApiLigaSerializer(ligas_disponibles, many=True)
+        return Response(serializer.data)
+
+
+class SalaPartidoViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet para gestionar partidos individuales habilitados en una sala.
+    Solo el administrador de la sala puede agregar/quitar partidos.
+    """
+    queryset = SalaPartido.objects.all()
+    serializer_class = SalaPartidoSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        """Filtrar por sala si se proporciona sala_id"""
+        queryset = super().get_queryset()
+        sala_id = self.request.query_params.get('sala_id')
+        if sala_id:
+            queryset = queryset.filter(id_sala=sala_id)
+        return queryset.select_related('id_partido', 'id_partido__equipo_local', 'id_partido__equipo_visitante')
+
+    def create(self, request, *args, **kwargs):
+        """Solo el admin de la sala puede agregar partidos"""
+        sala_id = request.data.get('id_sala')
+        try:
+            sala = Sala.objects.get(id_sala=sala_id)
+            if sala.id_usuario.user != request.user:
+                return Response(
+                    {"error": "Solo el administrador de la sala puede agregar partidos"},
+                    status=status.HTTP_403_FORBIDDEN
+                )
+
+            # Asignar el usuario que agregó el partido
+            mutable_data = request.data.copy()
+            mutable_data['agregado_por'] = request.user.perfil.id_usuario
+
+            serializer = self.get_serializer(data=mutable_data)
+            serializer.is_valid(raise_exception=True)
+            self.perform_create(serializer)
+            headers = self.get_success_headers(serializer.data)
+            return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+        except Sala.DoesNotExist:
+            return Response(
+                {"error": "La sala especificada no existe"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+    def destroy(self, request, *args, **kwargs):
+        """Solo el admin de la sala puede quitar partidos"""
+        instance = self.get_object()
+        if instance.id_sala.id_usuario.user != request.user:
+            return Response(
+                {"error": "Solo el administrador de la sala puede quitar partidos"},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        return super().destroy(request, *args, **kwargs)
+
+    @action(detail=False, methods=['get'])
+    def disponibles(self, request):
+        """
+        Obtiene partidos disponibles para agregar manualmente a una sala
+        (partidos próximos que aún no están en la sala)
+        """
+        sala_id = request.query_params.get('sala_id')
+        if not sala_id:
+            return Response(
+                {"error": "Se requiere el parámetro sala_id"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Partidos ya agregados a la sala
+        partidos_en_sala = SalaPartido.objects.filter(id_sala=sala_id).values_list('id_partido', flat=True)
+
+        # Partidos próximos disponibles (no agregados manualmente)
+        ahora = timezone.now()
+        partidos_disponibles = ApiPartido.objects.filter(
+            fecha__gte=ahora,
+            estado=PartidoStatus.PROGRAMADO
+        ).exclude(id_partido__in=partidos_en_sala).order_by('fecha')[:50]
+
+        serializer = ApiPartidoSerializer(partidos_disponibles, many=True)
+        return Response(serializer.data)
