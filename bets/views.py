@@ -643,8 +643,16 @@ class ApuestaFutbolViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_404_NOT_FOUND
             )
 
+        # Asignar el usuario autenticado a la apuesta
+        mutable_data = request.data.copy()
+        mutable_data['id_usuario'] = request.user.perfil.id_usuario
+
         # Si pasa las validaciones, crear la apuesta normalmente
-        return super().create(request, *args, **kwargs)
+        serializer = self.get_serializer(data=mutable_data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
     @action(detail=False, methods=['get'])
     def mis_apuestas(self, request):
