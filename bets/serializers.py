@@ -162,42 +162,59 @@ class ApiPartidoSerializer(serializers.ModelSerializer):
     venue_ciudad = serializers.ReadOnlyField(source='id_venue.ciudad', allow_null=True)
 
     def get_equipo_local_logo(self, obj):
-        """Convertir URL de SofaScore a usar nuestro proxy"""
-        logo_url = obj.equipo_local.logo_url if obj.equipo_local else None
-        if logo_url and 'sofascore.app' in logo_url:
-            # Extraer el team_id de la URL de SofaScore
-            # Formato: https://api.sofascore.app/api/v1/team/{team_id}/image
+        """Retorna el logo del equipo local, priorizando SofaScore con proxy"""
+        if not obj.equipo_local:
+            return None
+
+        logo_url = obj.equipo_local.logo_url
+
+        # Si no hay logo_url, retornar None (el frontend mostrará fallback)
+        if not logo_url:
+            return None
+
+        # Si es de SofaScore, usar el proxy
+        if 'sofascore.app' in logo_url:
             parts = logo_url.split('/')
             if 'team' in parts:
                 try:
                     team_index = parts.index('team')
                     team_id = parts[team_index + 1]
-                    # Retornar URL del proxy
                     request = self.context.get('request')
                     if request:
                         return request.build_absolute_uri(f'/api/proxy/sofascore/team/{team_id}/image')
                     return f'http://localhost:8000/api/proxy/sofascore/team/{team_id}/image'
                 except (ValueError, IndexError):
                     pass
+
+        # Si es de api-sports.io u otra fuente, retornar directamente
         return logo_url
 
     def get_equipo_visitante_logo(self, obj):
-        """Convertir URL de SofaScore a usar nuestro proxy"""
-        logo_url = obj.equipo_visitante.logo_url if obj.equipo_visitante else None
-        if logo_url and 'sofascore.app' in logo_url:
-            # Extraer el team_id de la URL de SofaScore
+        """Retorna el logo del equipo visitante, priorizando SofaScore con proxy"""
+        if not obj.equipo_visitante:
+            return None
+
+        logo_url = obj.equipo_visitante.logo_url
+
+        # Si no hay logo_url, retornar None (el frontend mostrará fallback)
+        if not logo_url:
+            return None
+
+        # Si es de SofaScore, usar el proxy
+        if 'sofascore.app' in logo_url:
             parts = logo_url.split('/')
             if 'team' in parts:
                 try:
                     team_index = parts.index('team')
                     team_id = parts[team_index + 1]
-                    # Retornar URL del proxy
                     request = self.context.get('request')
                     if request:
                         return request.build_absolute_uri(f'/api/proxy/sofascore/team/{team_id}/image')
                     return f'http://localhost:8000/api/proxy/sofascore/team/{team_id}/image'
                 except (ValueError, IndexError):
                     pass
+
+        # Si es de api-sports.io u otra fuente, retornar directamente
         return logo_url
 
     class Meta:
