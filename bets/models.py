@@ -57,6 +57,7 @@ class Sala(models.Model):
     id_sala = models.AutoField(primary_key=True)
     nombre = models.CharField(max_length=50)
     descripcion = models.CharField(max_length=100, blank=True, null=True)
+    max_miembros = models.IntegerField(null=True, blank=True)
     fecha_creacion = models.DateTimeField(auto_now_add=True)
     estado = models.BooleanField(default=True)
     id_usuario = models.ForeignKey(Usuario, on_delete=models.CASCADE, db_column='id_usuario')

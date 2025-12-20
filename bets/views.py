@@ -129,16 +129,19 @@ def usuario_me(request):
         usuario = Usuario.objects.get(user=request.user)
         nombre_usuario = usuario.nombre_usuario
         id_usuario = usuario.id_usuario
+        foto_perfil = usuario.foto_perfil
     except Usuario.DoesNotExist:
         nombre_usuario = request.user.username
         id_usuario = request.user.id
+        foto_perfil = None
 
     return Response({
         "id": request.user.id,
         "username": request.user.username,
         "email": request.user.email,
         "id_usuario": id_usuario,
-        "nombre_usuario": nombre_usuario
+        "nombre_usuario": nombre_usuario,
+        "foto_perfil": foto_perfil
     })
 
 
@@ -170,6 +173,15 @@ class UsuarioViewSet(viewsets.ModelViewSet):
         if self.action in ['create']:
             return [AllowAny()]
         return [IsAuthenticated()]
+
+    def perform_destroy(self, instance):
+        """
+        Eliminar también el usuario de Django asociado
+        """
+        user = instance.user
+        instance.delete()
+        if user:
+            user.delete()
 
 
 
@@ -454,12 +466,20 @@ class ApiPartidoViewSet(viewsets.ModelViewSet):
             # Obtener partidos agregados manualmente
             partidos_manuales = SalaPartido.objects.filter(id_sala=sala_id).values_list('id_partido', flat=True)
 
+            # Debug logging
+            print(f"[DEBUG] Sala ID: {sala_id}")
+            print(f"[DEBUG] Ligas habilitadas IDs: {list(ligas_habilitadas)}")
+            print(f"[DEBUG] Partidos manuales IDs: {list(partidos_manuales)}")
+
             # Si hay configuración, filtrar
             if ligas_habilitadas.exists() or partidos_manuales.exists():
                 # Partidos que pertenecen a ligas habilitadas O fueron agregados manualmente
                 partidos = partidos.filter(
                     Q(id_liga__in=ligas_habilitadas) | Q(id_partido__in=partidos_manuales)
                 )
+                print(f"[DEBUG] Partidos filtrados encontrados: {partidos.count()}")
+            else:
+                print(f"[DEBUG] No hay configuración de ligas/partidos para esta sala")
             # Si no hay configuración, mostrar todos los partidos (sala sin configurar)
 
         partidos = partidos.order_by('fecha')[:50]  # Limitar a 50 resultados
@@ -678,6 +698,86 @@ class ApuestaFutbolViewSet(viewsets.ModelViewSet):
         self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+    def update(self, request, *args, **kwargs):
+        """
+        Actualiza una apuesta existente validando que el partido no haya comenzado
+        """
+        apuesta = self.get_object()
+        usuario = request.user.perfil
+
+        # Verificar que el usuario sea el dueño de la apuesta
+        if apuesta.id_usuario != usuario:
+            return Response(
+                {"error": "Solo puedes editar tus propias apuestas"},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        # Validar que el partido no haya comenzado
+        partido = apuesta.id_partido
+        ahora = timezone.now()
+
+        if partido.fecha <= ahora:
+            return Response(
+                {
+                    "error": "No se pueden editar apuestas para partidos que ya han comenzado o finalizado",
+                    "fecha_partido": partido.fecha,
+                    "fecha_actual": ahora
+                },
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Validar que el partido no esté finalizado o en curso
+        if partido.estado in [PartidoStatus.FINALIZADO, PartidoStatus.EN_CURSO]:
+            return Response(
+                {
+                    "error": f"No se pueden editar apuestas para partidos en estado '{partido.estado}'",
+                    "estado_partido": partido.estado
+                },
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        return super().update(request, *args, **kwargs)
+
+    def destroy(self, request, *args, **kwargs):
+        """
+        Elimina una apuesta validando que el partido no haya comenzado
+        """
+        apuesta = self.get_object()
+        usuario = request.user.perfil
+
+        # Verificar que el usuario sea el dueño de la apuesta
+        if apuesta.id_usuario != usuario:
+            return Response(
+                {"error": "Solo puedes eliminar tus propias apuestas"},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        # Validar que el partido no haya comenzado
+        partido = apuesta.id_partido
+        ahora = timezone.now()
+
+        if partido.fecha <= ahora:
+            return Response(
+                {
+                    "error": "No se pueden eliminar apuestas para partidos que ya han comenzado o finalizado",
+                    "fecha_partido": partido.fecha,
+                    "fecha_actual": ahora
+                },
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Validar que el partido no esté finalizado o en curso
+        if partido.estado in [PartidoStatus.FINALIZADO, PartidoStatus.EN_CURSO]:
+            return Response(
+                {
+                    "error": f"No se pueden eliminar apuestas para partidos en estado '{partido.estado}'",
+                    "estado_partido": partido.estado
+                },
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        return super().destroy(request, *args, **kwargs)
 
     @action(detail=False, methods=['get'])
     def mis_apuestas(self, request):
