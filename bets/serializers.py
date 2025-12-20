@@ -91,7 +91,8 @@ class SalaSerializer(serializers.ModelSerializer):
 class UsuarioSalaSerializer(serializers.ModelSerializer):
     usuario_nombre = serializers.ReadOnlyField(source='id_usuario.nombre_usuario')
     sala_nombre = serializers.ReadOnlyField(source='id_sala.nombre')
-    
+    foto_perfil = serializers.ReadOnlyField(source='id_usuario.foto_perfil')
+
     class Meta:
         model = UsuarioSala
         fields = '__all__'
@@ -99,7 +100,7 @@ class UsuarioSalaSerializer(serializers.ModelSerializer):
 class SalaCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Sala
-        fields = ['nombre', 'descripcion', 'max_miembros']
+        fields = ['nombre', 'descripcion', 'max_miembros', 'avatar_sala']
 
 class SalaDetailSerializer(serializers.ModelSerializer):
     creador_nombre = serializers.ReadOnlyField(source='id_usuario.nombre_usuario')
@@ -112,7 +113,7 @@ class SalaDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = Sala
         fields = ['id_sala', 'nombre', 'descripcion', 'max_miembros', 'fecha_creacion',
-                  'estado', 'codigo_sala', 'id_usuario', 'creador_nombre', 'miembros']
+                  'estado', 'codigo_sala', 'id_usuario', 'creador_nombre', 'miembros', 'avatar_sala']
 
 class UsuarioSalaCreateSerializer(serializers.ModelSerializer):
     class Meta:

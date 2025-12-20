@@ -62,6 +62,7 @@ class Sala(models.Model):
     estado = models.BooleanField(default=True)
     id_usuario = models.ForeignKey(Usuario, on_delete=models.CASCADE, db_column='id_usuario')
     codigo_sala = models.CharField(unique=True, max_length=100, blank=True, null=True)
+    avatar_sala = models.CharField(max_length=200, blank=True, null=True, default='/avatars/messi_avatar.svg')
 
     def __str__(self):
         return self.nombre
