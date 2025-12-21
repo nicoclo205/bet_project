@@ -1,13 +1,18 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
+from django.conf import settings
+from django.utils import timezone
+from datetime import timedelta
+import secrets
 from .models import (
     ApiPais, ApiVenue, Usuario, Sala, UsuarioSala, Deporte, ApiLiga,
     ApiEquipo, ApiJugador, ApiPartido, PartidoTenis, PartidoBaloncesto,
     CarreraF1, ApuestaFutbol, ApuestaTenis, ApuestaBaloncesto, ApuestaF1,
     Ranking, MensajeChat, ApiPartidoEstadisticas, ApiPartidoEvento, ApiPartidoAlineacion,
-    SalaDeporte, SalaLiga, SalaPartido
+    SalaDeporte, SalaLiga, SalaPartido, EmailVerificationToken
 )
 from .validators import validate_username, validate_password, validate_email, validate_name, validate_lastname, validate_phoneNum
+from .email_service import send_verification_email
 
 class ApiPaisSerializer(serializers.ModelSerializer):
     class Meta:
@@ -55,28 +60,45 @@ class UsuarioCreateSerializer(serializers.ModelSerializer):
         username = validated_data.pop('username')
         password = validated_data.pop('password')
         email = validated_data.pop('email')
-        
+
         # Crear User de Django
         user = User.objects.create_user(
             username=username,
             email=email,
             password=password
         )
-        
+
         # Si no se proporciona nombre_usuario, usar el username
         if 'nombre_usuario' not in validated_data or not validated_data['nombre_usuario']:
             validated_data['nombre_usuario'] = username
-            
+
         # Si no se proporciona correo, usar el email
         if 'correo' not in validated_data or not validated_data['correo']:
             validated_data['correo'] = email
-        
+
         # Crear Usuario vinculado
         usuario = Usuario.objects.create(
             user=user,
             **validated_data
         )
-        
+
+        # Generate and send email verification token
+        token = secrets.token_urlsafe(32)
+        expires_at = timezone.now() + timedelta(hours=settings.EMAIL_VERIFICATION_EXPIRATION_HOURS)
+
+        EmailVerificationToken.objects.create(
+            usuario=usuario,
+            token=token,
+            expires_at=expires_at
+        )
+
+        # Send verification email
+        try:
+            send_verification_email(usuario.correo, token, usuario.nombre_usuario)
+        except Exception as e:
+            # Log the error but don't fail registration
+            print(f"Failed to send verification email: {str(e)}")
+
         return usuario
 
 

@@ -30,22 +30,37 @@ class Usuario(models.Model):
     id_usuario = models.AutoField(primary_key=True)
     nombre_usuario = models.CharField(max_length=100)
     correo = models.EmailField(unique=True, max_length=100)
-    contrasena = models.CharField(max_length=255)  
+    contrasena = models.CharField(max_length=255)
     fecha_registro = models.DateTimeField(auto_now_add=True)
     puntos_totales = models.IntegerField(default=0)
     nombre = models.CharField(max_length=100, blank=True, null=True)
     apellido = models.CharField(max_length=100, blank=True, null=True)
     celular = models.CharField(max_length=15, blank=True, null=True)
     foto_perfil = models.CharField(max_length=255, blank=True, null=True)
+    email_verified = models.BooleanField(default=False)
 
     def __str__(self):
         return self.nombre_usuario
     
     def save(self, *args, **kwargs):
         # Hash la contraseña si es una nueva contraseña
+        import logging
+        logger = logging.getLogger(__name__)
+
+        logger.info(f"Usuario.save() called for: {self.nombre_usuario}")
+        logger.info(f"  id_usuario: {self.id_usuario}")
+        logger.info(f"  contrasena starts with 'pbkdf2_': {self.contrasena.startswith('pbkdf2_') if self.contrasena else False}")
+
         if not self.id_usuario or not self.contrasena.startswith('pbkdf2_'):
+            logger.info(f"  Hashing password...")
+            old_pass = self.contrasena
             self.contrasena = make_password(self.contrasena)
+            logger.info(f"  Password hashed: {old_pass} -> {self.contrasena[:50]}...")
+        else:
+            logger.info(f"  Password already hashed, skipping hash")
+
         super().save(*args, **kwargs)
+        logger.info(f"  Usuario saved to database")
     
     def check_password(self, raw_password):
         return check_password(raw_password, self.contrasena)
@@ -721,3 +736,43 @@ class SalaPartido(models.Model):
             models.Index(fields=['id_sala']),
             models.Index(fields=['id_partido']),
         ]
+
+
+class EmailVerificationToken(models.Model):
+    """Tokens for email verification"""
+    id = models.AutoField(primary_key=True)
+    usuario = models.ForeignKey(Usuario, on_delete=models.CASCADE, related_name='verification_tokens')
+    token = models.CharField(max_length=255, unique=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField()
+    is_used = models.BooleanField(default=False)
+
+    def is_valid(self):
+        """Check if token is still valid"""
+        return not self.is_used and timezone.now() < self.expires_at
+
+    def __str__(self):
+        return f"Verification token for {self.usuario.nombre_usuario}"
+
+    class Meta:
+        db_table = 'email_verification_token'
+
+
+class PasswordResetToken(models.Model):
+    """Tokens for password reset"""
+    id = models.AutoField(primary_key=True)
+    usuario = models.ForeignKey(Usuario, on_delete=models.CASCADE, related_name='reset_tokens')
+    token = models.CharField(max_length=255, unique=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField()
+    is_used = models.BooleanField(default=False)
+
+    def is_valid(self):
+        """Check if token is still valid"""
+        return not self.is_used and timezone.now() < self.expires_at
+
+    def __str__(self):
+        return f"Reset token for {self.usuario.nombre_usuario}"
+
+    class Meta:
+        db_table = 'password_reset_token'

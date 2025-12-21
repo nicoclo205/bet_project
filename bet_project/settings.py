@@ -155,3 +155,53 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Email configuration
+# DEVELOPMENT: Using console backend - emails print to logs (copy reset URL from there)
+# PRODUCTION: Uncomment SMTP backend below and ensure Gmail app password is correct
+EMAIL_BACKEND = os.environ.get('EMAIL_BACKEND', 'django.core.mail.backends.console.EmailBackend')
+# To use real Gmail SMTP, set EMAIL_BACKEND=django.core.mail.backends.smtp.EmailBackend in .env
+
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', 'global.niclami@gmail.com')
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', 'azoecldwgukdvjhz').replace(' ', '')
+DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'global.niclami@gmail.com')
+
+# SSL certificate verification (set to False if having SSL issues in Docker)
+EMAIL_SSL_CERTFILE = None
+EMAIL_SSL_KEYFILE = None
+
+# Email verification settings
+EMAIL_VERIFICATION_EXPIRATION_HOURS = 24
+PASSWORD_RESET_EXPIRATION_HOURS = 1
+
+# Logging configuration
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'INFO',
+    },
+    'loggers': {
+        'bets': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+    },
+}

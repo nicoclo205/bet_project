@@ -5,7 +5,8 @@ from .models import (
     ApiPartido, ApiPartidoEstadisticas, ApiPartidoEvento, ApiPartidoAlineacion,
     PartidoTenis, PartidoBaloncesto, CarreraF1,
     ApuestaFutbol, ApuestaTenis, ApuestaBaloncesto, ApuestaF1,
-    Ranking, MensajeChat
+    Ranking, MensajeChat,
+    EmailVerificationToken, PasswordResetToken
 )
 
 # User and Room models
@@ -43,3 +44,7 @@ admin.site.register(ApuestaF1)
 # Social models
 admin.site.register(Ranking)
 admin.site.register(MensajeChat)
+
+# Email verification and password reset
+admin.site.register(EmailVerificationToken)
+admin.site.register(PasswordResetToken)
