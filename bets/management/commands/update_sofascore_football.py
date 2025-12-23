@@ -333,6 +333,10 @@ class Command(BaseCommand):
                 f"({partido.estado})"
             )
             self.stats['updated'] += 1
+
+            # Si el partido está finalizado, guardar estadísticas detalladas
+            if nuevo_estado == PartidoStatus.FINALIZADO:
+                self.guardar_estadisticas_partido(partido)
         else:
             self.stats['unchanged'] += 1
 
@@ -409,3 +413,86 @@ class Command(BaseCommand):
         except Exception as e:
             self.stdout.write(self.style.ERROR(f"   ❌ Error creando partido: {e}"))
             self.stats['errors'] += 1
+
+    def guardar_estadisticas_partido(self, partido):
+        """Obtiene y guarda las estadísticas detalladas de un partido finalizado"""
+        from bets.models import ApiPartidoEstadisticas
+        from bets.utils.sofascore_api import get_event_statistics
+
+        try:
+            # Obtener estadísticas desde SofaScore
+            stats_data = get_event_statistics(partido.api_fixture_id)
+            statistics = stats_data.get('statistics', [])
+
+            if not statistics:
+                self.stdout.write(self.style.WARNING(
+                    f"      ⚠️ No hay estadísticas disponibles"
+                ))
+                return
+
+            # SofaScore devuelve 2 conjuntos de stats: [0] = local, [1] = visitante
+            for team_stats in statistics:
+                # Identificar el equipo
+                team_id = team_stats.get('team', {}).get('id')
+
+                # Buscar el equipo en BD
+                if team_id == partido.equipo_local.api_id:
+                    equipo = partido.equipo_local
+                elif team_id == partido.equipo_visitante.api_id:
+                    equipo = partido.equipo_visitante
+                else:
+                    continue
+
+                # Extraer estadísticas de los grupos
+                stats_dict = {}
+                for group in team_stats.get('groups', []):
+                    for stat in group.get('statisticsItems', []):
+                        key = stat.get('name')
+                        value = stat.get('value')
+                        stats_dict[key] = value
+
+                # Crear o actualizar registro de estadísticas
+                ApiPartidoEstadisticas.objects.update_or_create(
+                    id_partido=partido,
+                    id_equipo=equipo,
+                    defaults={
+                        'posesion': self._parse_percentage(stats_dict.get('Ball possession')),
+                        'tiros_total': self._parse_int(stats_dict.get('Total shots')),
+                        'tiros_a_puerta': self._parse_int(stats_dict.get('Shots on target')),
+                        'tiros_fuera': self._parse_int(stats_dict.get('Shots off target')),
+                        'tiros_bloqueados': self._parse_int(stats_dict.get('Blocked shots')),
+                        'corners': self._parse_int(stats_dict.get('Corner kicks')),
+                        'offsides': self._parse_int(stats_dict.get('Offsides')),
+                        'faltas': self._parse_int(stats_dict.get('Fouls')),
+                        'tarjetas_amarillas': self._parse_int(stats_dict.get('Yellow cards')),
+                        'tarjetas_rojas': self._parse_int(stats_dict.get('Red cards')),
+                        'estadisticas_extra': stats_dict,  # Guardar todo por si acaso
+                    }
+                )
+
+            self.stdout.write(f"      📊 Estadísticas guardadas")
+
+        except Exception as e:
+            self.stdout.write(self.style.WARNING(
+                f"      ⚠️ No se pudieron obtener estadísticas: {e}"
+            ))
+
+    def _parse_int(self, value):
+        """Convierte un valor a entero, retorna None si no es posible"""
+        if value is None:
+            return None
+        try:
+            return int(value)
+        except (ValueError, TypeError):
+            return None
+
+    def _parse_percentage(self, value):
+        """Convierte un porcentaje (ej: '65%') a float"""
+        if value is None:
+            return None
+        try:
+            if isinstance(value, str) and '%' in value:
+                return float(value.replace('%', ''))
+            return float(value)
+        except (ValueError, TypeError):
+            return None
