@@ -1,13 +1,15 @@
 """
-Comando Django para cargar partidos recientes de Premier League y Champions League.
+Comando Django para cargar partidos recientes de Premier League, La Liga y Champions League.
 
 Este comando carga:
 - Premier League: Partidos de la última semana
+- La Liga: Partidos de la última semana
 - Champions League: Partidos del último mes
 
 Uso:
     python manage.py load_recent_premier_champions
     python manage.py load_recent_premier_champions --days-premier 7
+    python manage.py load_recent_premier_champions --days-laliga 7
     python manage.py load_recent_premier_champions --days-champions 30
 """
 
@@ -19,7 +21,7 @@ from bets.models import ApiLiga, ApiEquipo, ApiPartido, ApiPais, Deporte, Partid
 
 
 class Command(BaseCommand):
-    help = 'Carga partidos recientes de Premier League y Champions League'
+    help = 'Carga partidos recientes de Premier League, La Liga y Champions League'
 
     def add_arguments(self, parser):
         parser.add_argument(
@@ -27,6 +29,12 @@ class Command(BaseCommand):
             type=int,
             default=7,
             help='Días hacia atrás para Premier League (default: 7)',
+        )
+        parser.add_argument(
+            '--days-laliga',
+            type=int,
+            default=7,
+            help='Días hacia atrás para La Liga (default: 7)',
         )
         parser.add_argument(
             '--days-champions',
@@ -38,7 +46,7 @@ class Command(BaseCommand):
             '--days-forward',
             type=int,
             default=7,
-            help='Días hacia adelante para ambas ligas (default: 7)',
+            help='Días hacia adelante para todas las ligas (default: 7)',
         )
 
     def handle(self, *args, **options):
@@ -47,17 +55,21 @@ class Command(BaseCommand):
         self.stdout.write("="*80 + "\n")
 
         days_premier = options['days_premier']
+        days_laliga = options['days_laliga']
         days_champions = options['days_champions']
         days_forward = options['days_forward']
 
         # IDs de las ligas en SofaScore
         PREMIER_LEAGUE_ID = 17
+        LA_LIGA_ID = 8
         CHAMPIONS_LEAGUE_ID = 7
 
         # Estadísticas
         self.stats = {
             'premier_creados': 0,
             'premier_actualizados': 0,
+            'laliga_creados': 0,
+            'laliga_actualizados': 0,
             'champions_creados': 0,
             'champions_actualizados': 0,
             'equipos_creados': 0,
@@ -67,6 +79,7 @@ class Command(BaseCommand):
         # Obtener o crear ligas
         self.stdout.write("📋 Configurando ligas...")
         premier_league = self.setup_league(PREMIER_LEAGUE_ID, "Premier League", "GB", "League", "2024-25")
+        la_liga = self.setup_league(LA_LIGA_ID, "La Liga", "ES", "League", "2024-25")
         champions_league = self.setup_league(CHAMPIONS_LEAGUE_ID, "UEFA Champions League", "EUR", "Cup", "2024-25")
 
         # Cargar partidos de Premier League (última semana + próxima semana)
@@ -77,6 +90,16 @@ class Command(BaseCommand):
             days_forward,
             PREMIER_LEAGUE_ID,
             'premier'
+        )
+
+        # Cargar partidos de La Liga (última semana + próxima semana)
+        self.stdout.write(f"\n📋 Cargando La Liga (últimos {days_laliga} días + próximos {days_forward} días)...")
+        self.load_matches_by_date_range(
+            la_liga,
+            days_laliga,
+            days_forward,
+            LA_LIGA_ID,
+            'laliga'
         )
 
         # Cargar partidos de Champions League (último mes + próxima semana)
@@ -96,9 +119,14 @@ class Command(BaseCommand):
         """Crea o actualiza una liga en la BD"""
         try:
             # Obtener o crear país
+            country_names = {
+                'EUR': 'International',
+                'GB': 'England',
+                'ES': 'Spain'
+            }
             pais, _ = ApiPais.objects.get_or_create(
                 code=country_code,
-                defaults={'nombre': 'International' if country_code == 'EUR' else 'England'}
+                defaults={'nombre': country_names.get(country_code, 'Unknown')}
             )
 
             # Obtener deporte
@@ -241,11 +269,15 @@ class Command(BaseCommand):
                 )
                 if league_type == 'premier':
                     self.stats['premier_creados'] += 1
+                elif league_type == 'laliga':
+                    self.stats['laliga_creados'] += 1
                 else:
                     self.stats['champions_creados'] += 1
             else:
                 if league_type == 'premier':
                     self.stats['premier_actualizados'] += 1
+                elif league_type == 'laliga':
+                    self.stats['laliga_actualizados'] += 1
                 else:
                     self.stats['champions_actualizados'] += 1
 
@@ -307,6 +339,7 @@ class Command(BaseCommand):
 
         self.stdout.write(f"🏆 Equipos creados: {self.stats['equipos_creados']}")
         self.stdout.write(f"⚽ Premier League - Creados: {self.stats['premier_creados']}, Actualizados: {self.stats['premier_actualizados']}")
+        self.stdout.write(f"⚽ La Liga - Creados: {self.stats['laliga_creados']}, Actualizados: {self.stats['laliga_actualizados']}")
         self.stdout.write(f"🏆 Champions League - Creados: {self.stats['champions_creados']}, Actualizados: {self.stats['champions_actualizados']}")
 
         if self.stats['errores'] > 0:
