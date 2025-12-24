@@ -36,12 +36,14 @@ ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(','
 # Application definition
 
 INSTALLED_APPS = [
+    'daphne',  # Debe ir primero para soporte de WebSockets
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'channels',  # Django Channels para WebSockets
     'bets',
     'rest_framework',
     'corsheaders',
@@ -91,6 +93,19 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'bet_project.wsgi.application'
+
+# ASGI Application para WebSockets
+ASGI_APPLICATION = 'bet_project.asgi.application'
+
+# Django Channels - Configuración de capa de canales con Redis
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            "hosts": [(os.environ.get('REDIS_HOST', '127.0.0.1'), 6379)],
+        },
+    },
+}
 
 
 # Database

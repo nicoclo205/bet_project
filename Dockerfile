@@ -28,5 +28,5 @@ COPY . /app/
 # Exponer el puerto 8000
 EXPOSE 8000
 
-# Comando por defecto (se puede sobrescribir en docker-compose)
-CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+# Comando por defecto usando Daphne para soporte de WebSockets
+CMD ["daphne", "-b", "0.0.0.0", "-p", "8000", "bet_project.asgi:application"]

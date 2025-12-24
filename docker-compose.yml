@@ -24,6 +24,23 @@ services:
       timeout: 5s
       retries: 5
 
+  # Redis para Django Channels
+  redis:
+    image: redis:7-alpine
+    container_name: bet_redis
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - bet_network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
   # Aplicación Django
   web:
     build:
@@ -34,7 +51,7 @@ services:
     command: >
       sh -c "python manage.py migrate &&
              python manage.py collectstatic --noinput &&
-             python manage.py runserver 0.0.0.0:8000"
+             daphne -b 0.0.0.0 -p 8000 bet_project.asgi:application"
     volumes:
       # Montar el código fuente para desarrollo (hot reload)
       - .:/app
@@ -57,8 +74,11 @@ services:
       - EMAIL_HOST_USER=${EMAIL_HOST_USER:-global.niclami@gmail.com}
       - EMAIL_HOST_PASSWORD=${EMAIL_HOST_PASSWORD:-azoecldwgukdvjhz}
       - DEFAULT_FROM_EMAIL=${DEFAULT_FROM_EMAIL:-global.niclami@gmail.com}
+      - REDIS_HOST=redis
     depends_on:
       db:
+        condition: service_healthy
+      redis:
         condition: service_healthy
     networks:
       - bet_network
@@ -66,6 +86,8 @@ services:
 # Definición de volúmenes persistentes
 volumes:
   mysql_data:
+    driver: local
+  redis_data:
     driver: local
   static_volume:
   media_volume:
