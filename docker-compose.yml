@@ -83,6 +83,64 @@ services:
     networks:
       - bet_network
 
+  # Celery Worker para tareas asíncronas
+  celery:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: bet_celery
+    restart: always
+    command: celery -A bet_project worker --loglevel=info --concurrency=2
+    volumes:
+      - .:/app
+    environment:
+      - DEBUG=${DEBUG:-True}
+      - SECRET_KEY=${SECRET_KEY}
+      - DB_NAME=${DB_NAME:-bet_db}
+      - DB_USER=${DB_USER:-nico}
+      - DB_PASSWORD=${DB_PASSWORD:-C0r4z0n#25}
+      - DB_HOST=db
+      - DB_PORT=3306
+      - REDIS_HOST=redis
+      - C_FORCE_ROOT=true
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - bet_network
+
+  # Celery Beat para tareas programadas
+  celery-beat:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: bet_celery_beat
+    restart: always
+    command: celery -A bet_project beat --loglevel=info
+    volumes:
+      - .:/app
+    environment:
+      - DEBUG=${DEBUG:-True}
+      - SECRET_KEY=${SECRET_KEY}
+      - DB_NAME=${DB_NAME:-bet_db}
+      - DB_USER=${DB_USER:-nico}
+      - DB_PASSWORD=${DB_PASSWORD:-C0r4z0n#25}
+      - DB_HOST=db
+      - DB_PORT=3306
+      - REDIS_HOST=redis
+      - C_FORCE_ROOT=true
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      celery:
+        condition: service_started
+    networks:
+      - bet_network
+
 # Definición de volúmenes persistentes
 volumes:
   mysql_data:

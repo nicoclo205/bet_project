@@ -17,7 +17,7 @@ from .models import (
     ApiEquipo, ApiJugador, ApiPartido, PartidoTenis, PartidoBaloncesto,
     CarreraF1, ApuestaFutbol, ApuestaTenis, ApuestaBaloncesto, ApuestaF1,
     Ranking, MensajeChat, ApiPartidoEstadisticas, ApiPartidoEvento, ApiPartidoAlineacion,
-    PartidoStatus, ApuestaStatus, SalaDeporte, SalaLiga, SalaPartido
+    PartidoStatus, ApuestaStatus, SalaDeporte, SalaLiga, SalaPartido, SalaNotificacion
 )
 from .serializers import (
     ApiPaisSerializer, ApiVenueSerializer, UsuarioSerializer, UsuarioCreateSerializer,
@@ -28,7 +28,7 @@ from .serializers import (
     ApuestaFutbolSerializer, ApuestaTenisSerializer, ApuestaBaloncestoSerializer,
     ApuestaF1Serializer, RankingSerializer, MensajeChatSerializer,
     ApiPartidoEstadisticasSerializer, ApiPartidoEventoSerializer, ApiPartidoAlineacionSerializer,
-    SalaDeporteSerializer, SalaLigaSerializer, SalaPartidoSerializer
+    SalaDeporteSerializer, SalaLigaSerializer, SalaPartidoSerializer, SalaNotificacionSerializer
 )
 
 
@@ -445,9 +445,9 @@ class ApiPartidoViewSet(viewsets.ModelViewSet):
         """
         Obtiene los próximos partidos programados.
         Si se proporciona sala_id, filtra según la configuración de la sala:
-        - Partidos de deportes habilitados
-        - Partidos de ligas habilitadas
-        - Partidos agregados manualmente por el admin
+        - modo_sala='ligas': Solo partidos de ligas habilitadas
+        - modo_sala='partidos_individuales': Solo partidos agregados manualmente
+        - modo_sala='mixto': Partidos de ligas habilitadas + partidos agregados manualmente
         """
         ahora = timezone.now()
         sala_id = request.query_params.get('sala_id')
@@ -460,27 +460,54 @@ class ApiPartidoViewSet(viewsets.ModelViewSet):
 
         # Si se especifica una sala, filtrar según configuración
         if sala_id:
-            # Obtener ligas habilitadas en la sala
-            ligas_habilitadas = SalaLiga.objects.filter(id_sala=sala_id).values_list('id_liga', flat=True)
+            try:
+                sala = Sala.objects.get(id_sala=sala_id)
+                modo_sala = sala.modo_sala
 
-            # Obtener partidos agregados manualmente
-            partidos_manuales = SalaPartido.objects.filter(id_sala=sala_id).values_list('id_partido', flat=True)
+                # Obtener ligas habilitadas en la sala
+                ligas_habilitadas = SalaLiga.objects.filter(id_sala=sala_id).values_list('id_liga', flat=True)
 
-            # Debug logging
-            print(f"[DEBUG] Sala ID: {sala_id}")
-            print(f"[DEBUG] Ligas habilitadas IDs: {list(ligas_habilitadas)}")
-            print(f"[DEBUG] Partidos manuales IDs: {list(partidos_manuales)}")
+                # Obtener partidos agregados manualmente
+                partidos_manuales = SalaPartido.objects.filter(id_sala=sala_id).values_list('id_partido', flat=True)
 
-            # Si hay configuración, filtrar
-            if ligas_habilitadas.exists() or partidos_manuales.exists():
-                # Partidos que pertenecen a ligas habilitadas O fueron agregados manualmente
-                partidos = partidos.filter(
-                    Q(id_liga__in=ligas_habilitadas) | Q(id_partido__in=partidos_manuales)
-                )
-                print(f"[DEBUG] Partidos filtrados encontrados: {partidos.count()}")
-            else:
-                print(f"[DEBUG] No hay configuración de ligas/partidos para esta sala")
-            # Si no hay configuración, mostrar todos los partidos (sala sin configurar)
+                # Debug logging
+                print(f"[DEBUG] Sala ID: {sala_id}, Modo: {modo_sala}")
+                print(f"[DEBUG] Ligas habilitadas IDs: {list(ligas_habilitadas)}")
+                print(f"[DEBUG] Partidos manuales IDs: {list(partidos_manuales)}")
+
+                # Filtrar según el modo de la sala
+                if modo_sala == 'partidos_individuales':
+                    # Solo partidos agregados manualmente
+                    if partidos_manuales.exists():
+                        partidos = partidos.filter(id_partido__in=partidos_manuales)
+                        print(f"[DEBUG] Modo partidos individuales: {partidos.count()} partidos")
+                    else:
+                        partidos = ApiPartido.objects.none()  # Sin partidos configurados
+                        print(f"[DEBUG] Modo partidos individuales: Sin partidos configurados")
+
+                elif modo_sala == 'ligas':
+                    # Solo partidos de ligas habilitadas
+                    if ligas_habilitadas.exists():
+                        partidos = partidos.filter(id_liga__in=ligas_habilitadas)
+                        print(f"[DEBUG] Modo ligas: {partidos.count()} partidos")
+                    else:
+                        # Si no hay ligas configuradas, mostrar todos los partidos
+                        print(f"[DEBUG] Modo ligas: Sin ligas configuradas, mostrando todos")
+
+                elif modo_sala == 'mixto':
+                    # Partidos de ligas habilitadas + partidos agregados manualmente
+                    if ligas_habilitadas.exists() or partidos_manuales.exists():
+                        partidos = partidos.filter(
+                            Q(id_liga__in=ligas_habilitadas) | Q(id_partido__in=partidos_manuales)
+                        )
+                        print(f"[DEBUG] Modo mixto: {partidos.count()} partidos")
+                    else:
+                        # Si no hay configuración, mostrar todos los partidos
+                        print(f"[DEBUG] Modo mixto: Sin configuración, mostrando todos")
+
+            except Sala.DoesNotExist:
+                print(f"[DEBUG] Sala {sala_id} no existe")
+                pass  # Si la sala no existe, mostrar todos los partidos
 
         partidos = partidos.order_by('fecha')[:50]  # Limitar a 50 resultados
         serializer = self.get_serializer(partidos, many=True)
@@ -1233,3 +1260,49 @@ class SalaPartidoViewSet(viewsets.ModelViewSet):
 
         serializer = ApiPartidoSerializer(partidos_disponibles, many=True)
         return Response(serializer.data)
+
+
+class SalaNotificacionViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet para gestionar notificaciones/avisos importantes de una sala.
+    """
+    queryset = SalaNotificacion.objects.all()
+    serializer_class = SalaNotificacionSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        """Filtrar por sala si se proporciona sala_id"""
+        queryset = super().get_queryset()
+        sala_id = self.request.query_params.get('sala_id')
+        if sala_id:
+            queryset = queryset.filter(id_sala=sala_id)
+        return queryset.select_related('id_sala', 'usuario_relacionado', 'partido_relacionado')
+
+    def create(self, request, *args, **kwargs):
+        """Crear notificación personalizada (solo admin)"""
+        sala_id = request.data.get('id_sala')
+        try:
+            sala = Sala.objects.get(id_sala=sala_id)
+            if sala.id_usuario.user != request.user:
+                return Response(
+                    {"error": "Solo el administrador de la sala puede crear notificaciones"},
+                    status=status.HTTP_403_FORBIDDEN
+                )
+
+            return super().create(request, *args, **kwargs)
+
+        except Sala.DoesNotExist:
+            return Response(
+                {"error": "La sala especificada no existe"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+    def destroy(self, request, *args, **kwargs):
+        """Solo el admin de la sala puede eliminar notificaciones"""
+        instance = self.get_object()
+        if instance.id_sala.id_usuario.user != request.user:
+            return Response(
+                {"error": "Solo el administrador de la sala puede eliminar notificaciones"},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        return super().destroy(request, *args, **kwargs)

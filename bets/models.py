@@ -69,6 +69,12 @@ class Usuario(models.Model):
         db_table = 'usuario'
 
 class Sala(models.Model):
+    MODO_CHOICES = [
+        ('ligas', 'Ligas/Torneos'),
+        ('partidos_individuales', 'Partidos Individuales'),
+        ('mixto', 'Mixto (Ligas + Partidos Individuales)'),
+    ]
+
     id_sala = models.AutoField(primary_key=True)
     nombre = models.CharField(max_length=50)
     descripcion = models.CharField(max_length=100, blank=True, null=True)
@@ -78,6 +84,7 @@ class Sala(models.Model):
     id_usuario = models.ForeignKey(Usuario, on_delete=models.CASCADE, db_column='id_usuario')
     codigo_sala = models.CharField(unique=True, max_length=100, blank=True, null=True)
     avatar_sala = models.CharField(max_length=200, blank=True, null=True, default='/avatars/messi_avatar.svg')
+    modo_sala = models.CharField(max_length=30, choices=MODO_CHOICES, default='ligas')
 
     def __str__(self):
         return self.nombre
@@ -735,6 +742,41 @@ class SalaPartido(models.Model):
         indexes = [
             models.Index(fields=['id_sala']),
             models.Index(fields=['id_partido']),
+        ]
+
+
+class SalaNotificacion(models.Model):
+    """Notificaciones/Avisos importantes de la sala"""
+    TIPO_CHOICES = [
+        ('nuevo_miembro', 'Nuevo Miembro'),
+        ('nuevo_lider', 'Nuevo Líder'),
+        ('resultado_partido', 'Resultado de Partido'),
+        ('nuevo_partido', 'Nuevo Partido Agregado'),
+        ('nueva_liga', 'Nueva Liga Agregada'),
+        ('custom', 'Notificación Personalizada'),
+    ]
+
+    id_notificacion = models.AutoField(primary_key=True)
+    id_sala = models.ForeignKey(Sala, on_delete=models.CASCADE, db_column='id_sala', related_name='notificaciones')
+    tipo = models.CharField(max_length=30, choices=TIPO_CHOICES)
+    mensaje = models.TextField()
+    icono = models.CharField(max_length=50, default='🔔')  # Emoji o icono
+    color = models.CharField(max_length=50, default='text-blue-500')  # Clase CSS de color
+    fecha = models.DateTimeField(auto_now_add=True)
+    usuario_relacionado = models.ForeignKey(Usuario, on_delete=models.SET_NULL, null=True, blank=True, db_column='usuario_relacionado')
+    partido_relacionado = models.ForeignKey(ApiPartido, on_delete=models.SET_NULL, null=True, blank=True, db_column='partido_relacionado')
+
+    def __str__(self):
+        return f"{self.id_sala.nombre} - {self.tipo}: {self.mensaje[:50]}"
+
+    class Meta:
+        db_table = 'sala_notificacion'
+        verbose_name = 'Notificación de Sala'
+        verbose_name_plural = 'Notificaciones de Sala'
+        ordering = ['-fecha']  # Más recientes primero
+        indexes = [
+            models.Index(fields=['id_sala', '-fecha']),
+            models.Index(fields=['tipo']),
         ]
 
 

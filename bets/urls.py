@@ -42,6 +42,7 @@ router.register(r'mensajes-chat', views.MensajeChatViewSet)
 router.register(r'sala-deportes', views.SalaDeporteViewSet)
 router.register(r'sala-ligas', views.SalaLigaViewSet)
 router.register(r'sala-partidos', views.SalaPartidoViewSet)
+router.register(r'sala-notificaciones', views.SalaNotificacionViewSet)
 
 urlpatterns = [
     path('api/', include(router.urls)),

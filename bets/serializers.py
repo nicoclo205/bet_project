@@ -9,7 +9,7 @@ from .models import (
     ApiEquipo, ApiJugador, ApiPartido, PartidoTenis, PartidoBaloncesto,
     CarreraF1, ApuestaFutbol, ApuestaTenis, ApuestaBaloncesto, ApuestaF1,
     Ranking, MensajeChat, ApiPartidoEstadisticas, ApiPartidoEvento, ApiPartidoAlineacion,
-    SalaDeporte, SalaLiga, SalaPartido, EmailVerificationToken
+    SalaDeporte, SalaLiga, SalaPartido, SalaNotificacion, EmailVerificationToken
 )
 from .validators import validate_username, validate_password, validate_email, validate_name, validate_lastname, validate_phoneNum
 from .email_service import send_verification_email
@@ -122,7 +122,7 @@ class UsuarioSalaSerializer(serializers.ModelSerializer):
 class SalaCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Sala
-        fields = ['nombre', 'descripcion', 'max_miembros', 'avatar_sala']
+        fields = ['nombre', 'descripcion', 'max_miembros', 'avatar_sala', 'modo_sala']
 
 class SalaDetailSerializer(serializers.ModelSerializer):
     creador_nombre = serializers.ReadOnlyField(source='id_usuario.nombre_usuario')
@@ -135,7 +135,7 @@ class SalaDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = Sala
         fields = ['id_sala', 'nombre', 'descripcion', 'max_miembros', 'fecha_creacion',
-                  'estado', 'codigo_sala', 'id_usuario', 'creador_nombre', 'miembros', 'avatar_sala']
+                  'estado', 'codigo_sala', 'id_usuario', 'creador_nombre', 'miembros', 'avatar_sala', 'modo_sala']
 
 class UsuarioSalaCreateSerializer(serializers.ModelSerializer):
     class Meta:
@@ -390,4 +390,18 @@ class SalaPartidoSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = SalaPartido
+        fields = '__all__'
+
+class SalaNotificacionSerializer(serializers.ModelSerializer):
+    sala_nombre = serializers.ReadOnlyField(source='id_sala.nombre')
+    usuario_nombre = serializers.ReadOnlyField(source='usuario_relacionado.nombre_usuario')
+    partido_info = serializers.SerializerMethodField()
+
+    def get_partido_info(self, obj):
+        if obj.partido_relacionado:
+            return f"{obj.partido_relacionado.equipo_local.nombre} vs {obj.partido_relacionado.equipo_visitante.nombre}"
+        return None
+
+    class Meta:
+        model = SalaNotificacion
         fields = '__all__'
