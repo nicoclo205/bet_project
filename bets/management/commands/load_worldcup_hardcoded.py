@@ -19,7 +19,7 @@ Nota:
 
 from django.core.management.base import BaseCommand
 from django.utils import timezone
-from datetime import datetime, time
+from datetime import datetime, time, timezone as dt_tz
 from bets.models import ApiLiga, ApiEquipo, ApiPartido, ApiPais, Deporte, PartidoStatus
 
 
@@ -311,7 +311,7 @@ class Command(BaseCommand):
                     naive  = datetime.strptime(date_str, '%Y-%m-%d').replace(
                         hour=h, minute=m, second=0, microsecond=0
                     )
-                    fecha  = timezone.make_aware(naive, timezone.utc)
+                    fecha  = timezone.make_aware(naive, dt_tz.utc)
                     ronda  = f"Group {group} - Matchday {matchday}"
 
                     partido, created = ApiPartido.objects.update_or_create(
