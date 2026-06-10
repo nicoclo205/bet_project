@@ -64,4 +64,5 @@ urlpatterns = [
     # Room invitations
     path('api/salas/<int:sala_id>/invite/', views.invite_to_room, name='invite_to_room'),
     path('api/invitations/validate/', views.validate_invite_token, name='validate_invite_token'),
+    path('api/invitations/accept/', views.accept_invite, name='accept_invite'),
 ]

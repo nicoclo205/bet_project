@@ -1424,3 +1424,44 @@ def validate_invite_token(request):
         "room_name": invitation.sala.nombre,
         "invited_email": invitation.invited_email,
     }, status=status.HTTP_200_OK)
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def accept_invite(request):
+    """
+    POST /api/invitations/accept/
+    Body: { "token": "...", "email": "..." }
+    Called right after registration to auto-join the invited room.
+    No auth required — the token itself is the proof of authorization.
+    """
+    token = request.data.get('token', '').strip()
+    email = request.data.get('email', '').strip().lower()
+
+    if not token or not email:
+        return Response({"error": "token and email are required"}, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        invitation = RoomInvitation.objects.select_related('sala').get(token=token, is_used=False)
+    except RoomInvitation.DoesNotExist:
+        return Response({"error": "Invalid or already used invitation"}, status=status.HTTP_404_NOT_FOUND)
+
+    if not invitation.is_valid():
+        return Response({"error": "Invitation has expired"}, status=status.HTTP_410_GONE)
+
+    try:
+        usuario = Usuario.objects.get(correo=email)
+    except Usuario.DoesNotExist:
+        return Response({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
+
+    UsuarioSala.objects.get_or_create(
+        id_usuario=usuario,
+        id_sala=invitation.sala,
+        defaults={'rol': 'participante'}
+    )
+
+    invitation.is_used = True
+    invitation.used_at = timezone.now()
+    invitation.save()
+
+    return Response({"success": True, "room_name": invitation.sala.nombre}, status=status.HTTP_200_OK)
