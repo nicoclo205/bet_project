@@ -12,12 +12,14 @@ from django.conf import settings
 from datetime import timedelta
 from django.http import HttpResponse
 import requests
+import secrets as secrets_module
 from .models import (
     ApiPais, ApiVenue, Usuario, Sala, UsuarioSala, Deporte, ApiLiga,
     ApiEquipo, ApiJugador, ApiPartido, PartidoTenis, PartidoBaloncesto,
     CarreraF1, ApuestaFutbol, ApuestaTenis, ApuestaBaloncesto, ApuestaF1,
     Ranking, MensajeChat, ApiPartidoEstadisticas, ApiPartidoEvento, ApiPartidoAlineacion,
-    PartidoStatus, ApuestaStatus, SalaDeporte, SalaLiga, SalaPartido, SalaNotificacion
+    PartidoStatus, ApuestaStatus, SalaDeporte, SalaLiga, SalaPartido, SalaNotificacion,
+    RoomInvitation
 )
 from .serializers import (
     ApiPaisSerializer, ApiVenueSerializer, UsuarioSerializer, UsuarioCreateSerializer,
@@ -1328,9 +1330,92 @@ class SalaNotificacionViewSet(viewsets.ModelViewSet):
     def destroy(self, request, *args, **kwargs):
         """Solo el admin de la sala puede eliminar notificaciones"""
         instance = self.get_object()
-        if instance.id_sala.id_usuario.user != request.user:
-            return Response(
-                {"error": "Solo el administrador de la sala puede eliminar notificaciones"},
-                status=status.HTTP_403_FORBIDDEN
-            )
-        return super().destroy(request, *args, **kwargs)
+        if instance.id_sala
+
+# ─── Room Invitation Views ──────────────────────────────────────────────────
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def invite_to_room(request, sala_id):
+    """
+    POST /api/salas/<sala_id>/invite/
+    Body: { "email": "..." }
+    Only the room admin can send invitations.
+    """
+    try:
+        sala = Sala.objects.get(id_sala=sala_id)
+    except Sala.DoesNotExist:
+        return Response({"error": "Room not found"}, status=status.HTTP_404_NOT_FOUND)
+
+    # Permission: only the room owner
+    try:
+        usuario = Usuario.objects.get(user=request.user)
+    except Usuario.DoesNotExist:
+        return Response({"error": "User profile not found"}, status=status.HTTP_403_FORBIDDEN)
+
+    if sala.id_usuario != usuario:
+        return Response({"error": "Only the room admin can send invitations"}, status=status.HTTP_403_FORBIDDEN)
+
+    invited_email = request.data.get('email', '').strip().lower()
+    if not invited_email:
+        return Response({"error": "Email is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+    # Check if already a member
+    if Usuario.objects.filter(correo=invited_email).exists():
+        existing_user = Usuario.objects.get(correo=invited_email)
+        if UsuarioSala.objects.filter(id_usuario=existing_user, id_sala=sala).exists():
+            return Response({"error": "This user is already a member of the room"}, status=status.HTTP_400_BAD_REQUEST)
+
+    # Invalidate any previous unused invite for the same email+room
+    RoomInvitation.objects.filter(sala=sala, invited_email=invited_email, is_used=False).update(is_used=True)
+
+    # Create new invitation token
+    token = secrets_module.token_urlsafe(32)
+    invitation = RoomInvitation.objects.create(
+        sala=sala,
+        invited_by=usuario,
+        invited_email=invited_email,
+        token=token,
+    )
+
+    # Send email
+    from .email_service import send_room_invitation_email
+    try:
+        send_room_invitation_email(
+            invited_email=invited_email,
+            invite_token=token,
+            room_name=sala.nombre,
+            inviter_name=usuario.nombre_usuario,
+        )
+    except Exception as e:
+        import logging
+        logging.getLogger(__name__).error(f"Failed to send invite email: {e}")
+        return Response({"error": "Failed to send invitation email. Please try again."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    return Response({"success": True, "message": f"Invitation sent to {invited_email}"}, status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def validate_invite_token(request):
+    """
+    GET /api/invitations/validate/?token=<token>
+    Returns room info if the token is valid (used on the register page to show context).
+    """
+    token = request.query_params.get('token', '').strip()
+    if not token:
+        return Response({"valid": False, "error": "Token is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        invitation = RoomInvitation.objects.select_related('sala').get(token=token, is_used=False)
+    except RoomInvitation.DoesNotExist:
+        return Response({"valid": False, "error": "Invalid or expired invitation"}, status=status.HTTP_404_NOT_FOUND)
+
+    if not invitation.is_valid():
+        return Response({"valid": False, "error": "Invitation has expired"}, status=status.HTTP_410_GONE)
+
+    return Response({
+        "valid": True,
+        "room_name": invitation.sala.nombre,
+        "invited_email": invitation.invited_email,
+    }, status=status.HTTP_200_OK)

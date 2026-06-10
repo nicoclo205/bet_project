@@ -9,7 +9,8 @@ from .models import (
     ApiEquipo, ApiJugador, ApiPartido, PartidoTenis, PartidoBaloncesto,
     CarreraF1, ApuestaFutbol, ApuestaTenis, ApuestaBaloncesto, ApuestaF1,
     Ranking, MensajeChat, ApiPartidoEstadisticas, ApiPartidoEvento, ApiPartidoAlineacion,
-    SalaDeporte, SalaLiga, SalaPartido, SalaNotificacion, EmailVerificationToken
+    SalaDeporte, SalaLiga, SalaPartido, SalaNotificacion, EmailVerificationToken,
+    RoomInvitation
 )
 from .validators import validate_username, validate_password, validate_email, validate_name, validate_lastname, validate_phoneNum
 from .email_service import send_verification_email
@@ -48,18 +49,20 @@ class UsuarioCreateSerializer(serializers.ModelSerializer):
     nombre = serializers.CharField(write_only=True, validators=[validate_name])
     apellido = serializers.CharField(write_only=True, validators=[validate_lastname])
     celular = serializers.CharField(write_only=True, validators=[validate_phoneNum])
-    
+    invite_token = serializers.CharField(write_only=True, required=False, allow_blank=True)
+
     class Meta:
         model = Usuario
-        fields = ['nombre_usuario', 'correo', 'contrasena', 'nombre', 'apellido', 'celular', 
-                 'username', 'password', 'email', 'foto_perfil']
+        fields = ['nombre_usuario', 'correo', 'contrasena', 'nombre', 'apellido', 'celular',
+                 'username', 'password', 'email', 'foto_perfil', 'invite_token']
         extra_kwargs = {'contrasena': {'write_only': True}}
-    
+
     def create(self, validated_data):
         # Extraer datos para el User de Django
         username = validated_data.pop('username')
         password = validated_data.pop('password')
         email = validated_data.pop('email')
+        invite_token = validated_data.pop('invite_token', None)
 
         # Crear User de Django
         user = User.objects.create_user(
@@ -98,6 +101,22 @@ class UsuarioCreateSerializer(serializers.ModelSerializer):
         except Exception as e:
             import logging
             logging.getLogger(__name__).error(f"Failed to send verification email to {usuario.correo}: {str(e)}")
+
+        # Auto-join room if a valid invite token was provided
+        if invite_token:
+            try:
+                invitation = RoomInvitation.objects.get(token=invite_token, is_used=False)
+                if invitation.is_valid():
+                    UsuarioSala.objects.get_or_create(
+                        id_usuario=usuario,
+                        id_sala=invitation.sala,
+                        defaults={'rol': 'participante'}
+                    )
+                    invitation.is_used = True
+                    invitation.used_at = timezone.now()
+                    invitation.save()
+            except RoomInvitation.DoesNotExist:
+                pass  # Invalid / already-used token — just register without joining
 
         return usuario
 

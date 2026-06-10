@@ -131,3 +131,69 @@ def send_password_reset_email(user_email, reset_token, username):
     except Exception as e:
         logger.error(f"Failed to send password reset email to {user_email}: {str(e)}")
         raise
+
+
+def send_room_invitation_email(invited_email, invite_token, room_name, inviter_name):
+    """
+    Send a room invitation email with a link to register and auto-join.
+    """
+    subject = f"You've been invited to join {room_name} on FriendlyBet!"
+
+    frontend_url = getattr(settings, 'FRONTEND_URL', settings.CORS_ALLOWED_ORIGINS[0])
+    invite_url = f"{frontend_url}/login?invite={invite_token}"
+
+    html_message = f"""
+    <html>
+        <body style="font-family: Arial, sans-serif; padding: 20px; background-color: #f4f4f4;">
+            <div style="max-width: 600px; margin: 0 auto; background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                <h2 style="color: #2c3e50; text-align: center;">🏆 FriendlyBet Invitation</h2>
+                <p style="color: #555; font-size: 16px;">Hi there!</p>
+                <p style="color: #555; font-size: 16px;">
+                    <strong>{inviter_name}</strong> has invited you to join the betting room
+                    <strong>"{room_name}"</strong> on FriendlyBet.
+                </p>
+                <p style="color: #555; font-size: 16px;">
+                    Click the button below to create your account and you'll be automatically added to the room:
+                </p>
+                <div style="text-align: center; margin: 30px 0;">
+                    <a href="{invite_url}"
+                       style="background-color: #27ae60; color: white; padding: 14px 36px; text-decoration: none; border-radius: 8px; font-size: 16px; font-weight: bold; display: inline-block;">
+                        Accept Invitation &amp; Sign Up
+                    </a>
+                </div>
+                <p style="color: #777; font-size: 14px;">
+                    Or copy and paste this link in your browser:<br>
+                    <a href="{invite_url}" style="color: #27ae60;">{invite_url}</a>
+                </p>
+                <p style="color: #777; font-size: 14px; margin-top: 30px;">
+                    This invitation link will expire in 7 days.
+                </p>
+                <p style="color: #777; font-size: 14px;">
+                    If you weren't expecting this invitation, you can safely ignore this email.
+                </p>
+                <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
+                <p style="color: #999; font-size: 12px; text-align: center;">
+                    FriendlyBet - Sports Betting &amp; Predictions
+                </p>
+            </div>
+        </body>
+    </html>
+    """
+
+    plain_message = strip_tags(html_message)
+
+    try:
+        logger.info(f"Sending room invitation email to {invited_email} for room '{room_name}'")
+        result = send_mail(
+            subject=subject,
+            message=plain_message,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[invited_email],
+            html_message=html_message,
+            fail_silently=False,
+        )
+        logger.info(f"Room invitation email sent to {invited_email}. Result: {result}")
+        return result
+    except Exception as e:
+        logger.error(f"Failed to send room invitation email to {invited_email}: {str(e)}")
+        raise

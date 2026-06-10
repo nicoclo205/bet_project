@@ -818,3 +818,25 @@ class PasswordResetToken(models.Model):
 
     class Meta:
         db_table = 'password_reset_token'
+
+class RoomInvitation(models.Model):
+    """Invitations to join a room via email link"""
+    id = models.AutoField(primary_key=True)
+    sala = models.ForeignKey(Sala, on_delete=models.CASCADE, related_name='invitations')
+    invited_by = models.ForeignKey(Usuario, on_delete=models.CASCADE, related_name='sent_invitations')
+    invited_email = models.EmailField(max_length=254)
+    token = models.CharField(max_length=255, unique=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    used_at = models.DateTimeField(null=True, blank=True)
+    is_used = models.BooleanField(default=False)
+
+    def is_valid(self):
+        """Token valid for 7 days"""
+        from datetime import timedelta
+        return not self.is_used and timezone.now() < self.created_at + timedelta(days=7)
+
+    def __str__(self):
+        return f"Invite to {self.sala.nombre} for {self.invited_email}"
+
+    class Meta:
+        db_table = 'room_invitation'

@@ -61,4 +61,7 @@ urlpatterns = [
     path('api/validate-reset-token', auth_views.validate_reset_token, name='validate_reset_token'),
     # Image proxy
     path('api/proxy/sofascore/team/<int:team_id>/image', views.sofascore_image_proxy, name='sofascore_image_proxy'),
+    # Room invitations
+    path('api/salas/<int:sala_id>/invite/', views.invite_to_room, name='invite_to_room'),
+    path('api/invitations/validate/', views.validate_invite_token, name='validate_invite_token'),
 ]
