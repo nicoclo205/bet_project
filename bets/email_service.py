@@ -77,7 +77,7 @@ def send_password_reset_email(user_email, reset_token, username):
     subject = 'Reset your FriendlyBet password'
 
     # Password reset URL
-    reset_url = f"{settings.CORS_ALLOWED_ORIGINS[0]}/reset-password?token={reset_token}"
+    reset_url = f"{getattr(settings, 'FRONTEND_URL', settings.CORS_ALLOWED_ORIGINS[0])}/reset-password?token={reset_token}"
 
     html_message = f"""
     <html>

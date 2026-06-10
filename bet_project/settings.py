@@ -74,6 +74,7 @@ MIDDLEWARE = [
 
 # Permitir solicitudes desde el origen de tu aplicación React
 CORS_ALLOWED_ORIGINS = [o.strip() for o in os.environ.get('CORS_ALLOWED_ORIGINS', 'http://localhost:5173').split(',')]
+FRONTEND_URL = os.environ.get('FRONTEND_URL', CORS_ALLOWED_ORIGINS[0])
 
 ROOT_URLCONF = 'bet_project.urls'
 
