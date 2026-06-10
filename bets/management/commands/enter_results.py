@@ -12,7 +12,7 @@ Después de cargar los resultados, procesa automáticamente las apuestas pendien
 
 from django.core.management.base import BaseCommand
 from django.utils import timezone
-from datetime import datetime, date
+from datetime import datetime, date, timezone as dt_tz
 import datetime as dt_module
 
 from bets.models import ApiPartido, ApuestaFutbol, PartidoStatus
@@ -54,10 +54,10 @@ class Command(BaseCommand):
 
         # Obtener partidos del día (en UTC, buscar rango completo del día)
         day_start = timezone.make_aware(
-            datetime.combine(target_date, dt_module.time.min), timezone.utc
+            datetime.combine(target_date, dt_module.time.min), dt_tz.utc
         )
         day_end = timezone.make_aware(
-            datetime.combine(target_date, dt_module.time.max), timezone.utc
+            datetime.combine(target_date, dt_module.time.max), dt_tz.utc
         )
 
         partidos = ApiPartido.objects.filter(
