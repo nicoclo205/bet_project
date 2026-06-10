@@ -96,8 +96,8 @@ class UsuarioCreateSerializer(serializers.ModelSerializer):
         try:
             send_verification_email(usuario.correo, token, usuario.nombre_usuario)
         except Exception as e:
-            # Log the error but don't fail registration
-            print(f"Failed to send verification email: {str(e)}")
+            import logging
+            logging.getLogger(__name__).error(f"Failed to send verification email to {usuario.correo}: {str(e)}")
 
         return usuario
 

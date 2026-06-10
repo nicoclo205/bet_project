@@ -15,7 +15,7 @@ def send_verification_email(user_email, verification_token, username):
 
     # For now, using a simple HTML template
     # You can customize this URL based on your frontend routing
-    verification_url = f"{settings.CORS_ALLOWED_ORIGINS[0]}/verify-email?token={verification_token}"
+    verification_url = f"{getattr(settings, 'FRONTEND_URL', settings.CORS_ALLOWED_ORIGINS[0])}/verify-email?token={verification_token}"
 
     html_message = f"""
     <html>
