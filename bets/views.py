@@ -69,10 +69,16 @@ def login_view(request):
     try:
         usuario = Usuario.objects.get(user=user)
     except Usuario.DoesNotExist:
-        # Si no existe el perfil, puedes crearlo o manejar el error
         return Response(
             {"error": "Perfil de usuario no encontrado"},
             status=status.HTTP_404_NOT_FOUND,
+        )
+
+    # Verificar que el correo haya sido confirmado
+    if not usuario.email_verified:
+        return Response(
+            {"error": "Debes verificar tu correo electrónico antes de iniciar sesión. Revisa tu bandeja de entrada."},
+            status=status.HTTP_403_FORBIDDEN,
         )
 
     # Calcula el tiempo de expiración del token
