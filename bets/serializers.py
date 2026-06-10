@@ -306,6 +306,35 @@ class ApuestaFutbolSerializer(serializers.ModelSerializer):
         model = ApuestaFutbol
         fields = '__all__'
 
+class ApuestaFutbolGrupoSerializer(serializers.ModelSerializer):
+    """Serializer enriquecido para la vista de predicciones del grupo."""
+    usuario_nombre = serializers.ReadOnlyField(source='id_usuario.nombre_usuario')
+    usuario_foto   = serializers.ReadOnlyField(source='id_usuario.foto_perfil')
+    equipo_local        = serializers.ReadOnlyField(source='id_partido.equipo_local.nombre')
+    equipo_visitante    = serializers.ReadOnlyField(source='id_partido.equipo_visitante.nombre')
+    equipo_local_logo   = serializers.ReadOnlyField(source='id_partido.equipo_local.logo_url')
+    equipo_visitante_logo = serializers.ReadOnlyField(source='id_partido.equipo_visitante.logo_url')
+    fecha_partido       = serializers.ReadOnlyField(source='id_partido.fecha')
+    estado_partido      = serializers.ReadOnlyField(source='id_partido.estado')
+    goles_local_real    = serializers.ReadOnlyField(source='id_partido.goles_local')
+    goles_visitante_real = serializers.ReadOnlyField(source='id_partido.goles_visitante')
+    ronda               = serializers.ReadOnlyField(source='id_partido.ronda')
+
+    class Meta:
+        model = ApuestaFutbol
+        fields = [
+            'id_apuesta', 'id_partido',
+            'usuario_nombre', 'usuario_foto',
+            'prediccion_local', 'prediccion_visitante',
+            'puntos_ganados', 'estado',
+            'equipo_local', 'equipo_visitante',
+            'equipo_local_logo', 'equipo_visitante_logo',
+            'fecha_partido', 'estado_partido',
+            'goles_local_real', 'goles_visitante_real',
+            'ronda',
+        ]
+
+
 class ApuestaTenisSerializer(serializers.ModelSerializer):
     usuario_nombre = serializers.ReadOnlyField(source='id_usuario.nombre_usuario')
     partido_info = serializers.ReadOnlyField(source='id_partido.__str__')

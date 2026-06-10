@@ -25,7 +25,7 @@ from .serializers import (
     UnirseASalaSerializer, DeporteSerializer, ApiLigaSerializer,
     ApiEquipoSerializer, ApiJugadorSerializer, ApiPartidoSerializer,
     PartidoTenisSerializer, PartidoBaloncestoSerializer, CarreraF1Serializer,
-    ApuestaFutbolSerializer, ApuestaTenisSerializer, ApuestaBaloncestoSerializer,
+    ApuestaFutbolSerializer, ApuestaFutbolGrupoSerializer, ApuestaTenisSerializer, ApuestaBaloncestoSerializer,
     ApuestaF1Serializer, RankingSerializer, MensajeChatSerializer,
     ApiPartidoEstadisticasSerializer, ApiPartidoEventoSerializer, ApiPartidoAlineacionSerializer,
     SalaDeporteSerializer, SalaLigaSerializer, SalaPartidoSerializer, SalaNotificacionSerializer
@@ -835,6 +835,28 @@ class ApuestaFutbolViewSet(viewsets.ModelViewSet):
 
         apuestas = ApuestaFutbol.objects.filter(id_partido=partido_id, id_sala=sala_id)
         serializer = self.get_serializer(apuestas, many=True)
+        return Response(serializer.data)
+
+    @action(detail=False, methods=['get'])
+    def por_sala(self, request):
+        """
+        Todas las apuestas de una sala con detalles del partido.
+        Usado por la vista de predicciones del grupo.
+        """
+        sala_id = request.query_params.get('sala_id')
+        if not sala_id:
+            return Response({"error": "Se requiere sala_id"}, status=status.HTTP_400_BAD_REQUEST)
+
+        apuestas = ApuestaFutbol.objects.filter(
+            id_sala=sala_id
+        ).select_related(
+            'id_usuario',
+            'id_partido',
+            'id_partido__equipo_local',
+            'id_partido__equipo_visitante',
+        ).order_by('id_partido__fecha', 'id_usuario__nombre_usuario')
+
+        serializer = ApuestaFutbolGrupoSerializer(apuestas, many=True)
         return Response(serializer.data)
 
 
