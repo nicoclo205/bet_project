@@ -1330,7 +1330,12 @@ class SalaNotificacionViewSet(viewsets.ModelViewSet):
     def destroy(self, request, *args, **kwargs):
         """Solo el admin de la sala puede eliminar notificaciones"""
         instance = self.get_object()
-        if instance.id_sala
+        if instance.id_sala.id_usuario.user != request.user:
+            return Response(
+                {"error": "Solo el administrador de la sala puede eliminar notificaciones"},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        return super().destroy(request, *args, **kwargs)
 
 # ─── Room Invitation Views ──────────────────────────────────────────────────
 
