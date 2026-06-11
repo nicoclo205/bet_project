@@ -88,6 +88,6 @@ app.conf.beat_schedule = {
     # Recordatorio diario / Daily match reminder - 08:00 AM America/Santiago
     'send-daily-match-reminders': {
         'task': 'send_daily_match_reminders',
-        'schedule': crontab(hour='8', minute='0'),  # 08:00 AM
+        'schedule': crontab(hour='8', minute='30'),  # 08:30 AM Colombia (America/Bogota)
     },
 }

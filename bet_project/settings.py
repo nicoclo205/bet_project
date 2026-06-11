@@ -231,6 +231,5 @@ CELERY_RESULT_BACKEND = f'redis://{os.environ.get("REDIS_HOST", "localhost")}:63
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
-CELERY_TIMEZONE = 'America/Santiago'  # Ajusta a tu zona horaria
-CELERY_TASK_TRACK_STARTED = True
-CELERY_TASK_TIME_LIMIT = 30 * 60  # 30 minutos máximo por tarea
+CELERY_TIMEZONE = 'America/Bogota'  # UTC-5, Colombia (no DST)
+CELERY_TASK_TRACK_STARTED 
