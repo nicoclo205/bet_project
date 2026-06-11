@@ -95,12 +95,19 @@ class UsuarioCreateSerializer(serializers.ModelSerializer):
             expires_at=expires_at
         )
 
-        # Send verification email
-        try:
-            send_verification_email(usuario.correo, token, usuario.nombre_usuario)
-        except Exception as e:
-            import logging
-            logging.getLogger(__name__).error(f"Failed to send verification email to {usuario.correo}: {str(e)}")
+        # Send verification email in background so the registration request
+        # returns immediately (SMTP can take >10s and the frontend times out)
+        import threading
+
+        def _send_email_async(correo=usuario.correo, tk=token, nombre=usuario.nombre_usuario):
+            try:
+                send_verification_email(correo, tk, nombre)
+            except Exception as e:
+                import logging
+                logging.getLogger(__name__).error(
+                    f"Failed to send verification email to {correo}: {str(e)}")
+
+        threading.Thread(target=_send_email_async, daemon=True).start()
 
         # Auto-join room if a valid invite token was provided
         if invite_token:
