@@ -140,6 +140,8 @@ class UsuarioSalaSerializer(serializers.ModelSerializer):
     usuario_nombre = serializers.ReadOnlyField(source='id_usuario.nombre_usuario')
     sala_nombre = serializers.ReadOnlyField(source='id_sala.nombre')
     foto_perfil = serializers.ReadOnlyField(source='id_usuario.foto_perfil')
+    nombre = serializers.ReadOnlyField(source='id_usuario.nombre')
+    apellido = serializers.ReadOnlyField(source='id_usuario.apellido')
 
     class Meta:
         model = UsuarioSala
