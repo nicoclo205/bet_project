@@ -55,6 +55,16 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.TokenAuthentication',
     ],
+    # Basic API rate limiting: protects auth endpoints from abuse without
+    # affecting normal app usage (rates are intentionally generous).
+    'DEFAULT_THROTTLE_CLASSES': [
+        'rest_framework.throttling.AnonRateThrottle',
+        'rest_framework.throttling.UserRateThrottle',
+    ],
+    'DEFAULT_THROTTLE_RATES': {
+        'anon': '60/min',
+        'user': '600/min',
+    },
 }
 
 TOKEN_EXPIRATION_HOURS = 12 
