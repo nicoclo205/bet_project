@@ -32,7 +32,7 @@ services:
     command: >
       sh -c "python manage.py migrate &&
              python manage.py collectstatic --noinput &&
-             gunicorn bet_project.wsgi:application --bind 0.0.0.0:8000 --workers 4"
+             daphne -b 0.0.0.0 -p 8000 bet_project.asgi:application"
     volumes:
       - static_volume_prod:/app/staticfiles
       - media_volume_prod:/app/media
