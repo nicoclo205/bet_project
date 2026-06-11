@@ -6,7 +6,7 @@ from .models import (
     PartidoTenis, PartidoBaloncesto, CarreraF1,
     ApuestaFutbol, ApuestaTenis, ApuestaBaloncesto, ApuestaF1,
     Ranking, MensajeChat,
-    EmailVerificationToken, PasswordResetToken
+    EmailVerificationToken, PasswordResetToken, LoginEvent
 )
 
 # User and Room models
@@ -48,3 +48,16 @@ admin.site.register(MensajeChat)
 # Email verification and password reset
 admin.site.register(EmailVerificationToken)
 admin.site.register(PasswordResetToken)
+
+
+# Login tracking
+@admin.register(LoginEvent)
+class LoginEventAdmin(admin.ModelAdmin):
+    list_display = ('usuario', 'timestamp', 'ip_address', 'user_agent')
+    list_filter = ('timestamp',)
+    search_fields = ('usuario__nombre_usuario', 'usuario__correo', 'ip_address')
+    date_hierarchy = 'timestamp'
+    readonly_fields = ('usuario', 'timestamp', 'ip_address', 'user_agent')
+
+    def has_add_permission(self, request):
+        return False

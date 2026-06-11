@@ -843,3 +843,22 @@ class RoomInvitation(models.Model):
 
     class Meta:
         db_table = 'room_invitation'
+
+
+class LoginEvent(models.Model):
+    """Registro de cada inicio de sesión exitoso"""
+    id = models.AutoField(primary_key=True)
+    usuario = models.ForeignKey(Usuario, on_delete=models.CASCADE, related_name='login_events')
+    timestamp = models.DateTimeField(auto_now_add=True)
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    user_agent = models.CharField(max_length=255, blank=True, default='')
+
+    def __str__(self):
+        return f"{self.usuario.nombre_usuario} @ {self.timestamp:%Y-%m-%d %H:%M}"
+
+    class Meta:
+        db_table = 'login_event'
+        ordering = ['-timestamp']
+        indexes = [
+            models.Index(fields=['usuario', '-timestamp']),
+        ]

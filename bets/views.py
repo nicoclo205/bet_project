@@ -19,7 +19,7 @@ from .models import (
     CarreraF1, ApuestaFutbol, ApuestaTenis, ApuestaBaloncesto, ApuestaF1,
     Ranking, MensajeChat, ApiPartidoEstadisticas, ApiPartidoEvento, ApiPartidoAlineacion,
     PartidoStatus, ApuestaStatus, SalaDeporte, SalaLiga, SalaPartido, SalaNotificacion,
-    RoomInvitation
+    RoomInvitation, LoginEvent
 )
 from .serializers import (
     ApiPaisSerializer, ApiVenueSerializer, UsuarioSerializer, UsuarioCreateSerializer,
@@ -82,6 +82,18 @@ def login_view(request):
             {"error": "Debes verificar tu correo electrónico antes de iniciar sesión. Revisa tu bandeja de entrada."},
             status=status.HTTP_403_FORBIDDEN,
         )
+
+    # Actualiza last_login y registra el evento de login
+    user.last_login = timezone.now()
+    user.save(update_fields=['last_login'])
+
+    ip_address = request.META.get('HTTP_X_FORWARDED_FOR', '').split(',')[0].strip() or \
+        request.META.get('REMOTE_ADDR')
+    LoginEvent.objects.create(
+        usuario=usuario,
+        ip_address=ip_address or None,
+        user_agent=request.META.get('HTTP_USER_AGENT', '')[:255],
+    )
 
     # Calcula el tiempo de expiración del token
     expiration_hours = getattr(settings, 'TOKEN_EXPIRATION_HOURS', 24)
