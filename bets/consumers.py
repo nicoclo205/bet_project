@@ -5,6 +5,8 @@ from django.contrib.auth.models import User
 from rest_framework.authtoken.models import Token
 from .models import MensajeChat, Sala, Usuario, SalaNotificacion
 from datetime import timedelta
+from django.utils import timezone, SalaNotificacion
+from datetime import timedelta
 from django.utils import timezone
 
 class ChatConsumer(AsyncWebsocketConsumer):
@@ -70,7 +72,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 )
 
                 # Create notification (throttled 15 min per sala)
-                await self.create_chat_notification(self.room_id, self.user)
+                await self.create_chat_notification(self.room_id, self.user, contenido)
 
                 # Enviar mensaje a todos los miembros de la sala
                 await self.channel_layer.group_send(
@@ -136,7 +138,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         }
 
     @database_sync_to_async
-    def create_chat_notification(self, room_id, usuario):
+    def create_chat_notification(self, room_id, usuario, contenido):
         """Creates a chat notification for the sala, throttled to once per 15 minutes"""
         try:
             sala = Sala.objects.get(id_sala=room_id)
@@ -147,16 +149,17 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 fecha__gte=quince_min_atras
             ).exists()
             if not ya_existe:
+                preview = contenido[:80] + ('...' if len(contenido) > 80 else '')
                 SalaNotificacion.objects.create(
                     id_sala=sala,
                     tipo='nuevo_mensaje_chat',
-                    mensaje=f'\U0001f4ac {usuario.nombre_usuario} sent a message in {sala.nombre}',
+                    mensaje=f'{usuario.nombre_usuario}: \u201c{preview}\u201d',
                     icono='\U0001f4ac',
                     color='text-blue-400',
                     usuario_relacionado=usuario,
                 )
         except Exception:
-            pass  # Non-blocking: never crash the chat for a notification failure
+            pass  # Non-blocking
 
     @database_sync_to_async
     def get_recent_messages(self, room_id, limit=50):
