@@ -32,6 +32,18 @@ DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 
 ALLOWED_HOSTS = [h.strip() for h in os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')]
 
+# Trust the public HTTPS domains for CSRF-protected forms (e.g. the admin login)
+CSRF_TRUSTED_ORIGINS = [
+    o.strip() for o in os.environ.get(
+        'CSRF_TRUSTED_ORIGINS',
+        'https://api-bet.260569.xyz,https://friendlybet.260569.xyz'
+    ).split(',') if o.strip()
+]
+
+# Behind the Cloudflare tunnel, requests arrive as HTTP; this header tells
+# Django the original request was HTTPS
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
 
 # Application definition
 
