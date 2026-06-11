@@ -167,3 +167,13 @@ class Command(BaseCommand):
             self.stdout.write(self.style.WARNING('\n   [DRY RUN — nada fue guardado]\n'))
         else:
             self.stdout.write('')
+
+        # Actualizar cruces eliminatorios del Mundial (idempotente)
+        if updated > 0 and not dry_run:
+            from django.core.management import call_command
+            self.stdout.write('🏆 Actualizando cruces del Mundial 2026...')
+            try:
+                call_command('update_worldcup_bracket', no_input=True)
+            except Exception as exc:
+                self.stdout.write(self.style.WARNING(
+                    f'   ⚠️  No se pudieron actualizar los cruces: {exc}'))
