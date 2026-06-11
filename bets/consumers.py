@@ -5,8 +5,6 @@ from django.contrib.auth.models import User
 from rest_framework.authtoken.models import Token
 from .models import MensajeChat, Sala, Usuario, SalaNotificacion
 from datetime import timedelta
-from django.utils import timezone, SalaNotificacion
-from datetime import timedelta
 from django.utils import timezone
 
 class ChatConsumer(AsyncWebsocketConsumer):
