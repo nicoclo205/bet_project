@@ -755,6 +755,7 @@ class SalaNotificacion(models.Model):
         ('nuevo_partido', 'Nuevo Partido Agregado'),
         ('nueva_liga', 'Nueva Liga Agregada'),
         ('recordatorio_partido', 'Recordatorio de Partido'),
+        ('nuevo_mensaje_chat', 'Nuevo Mensaje de Chat'),
         ('custom', 'Notificación Personalizada'),
     ]
 

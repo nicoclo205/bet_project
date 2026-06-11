@@ -1042,6 +1042,27 @@ class MensajeChatViewSet(viewsets.ModelViewSet):
     serializer_class = MensajeChatSerializer
     permission_classes = [IsAuthenticated]
 
+    def perform_create(self, serializer):
+        mensaje = serializer.save(id_usuario=self.request.user)
+        sala = mensaje.id_sala
+        usuario = self.request.user
+        # One chat notification per sala per 15 minutes to avoid spamming
+        quince_min_atras = timezone.now() - timedelta(minutes=15)
+        ya_existe = SalaNotificacion.objects.filter(
+            id_sala=sala,
+            tipo='nuevo_mensaje_chat',
+            fecha__gte=quince_min_atras
+        ).exists()
+        if not ya_existe:
+            SalaNotificacion.objects.create(
+                id_sala=sala,
+                tipo='nuevo_mensaje_chat',
+                mensaje=f'\U0001f4ac {usuario.nombre_usuario} sent a message in {sala.nombre}',
+                icono='\U0001f4ac',
+                color='text-blue-400',
+                usuario_relacionado=usuario,
+            )
+
     @action(detail=False, methods=['get'])
     def por_sala(self, request):
         """
