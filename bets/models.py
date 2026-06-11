@@ -98,6 +98,7 @@ class UsuarioSala(models.Model):
     id_sala = models.ForeignKey(Sala, on_delete=models.CASCADE, db_column='id_sala')
     fecha_ingreso = models.DateTimeField(auto_now_add=True)
     rol = models.CharField(max_length=50, default='participante')
+    ultima_notificacion_vista = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
         return f"{self.id_usuario.nombre_usuario} en {self.id_sala.nombre}"
@@ -753,6 +754,7 @@ class SalaNotificacion(models.Model):
         ('resultado_partido', 'Resultado de Partido'),
         ('nuevo_partido', 'Nuevo Partido Agregado'),
         ('nueva_liga', 'Nueva Liga Agregada'),
+        ('recordatorio_partido', 'Recordatorio de Partido'),
         ('custom', 'Notificación Personalizada'),
     ]
 

@@ -1465,3 +1465,121 @@ def accept_invite(request):
     invitation.save()
 
     return Response({"success": True, "room_name": invitation.sala.nombre}, status=status.HTTP_200_OK)
+
+
+# ─── Notification Views ────────────────────────────────────────────────────────
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def mis_notificaciones(request):
+    """
+    GET /api/notificaciones/mias/
+    Returns recent notifications across all rooms the user belongs to,
+    along with per-room unread counts. Also lazily creates match reminders
+    for matches starting within 12 hours.
+    """
+    from datetime import timedelta as td
+    usuario = request.user.perfil
+    ahora = timezone.now()
+    ventana = ahora + td(hours=12)
+
+    memberships = UsuarioSala.objects.filter(id_usuario=usuario).select_related('id_sala')
+
+    resultado = []
+    total_no_leidas = 0
+
+    for membership in memberships:
+        sala = membership.id_sala
+
+        # Lazy match reminder creation
+        partidos_proximos = ApiPartido.objects.filter(
+            fecha__gte=ahora,
+            fecha__lte=ventana,
+            estado='programado'
+        )
+        for partido in partidos_proximos:
+            liga_match = SalaLiga.objects.filter(id_sala=sala, id_liga=partido.id_liga).exists()
+            partido_match = SalaPartido.objects.filter(id_sala=sala, id_partido=partido).exists()
+            if not liga_match and not partido_match:
+                continue
+            hoy_inicio = ahora.replace(hour=0, minute=0, second=0, microsecond=0)
+            ya_existe = SalaNotificacion.objects.filter(
+                id_sala=sala,
+                tipo='recordatorio_partido',
+                partido_relacionado=partido,
+                fecha__gte=hoy_inicio
+            ).exists()
+            if not ya_existe:
+                minutos = int((partido.fecha - ahora).total_seconds() / 60)
+                tiempo_texto = f"{minutos // 60}h" if minutos >= 60 else f"{minutos}min"
+                local = partido.equipo_local.nombre if partido.equipo_local else '?'
+                visitante = partido.equipo_visitante.nombre if partido.equipo_visitante else '?'
+                SalaNotificacion.objects.create(
+                    id_sala=sala,
+                    tipo='recordatorio_partido',
+                    mensaje=f"⚽ {local} vs {visitante} empieza en {tiempo_texto} — ¡no olvides apostar!",
+                    icono='⏰',
+                    color='text-yellow-400',
+                    partido_relacionado=partido
+                )
+
+        # Collect notifications
+        notificaciones = SalaNotificacion.objects.filter(
+            id_sala=sala
+        ).select_related('usuario_relacionado', 'partido_relacionado').order_by('-fecha')[:10]
+
+        ultima_vista = membership.ultima_notificacion_vista
+        no_leidas = 0
+        notifs_data = []
+        for n in notificaciones:
+            leida = ultima_vista is not None and n.fecha <= ultima_vista
+            if not leida:
+                no_leidas += 1
+            notifs_data.append({
+                'id': n.id_notificacion,
+                'tipo': n.tipo,
+                'mensaje': n.mensaje,
+                'icono': n.icono,
+                'color': n.color,
+                'fecha': n.fecha.isoformat(),
+                'leida': leida,
+                'sala_id': sala.id_sala,
+                'sala_nombre': sala.nombre,
+            })
+
+        total_no_leidas += no_leidas
+        resultado.append({
+            'sala_id': sala.id_sala,
+            'sala_nombre': sala.nombre,
+            'no_leidas': no_leidas,
+            'notificaciones': notifs_data,
+        })
+
+    return Response({
+        'total_no_leidas': total_no_leidas,
+        'salas': resultado,
+    })
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def marcar_notificaciones_vistas(request):
+    """
+    POST /api/notificaciones/marcar-vistas/
+    Body: { "sala_id": 2 }  (optional - if omitted marks all rooms)
+    """
+    usuario = request.user.perfil
+    sala_id = request.data.get('sala_id')
+    ahora = timezone.now()
+
+    if sala_id:
+        UsuarioSala.objects.filter(
+            id_usuario=usuario,
+            id_sala_id=sala_id
+        ).update(ultima_notificacion_vista=ahora)
+    else:
+        UsuarioSala.objects.filter(
+            id_usuario=usuario
+        ).update(ultima_notificacion_vista=ahora)
+
+    return Response({'success': True, 'timestamp': ahora.isoformat()})

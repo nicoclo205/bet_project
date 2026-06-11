@@ -65,4 +65,7 @@ urlpatterns = [
     path('api/salas/<int:sala_id>/invite/', views.invite_to_room, name='invite_to_room'),
     path('api/invitations/validate/', views.validate_invite_token, name='validate_invite_token'),
     path('api/invitations/accept/', views.accept_invite, name='accept_invite'),
+    # In-app notifications
+    path('api/notificaciones/mias/', views.mis_notificaciones, name='mis_notificaciones'),
+    path('api/notificaciones/marcar-vistas/', views.marcar_notificaciones_vistas, name='marcar_notificaciones_vistas'),
 ]
