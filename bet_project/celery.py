@@ -80,4 +80,14 @@ app.conf.beat_schedule = {
         'task': 'cleanup_old_notifications',
         'schedule': crontab(hour='3', minute='0'),  # 03:00 AM
     },
+
+    # ============================================================
+    # EMAIL NOTIFICATIONS
+    # ============================================================
+
+    # Recordatorio diario / Daily match reminder - 08:00 AM America/Santiago
+    'send-daily-match-reminders': {
+        'task': 'send_daily_match_reminders',
+        'schedule': crontab(hour='8', minute='0'),  # 08:00 AM
+    },
 }
