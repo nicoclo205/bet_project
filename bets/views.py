@@ -228,6 +228,17 @@ class SalaViewSet(viewsets.ModelViewSet):
         
         # Asignar el usuario autenticado como creador
         usuario = request.user.perfil
+
+        # Limite de salas creadas por usuario
+        max_salas = getattr(settings, 'MAX_SALAS_POR_USUARIO', 5)
+        salas_creadas = Sala.objects.filter(id_usuario=usuario).count()
+        if salas_creadas >= max_salas:
+            return Response(
+                {"error": f"Has alcanzado el límite de {max_salas} salas creadas. "
+                          f"Elimina una sala existente para poder crear otra."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
         sala = serializer.save(id_usuario=usuario)
         
         # Generar código único para la sala (si no existe)
