@@ -862,3 +862,27 @@ class LoginEvent(models.Model):
         indexes = [
             models.Index(fields=['usuario', '-timestamp']),
         ]
+
+
+class WorldCupPrediction(models.Model):
+    """Prediccion completa del juego del Mundial 2026 (una por usuario)."""
+    id_prediccion = models.AutoField(primary_key=True)
+    usuario = models.OneToOneField(
+        Usuario, on_delete=models.CASCADE,
+        db_column='id_usuario', related_name='wc_prediction')
+    # {"A": ["Mexico", "Rep. of Korea", ...], ...} nombres como en BD
+    group_order = models.JSONField(default=dict, blank=True)
+    # ["A", "C", ...] letras de los 8 grupos cuyos terceros clasifican
+    thirds = models.JSONField(default=list, blank=True)
+    # {"73": "Nombre equipo", ...} ganador elegido por numero de partido FIFA
+    ko_winners = models.JSONField(default=dict, blank=True)
+    completed = models.BooleanField(default=False)
+    completed_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"WC2026 {self.usuario.nombre_usuario}"
+
+    class Meta:
+        db_table = 'worldcup_prediction'
