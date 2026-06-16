@@ -141,6 +141,34 @@ services:
     networks:
       - bet_network
 
+  # phpMyAdmin
+  phpmyadmin:
+    image: phpmyadmin:latest
+    container_name: bet_phpmyadmin
+    restart: always
+    ports:
+      - "8181:80"
+    environment:
+      PMA_HOST: db
+      PMA_PORT: 3306
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-rootpassword}
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - bet_network
+
+  # Cloudflare Tunnel
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: bet_cloudflared
+    restart: always
+    command: tunnel --no-autoupdate --protocol http2 run --token eyJhIjoiYTMyY2NkMzQ0M2Q3Zjc4NTdmNzE5M2U3NmI1ZDliYWQiLCJ0IjoiMTk4YzY5YzQtN2E1OC00YmIzLThkNzAtMzhkMTViMmZiY2Q0IiwicyI6Ik0yRTROV1JoTkdFdFpqSTBOUzAwTUdFeUxUaGlORGN0WVRneVpEWTRNVGhqTlRCbCJ9
+    depends_on:
+      - web
+    networks:
+      - bet_network
+
 # Definición de volúmenes persistentes
 volumes:
   mysql_data:
