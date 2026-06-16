@@ -157,7 +157,9 @@ class SalaDetailSerializer(serializers.ModelSerializer):
     miembros = serializers.SerializerMethodField()
 
     def get_miembros(self, obj):
-        usuarios_sala = UsuarioSala.objects.filter(id_sala=obj)
+        # Usa el prefetch_related hecho en la vista si está disponible;
+        # si no (e.g. retrieve individual), hace la query directo.
+        usuarios_sala = obj.usuariosala_set.all()
         return UsuarioSalaSerializer(usuarios_sala, many=True).data
 
     class Meta:

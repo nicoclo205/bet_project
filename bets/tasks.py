@@ -82,41 +82,57 @@ def update_live_matches():
 @shared_task(name='process_finished_matches')
 def process_finished_matches():
     """
-    Procesa partidos finalizados y actualiza apuestas
-    Ejecutar cada hora
+    Procesa partidos finalizados y actualiza apuestas.
+    Usa bulk_update para evitar un UPDATE por apuesta.
     """
     from bets.models import ApiPartido, ApuestaFutbol, PartidoStatus
+    from bets.points_management.scoring import calcular_puntos_futbol, determinar_estado_apuesta
 
     logger.info('🎯 Procesando partidos finalizados')
     try:
-        # Obtener partidos finalizados en las últimas 24 horas
         hace_24h = timezone.now() - timedelta(hours=24)
-        partidos_finalizados = ApiPartido.objects.filter(
+        partidos_finalizados = list(ApiPartido.objects.filter(
             estado=PartidoStatus.FINALIZADO,
-            fecha__gte=hace_24h
-        )
+            fecha__gte=hace_24h,
+        ))
 
-        apuestas_procesadas = 0
+        if not partidos_finalizados:
+            return {'status': 'success', 'matches': 0, 'bets_processed': 0,
+                    'timestamp': timezone.now().isoformat()}
 
-        for partido in partidos_finalizados:
-            # Obtener apuestas pendientes de este partido
-            apuestas = ApuestaFutbol.objects.filter(
-                id_partido=partido,
-                estado='pendiente'
+        # Traer todas las apuestas pendientes de esos partidos en 1 query
+        apuestas_pendientes = list(ApuestaFutbol.objects.filter(
+            id_partido__in=partidos_finalizados,
+            estado='pendiente',
+        ).select_related('id_partido'))
+
+        partido_map = {p.id_partido: p for p in partidos_finalizados}
+        apuestas_a_guardar = []
+
+        for apuesta in apuestas_pendientes:
+            partido = partido_map.get(apuesta.id_partido_id)
+            if not partido:
+                continue
+            puntos = calcular_puntos_futbol(
+                apuesta.prediccion_local,
+                apuesta.prediccion_visitante,
+                partido.goles_local,
+                partido.goles_visitante,
+                apuesta.reglas_puntuacion,
             )
+            apuesta.puntos_ganados = puntos
+            apuesta.estado = determinar_estado_apuesta(puntos)
+            apuestas_a_guardar.append(apuesta)
 
-            for apuesta in apuestas:
-                # Calcular puntos
-                puntos = apuesta.calcular_y_actualizar_puntos()
-                if puntos > 0:
-                    apuestas_procesadas += 1
+        if apuestas_a_guardar:
+            ApuestaFutbol.objects.bulk_update(apuestas_a_guardar, ['puntos_ganados', 'estado'])
 
-        logger.info(f'✅ {apuestas_procesadas} apuestas procesadas')
+        logger.info(f'✅ {len(apuestas_a_guardar)} apuestas procesadas')
         return {
             'status': 'success',
-            'matches': partidos_finalizados.count(),
-            'bets_processed': apuestas_procesadas,
-            'timestamp': timezone.now().isoformat()
+            'matches': len(partidos_finalizados),
+            'bets_processed': len(apuestas_a_guardar),
+            'timestamp': timezone.now().isoformat(),
         }
     except Exception as e:
         logger.error(f'❌ Error procesando partidos: {str(e)}')
@@ -194,6 +210,15 @@ def send_daily_match_reminders():
     sent = 0
     skipped = 0
 
+    def partido_to_dict(partido, prediccion_str=''):
+        return {
+            'local': partido.equipo_local.nombre,
+            'visitante': partido.equipo_visitante.nombre,
+            'liga': partido.id_liga.nombre if partido.id_liga else '—',
+            'hora': partido.fecha.strftime('%H:%M'),
+            'prediccion': prediccion_str,
+        }
+
     for user in users:
         try:
             memberships = UsuarioSala.objects.filter(
@@ -208,63 +233,45 @@ def send_daily_match_reminders():
             for membership in memberships:
                 sala = membership.id_sala
 
-                # All tomorrow's PROGRAMADO matches any sala member has bet on
-                all_sala_partido_ids = list(
+                # 1 query: todas las apuestas de esta sala para mañana
+                # (tanto las de este usuario como las del resto)
+                todas_apuestas = list(
                     ApuestaFutbol.objects.filter(
                         id_sala=sala,
                         id_partido__fecha__date=tomorrow,
                         id_partido__estado=PartidoStatus.PROGRAMADO,
-                    ).values_list('id_partido_id', flat=True).distinct()
+                    ).select_related(
+                        'id_partido__equipo_local',
+                        'id_partido__equipo_visitante',
+                        'id_partido__id_liga',
+                    )
                 )
 
-                if not all_sala_partido_ids:
+                if not todas_apuestas:
                     continue
 
-                # Matches this user has bet on in this sala
-                user_bet_ids = set(
-                    ApuestaFutbol.objects.filter(
-                        id_usuario=user,
-                        id_sala=sala,
-                        id_partido_id__in=all_sala_partido_ids,
-                    ).values_list('id_partido_id', flat=True)
-                )
-
-                missing_ids = set(all_sala_partido_ids) - user_bet_ids
-
-                def partido_to_dict(partido, prediccion_str=''):
-                    return {
-                        'local': partido.equipo_local.nombre,
-                        'visitante': partido.equipo_visitante.nombre,
-                        'liga': partido.id_liga.nombre if partido.id_liga else '—',
-                        'hora': partido.fecha.strftime('%H:%M'),
-                        'prediccion': prediccion_str,
-                    }
-
-                # Build placed list with score predictions
+                # Separar en Python sin queries adicionales
                 bets_placed = []
-                user_bets_qs = ApuestaFutbol.objects.filter(
-                    id_usuario=user,
-                    id_sala=sala,
-                    id_partido_id__in=list(user_bet_ids),
-                ).select_related(
-                    'id_partido__equipo_local',
-                    'id_partido__equipo_visitante',
-                    'id_partido__id_liga',
-                )
-                for bet in user_bets_qs:
-                    pred = f'{bet.prediccion_local}-{bet.prediccion_visitante}'
-                    bets_placed.append(partido_to_dict(bet.id_partido, pred))
+                all_partido_ids = set()
+                user_partido_ids = set()
 
-                # Build missing list
+                for bet in todas_apuestas:
+                    all_partido_ids.add(bet.id_partido_id)
+                    if bet.id_usuario_id == user.id_usuario:
+                        pred = f'{bet.prediccion_local}-{bet.prediccion_visitante}'
+                        bets_placed.append(partido_to_dict(bet.id_partido, pred))
+                        user_partido_ids.add(bet.id_partido_id)
+
+                missing_ids = all_partido_ids - user_partido_ids
+
+                # 1 query para partidos sin apostar (solo si hay)
                 bets_missing = []
                 if missing_ids:
                     missing_qs = ApiPartido.objects.filter(
-                        id_partido__in=list(missing_ids)
+                        id_partido__in=missing_ids,
                     ).select_related('equipo_local', 'equipo_visitante', 'id_liga')
-                    for partido in missing_qs:
-                        bets_missing.append(partido_to_dict(partido))
+                    bets_missing = [partido_to_dict(p) for p in missing_qs]
 
-                # Sort both by kick-off time
                 bets_placed.sort(key=lambda x: x['hora'])
                 bets_missing.sort(key=lambda x: x['hora'])
 

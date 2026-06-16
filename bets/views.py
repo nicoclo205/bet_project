@@ -7,8 +7,10 @@ from rest_framework.authtoken.models import Token
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
 from django.utils import timezone
-from django.db.models import Q
+from django.db.models import Q, Sum, Count
+from django.db.models import Prefetch
 from django.conf import settings
+from django.core.cache import cache
 from datetime import timedelta
 from django.http import HttpResponse
 import requests
@@ -119,7 +121,10 @@ def logout_view(request):
     API endpoint para cerrar sesión y eliminar el token
     """
     try:
-        # Elimina el token del usuario
+        auth_header = request.META.get('HTTP_AUTHORIZATION', '')
+        if auth_header.startswith('Token '):
+            token_key = auth_header.split(' ')[1]
+            cache.delete(f'token_valid:{token_key}')
         request.user.auth_token.delete()
         return Response({"success": "Sesión cerrada correctamente"}, status=status.HTTP_200_OK)
     except Exception as e:
@@ -296,12 +301,10 @@ class SalaViewSet(viewsets.ModelViewSet):
         Devuelve las salas a las que pertenece el usuario autenticado
         """
         usuario = request.user.perfil
-        
-        # Obtener salas donde el usuario es miembro (vía UsuarioSala)
         salas_ids = UsuarioSala.objects.filter(id_usuario=usuario).values_list('id_sala', flat=True)
-        salas = Sala.objects.filter(id_sala__in=salas_ids)
-        
-        # Serializar los resultados
+        salas = Sala.objects.filter(id_sala__in=salas_ids).prefetch_related(
+            Prefetch('usuariosala_set', queryset=UsuarioSala.objects.select_related('id_usuario'))
+        )
         serializer = SalaDetailSerializer(salas, many=True)
         return Response(serializer.data)
 
@@ -501,43 +504,24 @@ class ApiPartidoViewSet(viewsets.ModelViewSet):
                 # Obtener partidos agregados manualmente
                 partidos_manuales = SalaPartido.objects.filter(id_sala=sala_id).values_list('id_partido', flat=True)
 
-                # Debug logging
-                print(f"[DEBUG] Sala ID: {sala_id}, Modo: {modo_sala}")
-                print(f"[DEBUG] Ligas habilitadas IDs: {list(ligas_habilitadas)}")
-                print(f"[DEBUG] Partidos manuales IDs: {list(partidos_manuales)}")
-
                 # Filtrar según el modo de la sala
                 if modo_sala == 'partidos_individuales':
-                    # Solo partidos agregados manualmente
                     if partidos_manuales.exists():
                         partidos = partidos.filter(id_partido__in=partidos_manuales)
-                        print(f"[DEBUG] Modo partidos individuales: {partidos.count()} partidos")
                     else:
-                        partidos = ApiPartido.objects.none()  # Sin partidos configurados
-                        print(f"[DEBUG] Modo partidos individuales: Sin partidos configurados")
+                        partidos = ApiPartido.objects.none()
 
                 elif modo_sala == 'ligas':
-                    # Solo partidos de ligas habilitadas
                     if ligas_habilitadas.exists():
                         partidos = partidos.filter(id_liga__in=ligas_habilitadas)
-                        print(f"[DEBUG] Modo ligas: {partidos.count()} partidos")
-                    else:
-                        # Si no hay ligas configuradas, mostrar todos los partidos
-                        print(f"[DEBUG] Modo ligas: Sin ligas configuradas, mostrando todos")
 
                 elif modo_sala == 'mixto':
-                    # Partidos de ligas habilitadas + partidos agregados manualmente
                     if ligas_habilitadas.exists() or partidos_manuales.exists():
                         partidos = partidos.filter(
                             Q(id_liga__in=ligas_habilitadas) | Q(id_partido__in=partidos_manuales)
                         )
-                        print(f"[DEBUG] Modo mixto: {partidos.count()} partidos")
-                    else:
-                        # Si no hay configuración, mostrar todos los partidos
-                        print(f"[DEBUG] Modo mixto: Sin configuración, mostrando todos")
 
             except Sala.DoesNotExist:
-                print(f"[DEBUG] Sala {sala_id} no existe")
                 pass  # Si la sala no existe, mostrar todos los partidos
 
         partidos = partidos.order_by('fecha')[:50]  # Limitar a 50 resultados
@@ -984,11 +968,9 @@ class RankingViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['get'])
     def actual(self, request):
         """
-        Obtiene el ranking actual de una sala basado en los puntos totales
-        de todas las apuestas ganadas (no usa la tabla Ranking)
+        Obtiene el ranking actual de una sala. Usa una sola query de agregación
+        en lugar de un query por cada miembro.
         """
-        from django.db.models import Sum, Count
-
         sala_id = request.query_params.get('sala_id')
 
         if not sala_id:
@@ -1005,23 +987,29 @@ class RankingViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_404_NOT_FOUND
             )
 
-        # Obtener miembros de la sala con sus estadísticas
         miembros = UsuarioSala.objects.filter(id_sala=sala).select_related('id_usuario')
+        usuario_ids = [m.id_usuario_id for m in miembros]
+
+        # Una sola query GROUP BY en lugar de N queries (una por miembro)
+        stats_qs = ApuestaFutbol.objects.filter(
+            id_sala=sala,
+            id_usuario__in=usuario_ids,
+        ).values('id_usuario').annotate(
+            total_puntos=Sum('puntos_ganados'),
+            total_apuestas=Count('id_apuesta'),
+            apuestas_ganadas=Count('id_apuesta', filter=Q(estado=ApuestaStatus.GANADA)),
+            apuestas_perdidas=Count('id_apuesta', filter=Q(estado=ApuestaStatus.PERDIDA)),
+        )
+        stats_dict = {s['id_usuario']: s for s in stats_qs}
 
         ranking_data = []
         for miembro in miembros:
             usuario = miembro.id_usuario
-
-            # Calcular estadísticas del usuario en esta sala
-            apuestas_stats = ApuestaFutbol.objects.filter(
-                id_usuario=usuario,
-                id_sala=sala
-            ).aggregate(
-                total_puntos=Sum('puntos_ganados'),
-                total_apuestas=Count('id_apuesta'),
-                apuestas_ganadas=Count('id_apuesta', filter=Q(estado=ApuestaStatus.GANADA)),
-                apuestas_perdidas=Count('id_apuesta', filter=Q(estado=ApuestaStatus.PERDIDA))
-            )
+            s = stats_dict.get(usuario.id_usuario, {})
+            total = s.get('total_apuestas') or 0
+            ganadas = s.get('apuestas_ganadas') or 0
+            perdidas = s.get('apuestas_perdidas') or 0
+            puntos = s.get('total_puntos') or 0
 
             ranking_data.append({
                 'usuario': {
@@ -1031,21 +1019,14 @@ class RankingViewSet(viewsets.ModelViewSet):
                     'apellido': usuario.apellido,
                     'foto_perfil': usuario.foto_perfil,
                 },
-                'puntos': apuestas_stats['total_puntos'] or 0,
-                'total_apuestas': apuestas_stats['total_apuestas'],
-                'apuestas_ganadas': apuestas_stats['apuestas_ganadas'],
-                'apuestas_perdidas': apuestas_stats['apuestas_perdidas'],
-                'efectividad': round(
-                    (apuestas_stats['apuestas_ganadas'] / apuestas_stats['total_apuestas'] * 100)
-                    if apuestas_stats['total_apuestas'] > 0 else 0,
-                    2
-                )
+                'puntos': puntos,
+                'total_apuestas': total,
+                'apuestas_ganadas': ganadas,
+                'apuestas_perdidas': perdidas,
+                'efectividad': round((ganadas / total * 100) if total > 0 else 0, 2),
             })
 
-        # Ordenar por puntos descendente
         ranking_data.sort(key=lambda x: x['puntos'], reverse=True)
-
-        # Asignar posiciones
         for idx, item in enumerate(ranking_data, start=1):
             item['posicion'] = idx
 
@@ -1056,7 +1037,7 @@ class RankingViewSet(viewsets.ModelViewSet):
                 'descripcion': sala.descripcion,
             },
             'ranking': ranking_data,
-            'total_participantes': len(ranking_data)
+            'total_participantes': len(ranking_data),
         })
 
 
@@ -1518,61 +1499,99 @@ def accept_invite(request):
 def mis_notificaciones(request):
     """
     GET /api/notificaciones/mias/
-    Returns recent notifications across all rooms the user belongs to,
-    along with per-room unread counts. Also lazily creates match reminders
-    for matches starting within 12 hours.
+    Devuelve notificaciones recientes de todas las salas del usuario y los
+    conteos de no leídas. Crea recordatorios de partidos próximos (12h) de
+    forma lazy pero con queries batched para evitar N+1.
     """
     from datetime import timedelta as td
+    from collections import defaultdict
     usuario = request.user.perfil
     ahora = timezone.now()
     ventana = ahora + td(hours=12)
 
-    memberships = UsuarioSala.objects.filter(id_usuario=usuario).select_related('id_sala')
+    memberships = list(UsuarioSala.objects.filter(id_usuario=usuario).select_related('id_sala'))
+    if not memberships:
+        return Response({'total_no_leidas': 0, 'salas': []})
 
+    sala_ids = [m.id_sala_id for m in memberships]
+
+    # ── Recordatorios de partidos próximos (todas las salas de una vez) ──
+    partidos_proximos = list(ApiPartido.objects.filter(
+        fecha__gte=ahora,
+        fecha__lte=ventana,
+        estado='programado',
+    ).select_related('equipo_local', 'equipo_visitante'))
+
+    if partidos_proximos:
+        partido_ids = [p.id_partido for p in partidos_proximos]
+
+        # Qué liga pertenece a qué sala (1 query)
+        sala_liga_set = set(
+            SalaLiga.objects.filter(id_sala__in=sala_ids)
+            .values_list('id_sala_id', 'id_liga_id')
+        )
+        # Qué partido manual pertenece a qué sala (1 query)
+        sala_partido_set = set(
+            SalaPartido.objects.filter(id_sala__in=sala_ids, id_partido__in=partido_ids)
+            .values_list('id_sala_id', 'id_partido_id')
+        )
+        # Recordatorios ya creados hoy (1 query)
+        hoy_inicio = ahora.replace(hour=0, minute=0, second=0, microsecond=0)
+        existing_reminders = set(
+            SalaNotificacion.objects.filter(
+                id_sala__in=sala_ids,
+                tipo='recordatorio_partido',
+                partido_relacionado__in=partido_ids,
+                fecha__gte=hoy_inicio,
+            ).values_list('id_sala_id', 'partido_relacionado_id')
+        )
+
+        # Construir las notificaciones faltantes en memoria, luego bulk_create
+        nuevas = []
+        for sala_id in sala_ids:
+            for partido in partidos_proximos:
+                pid = partido.id_partido
+                liga_id = partido.id_liga_id
+                pertenece = (sala_id, liga_id) in sala_liga_set or (sala_id, pid) in sala_partido_set
+                if not pertenece or (sala_id, pid) in existing_reminders:
+                    continue
+                minutos = int((partido.fecha - ahora).total_seconds() / 60)
+                tiempo_texto = f"{minutos // 60}h" if minutos >= 60 else f"{minutos}min"
+                local = partido.equipo_local.nombre if partido.equipo_local else '?'
+                visitante = partido.equipo_visitante.nombre if partido.equipo_visitante else '?'
+                nuevas.append(SalaNotificacion(
+                    id_sala_id=sala_id,
+                    tipo='recordatorio_partido',
+                    mensaje=f"⚽ {local} vs {visitante} empieza en {tiempo_texto} — ¡no olvides apostar!",
+                    icono='⏰',
+                    color='text-yellow-400',
+                    partido_relacionado_id=pid,
+                ))
+        if nuevas:
+            SalaNotificacion.objects.bulk_create(nuevas)
+
+    # ── Todas las notificaciones de todas las salas en 1 query ───────────
+    all_notifs = (
+        SalaNotificacion.objects
+        .filter(id_sala__in=sala_ids)
+        .select_related('usuario_relacionado', 'partido_relacionado')
+        .order_by('id_sala_id', '-fecha')
+    )
+    notif_por_sala = defaultdict(list)
+    for n in all_notifs:
+        bucket = notif_por_sala[n.id_sala_id]
+        if len(bucket) < 10:
+            bucket.append(n)
+
+    # ── Construir respuesta en memoria ────────────────────────────────────
     resultado = []
     total_no_leidas = 0
 
     for membership in memberships:
         sala = membership.id_sala
-
-        # Lazy match reminder creation
-        partidos_proximos = ApiPartido.objects.filter(
-            fecha__gte=ahora,
-            fecha__lte=ventana,
-            estado='programado'
-        )
-        for partido in partidos_proximos:
-            liga_match = SalaLiga.objects.filter(id_sala=sala, id_liga=partido.id_liga).exists()
-            partido_match = SalaPartido.objects.filter(id_sala=sala, id_partido=partido).exists()
-            if not liga_match and not partido_match:
-                continue
-            hoy_inicio = ahora.replace(hour=0, minute=0, second=0, microsecond=0)
-            ya_existe = SalaNotificacion.objects.filter(
-                id_sala=sala,
-                tipo='recordatorio_partido',
-                partido_relacionado=partido,
-                fecha__gte=hoy_inicio
-            ).exists()
-            if not ya_existe:
-                minutos = int((partido.fecha - ahora).total_seconds() / 60)
-                tiempo_texto = f"{minutos // 60}h" if minutos >= 60 else f"{minutos}min"
-                local = partido.equipo_local.nombre if partido.equipo_local else '?'
-                visitante = partido.equipo_visitante.nombre if partido.equipo_visitante else '?'
-                SalaNotificacion.objects.create(
-                    id_sala=sala,
-                    tipo='recordatorio_partido',
-                    mensaje=f"⚽ {local} vs {visitante} empieza en {tiempo_texto} — ¡no olvides apostar!",
-                    icono='⏰',
-                    color='text-yellow-400',
-                    partido_relacionado=partido
-                )
-
-        # Collect notifications
-        notificaciones = SalaNotificacion.objects.filter(
-            id_sala=sala
-        ).select_related('usuario_relacionado', 'partido_relacionado').order_by('-fecha')[:10]
-
         ultima_vista = membership.ultima_notificacion_vista
+        notificaciones = notif_por_sala[sala.id_sala]
+
         no_leidas = 0
         notifs_data = []
         for n in notificaciones:
@@ -1599,10 +1618,7 @@ def mis_notificaciones(request):
             'notificaciones': notifs_data,
         })
 
-    return Response({
-        'total_no_leidas': total_no_leidas,
-        'salas': resultado,
-    })
+    return Response({'total_no_leidas': total_no_leidas, 'salas': resultado})
 
 
 @api_view(['POST'])
