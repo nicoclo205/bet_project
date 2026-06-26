@@ -241,6 +241,9 @@ class ApiPartido(models.Model):
     tiempo_partido = models.CharField(max_length=20, blank=True, null=True)  # For storing halftime, etc
     id_venue = models.ForeignKey(ApiVenue, on_delete=models.SET_NULL, blank=True, null=True)
     
+    # Knockout phase flag
+    is_knockout = models.BooleanField(default=False)
+
     # Tracking fields
     eventos_cargados = models.BooleanField(default=False)
     alineaciones_cargadas = models.BooleanField(default=False)
@@ -369,7 +372,19 @@ class ApuestaFutbol(models.Model):
     
     # Optional custom scoring rules for this bet
     reglas_puntuacion = models.JSONField(blank=True, null=True)
-    
+
+    # Knockout phase extra fields (only meaningful when id_partido.is_knockout=True)
+    tiene_tiempo_extra = models.BooleanField(null=True, blank=True)
+    tiene_penales = models.BooleanField(null=True, blank=True)
+    ganador_ko = models.ForeignKey(
+        'ApiEquipo',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='apuestas_ko_ganador',
+        db_column='ganador_ko',
+    )
+
     def __str__(self):
         return f"Apuesta Fútbol: {self.id_usuario.nombre_usuario} - {self.id_partido}"
     

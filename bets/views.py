@@ -680,6 +680,50 @@ class CarreraF1ViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
 
+def _validar_apuesta_knockout(data):
+    """
+    Returns an error string if knockout-specific fields are inconsistent,
+    or None if everything is valid.
+
+    Rules:
+    - Draw prediction  → tiene_tiempo_extra and tiene_penales must be True,
+                          and ganador_ko must be provided.
+    - Non-draw prediction → tiene_penales must not be True,
+                             ganador_ko must not be set.
+    """
+    try:
+        pred_local = int(data.get('prediccion_local', -1))
+        pred_visitante = int(data.get('prediccion_visitante', -1))
+    except (TypeError, ValueError):
+        return None  # let the serializer handle invalid score types
+
+    is_draw = pred_local == pred_visitante
+
+    if is_draw:
+        if not data.get('ganador_ko'):
+            return (
+                "Para una predicción de empate en fase eliminatoria debes "
+                "seleccionar el equipo ganador por penales."
+            )
+        if data.get('tiene_penales') is False:
+            return (
+                "Una predicción de empate en fase eliminatoria siempre lleva "
+                "tanda de penales."
+            )
+    else:
+        if data.get('tiene_penales'):
+            return (
+                "No puede haber tanda de penales si el marcador predicho no "
+                "es un empate."
+            )
+        if data.get('ganador_ko'):
+            return (
+                "El ganador por penales solo se especifica cuando la predicción "
+                "del marcador es un empate."
+            )
+    return None
+
+
 class ApuestaFutbolViewSet(viewsets.ModelViewSet):
     queryset = ApuestaFutbol.objects.all()
     serializer_class = ApuestaFutbolSerializer
@@ -734,6 +778,12 @@ class ApuestaFutbolViewSet(viewsets.ModelViewSet):
         mutable_data = request.data.copy()
         mutable_data['id_usuario'] = request.user.perfil.id_usuario
 
+        # Validaciones adicionales para partidos de fase eliminatoria
+        if partido.is_knockout:
+            error = _validar_apuesta_knockout(mutable_data)
+            if error:
+                return Response({"error": error}, status=status.HTTP_400_BAD_REQUEST)
+
         # Si pasa las validaciones, crear la apuesta normalmente
         serializer = self.get_serializer(data=mutable_data)
         serializer.is_valid(raise_exception=True)
@@ -778,6 +828,12 @@ class ApuestaFutbolViewSet(viewsets.ModelViewSet):
                 },
                 status=status.HTTP_400_BAD_REQUEST
             )
+
+        # Validaciones adicionales para partidos de fase eliminatoria
+        if partido.is_knockout:
+            error = _validar_apuesta_knockout(request.data)
+            if error:
+                return Response({"error": error}, status=status.HTTP_400_BAD_REQUEST)
 
         return super().update(request, *args, **kwargs)
 
