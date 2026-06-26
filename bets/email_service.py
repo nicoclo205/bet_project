@@ -446,7 +446,7 @@ def send_phase_transition_email(sala_id, ronda_patron='group'):
                   overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.08);">
 
         <!-- Header -->
-        <div style="background:linear-gradient(135deg,#1d4ed8,#1e40af);padding:32px 30px;text-align:center;">
+        <div style="background:#1d4ed8;padding:32px 30px;text-align:center;">
           <h1 style="margin:0;color:white;font-size:24px;font-weight:800;">{TROPHY} FriendlyBet</h1>
           <p style="margin:8px 0 0;color:rgba(255,255,255,0.9);font-size:16px;font-weight:600;">
             {sala.nombre}
@@ -457,10 +457,18 @@ def send_phase_transition_email(sala_id, ronda_patron='group'):
 
           <!-- ===== ESPAÑOL ===== -->
           <div style="border-bottom:2px solid #e5e7eb;padding-bottom:28px;margin-bottom:28px;">
-            <h2 style="margin:0 0 4px;font-size:20px;color:#111827;">{BALL} Fase de Grupos — Resultados Finales</h2>
-            <p style="margin:0 0 20px;font-size:13px;color:#6b7280;">
-              La fase de grupos ha concluido. Aqui esta la clasificacion final de <strong>{sala.nombre}</strong>:
+
+            <h2 style="margin:0 0 4px;font-size:20px;color:#111827;">{BALL} Fase de Grupos — Clasificación Parcial</h2>
+            <p style="margin:0 0 6px;font-size:13px;color:#6b7280;">
+              La fase de grupos ha concluido. Estos son los puntos acumulados hasta ahora en <strong>{sala.nombre}</strong>.
             </p>
+            <div style="background:#fef9c3;border:1px solid #fde047;border-radius:6px;padding:10px 14px;margin-bottom:20px;">
+              <p style="margin:0;font-size:12px;color:#713f12;">
+                &#x26A0;&#xFE0F; <strong>Clasificación parcial:</strong> estos puntos son solo de la fase de grupos.
+                La competencia continúa a través de los octavos, cuartos, semifinales y la gran final —
+                hasta que haya un <strong>Campeón del Mundial</strong> en tu sala. ¡Todos los puntos se acumulan!
+              </p>
+            </div>
 
             <!-- Podium callout -->
             <div style="background:#fefce8;border:1px solid #fde68a;border-radius:8px;padding:16px 20px;margin-bottom:20px;">
@@ -477,7 +485,7 @@ def send_phase_transition_email(sala_id, ronda_patron='group'):
                 <tr style="background:#f9fafb;">
                   <th style="padding:10px 12px;font-size:12px;color:#6b7280;text-align:left;font-weight:600;">POS</th>
                   <th style="padding:10px 12px;font-size:12px;color:#6b7280;text-align:left;font-weight:600;">JUGADOR</th>
-                  <th style="padding:10px 12px;font-size:12px;color:#6b7280;text-align:right;font-weight:600;">PUNTOS</th>
+                  <th style="padding:10px 12px;font-size:12px;color:#6b7280;text-align:right;font-weight:600;">PUNTOS (FASE DE GRUPOS)</th>
                 </tr>
               </thead>
               <tbody>
@@ -485,10 +493,66 @@ def send_phase_transition_email(sala_id, ronda_patron='group'):
               </tbody>
             </table>
 
-            <p style="margin:20px 0 0;font-size:13px;color:#6b7280;">
-              La fase eliminatoria comienza pronto. ¡Sigue apostando!
-            </p>
-            <div style="text-align:center;margin-top:16px;">
+            <!-- New scoring callout ES -->
+            <div style="margin-top:20px;border:1px solid #bfdbfe;border-radius:8px;overflow:hidden;">
+              <div style="background:#1d4ed8;padding:10px 16px;">
+                <p style="margin:0;font-size:13px;font-weight:700;color:white;">&#x1F195; Nuevo sistema de puntuacion — desde Octavos de Final</p>
+              </div>
+              <div style="padding:14px 16px;background:#eff6ff;">
+                <p style="margin:0 0 10px;font-size:12px;color:#1e3a5f;">
+                  A partir de los octavos de final, el sistema de puntuacion cambia para recompensar el
+                  <strong>conocimiento futbolistico real</strong>. Ya no es solo acertar el ganador —
+                  cada gol que predices con exactitud suma puntos, incluso si fallas el resultado global:
+                </p>
+                <table style="width:100%;font-size:12px;color:#1e3a5f;border-collapse:collapse;">
+                  <thead>
+                    <tr style="border-bottom:1px solid #bfdbfe;">
+                      <th style="padding:5px 4px 5px 0;text-align:left;font-weight:600;color:#1e40af;">Situacion</th>
+                      <th style="padding:5px 0;text-align:left;font-weight:600;color:#1e40af;">Ejemplo</th>
+                      <th style="padding:5px 0;text-align:right;font-weight:600;color:#1e40af;">Puntos</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr style="border-bottom:1px solid #dbeafe;">
+                      <td style="padding:5px 4px 5px 0;">&#x1F3AF; Marcador exacto</td>
+                      <td style="padding:5px 0;color:#6b7280;">Predices 2-1, cae 2-1</td>
+                      <td style="padding:5px 0;text-align:right;font-weight:700;color:#16a34a;">10 pts</td>
+                    </tr>
+                    <tr style="border-bottom:1px solid #dbeafe;">
+                      <td style="padding:5px 4px 5px 0;">&#x1F4CA; Diferencia de goles correcta</td>
+                      <td style="padding:5px 0;color:#6b7280;">Predices 3-1, cae 4-2</td>
+                      <td style="padding:5px 0;text-align:right;font-weight:700;color:#16a34a;">8 pts</td>
+                    </tr>
+                    <tr style="border-bottom:1px solid #dbeafe;">
+                      <td style="padding:5px 4px 5px 0;">&#x2705; Resultado correcto + un equipo exacto</td>
+                      <td style="padding:5px 0;color:#6b7280;">Predices 2-0, cae 3-0</td>
+                      <td style="padding:5px 0;text-align:right;font-weight:700;color:#16a34a;">6 pts</td>
+                    </tr>
+                    <tr style="border-bottom:1px solid #dbeafe;">
+                      <td style="padding:5px 4px 5px 0;">&#x1F3C6; Resultado correcto unicamente</td>
+                      <td style="padding:5px 0;color:#6b7280;">Predices 1-0, cae 3-1</td>
+                      <td style="padding:5px 0;text-align:right;font-weight:700;color:#16a34a;">5 pts</td>
+                    </tr>
+                    <tr style="border-bottom:1px solid #dbeafe;">
+                      <td style="padding:5px 4px 5px 0;">&#x26A0;&#xFE0F; Resultado fallado, pero un equipo exacto</td>
+                      <td style="padding:5px 0;color:#6b7280;">Predices 2-1, cae 0-1</td>
+                      <td style="padding:5px 0;text-align:right;font-weight:700;color:#d97706;">1 pt</td>
+                    </tr>
+                    <tr>
+                      <td style="padding:5px 4px 5px 0;">&#x274C; Sin aciertos</td>
+                      <td style="padding:5px 0;color:#6b7280;">Predices 2-0, cae 0-3</td>
+                      <td style="padding:5px 0;text-align:right;font-weight:700;color:#dc2626;">0 pts</td>
+                    </tr>
+                  </tbody>
+                </table>
+                <p style="margin:12px 0 0;font-size:12px;color:#1e40af;font-style:italic;">
+                  La diferencia entre el primero y el ultimo puede cambiar con un solo marcador exacto.
+                  ¡Cada partido de la eliminatoria cuenta!
+                </p>
+              </div>
+            </div>
+
+            <div style="text-align:center;margin-top:20px;">
               <a href="{cta_url}" style="background:#1d4ed8;color:white;padding:11px 28px;border-radius:8px;
                  text-decoration:none;font-size:14px;font-weight:700;display:inline-block;">
                 Ver sala &rarr;
@@ -498,10 +562,18 @@ def send_phase_transition_email(sala_id, ronda_patron='group'):
 
           <!-- ===== ENGLISH ===== -->
           <div>
-            <h2 style="margin:0 0 4px;font-size:20px;color:#111827;">{BALL} Group Stage — Final Standings</h2>
-            <p style="margin:0 0 20px;font-size:13px;color:#6b7280;">
-              The group stage is over. Here are the final standings for <strong>{sala.nombre}</strong>:
+
+            <h2 style="margin:0 0 4px;font-size:20px;color:#111827;">{BALL} Group Stage — Partial Standings</h2>
+            <p style="margin:0 0 6px;font-size:13px;color:#6b7280;">
+              The group stage is over. Here are the points accumulated so far in <strong>{sala.nombre}</strong>.
             </p>
+            <div style="background:#fef9c3;border:1px solid #fde047;border-radius:6px;padding:10px 14px;margin-bottom:20px;">
+              <p style="margin:0;font-size:12px;color:#713f12;">
+                &#x26A0;&#xFE0F; <strong>Partial standings:</strong> these points cover the group stage only.
+                The competition runs all the way through the Round of 16, Quarter-finals, Semi-finals,
+                and the Final — until a <strong>World Champion</strong> is crowned in your room. All points accumulate!
+              </p>
+            </div>
 
             <!-- Podium callout -->
             <div style="background:#fefce8;border:1px solid #fde68a;border-radius:8px;padding:16px 20px;margin-bottom:20px;">
@@ -518,7 +590,7 @@ def send_phase_transition_email(sala_id, ronda_patron='group'):
                 <tr style="background:#f9fafb;">
                   <th style="padding:10px 12px;font-size:12px;color:#6b7280;text-align:left;font-weight:600;">POS</th>
                   <th style="padding:10px 12px;font-size:12px;color:#6b7280;text-align:left;font-weight:600;">PLAYER</th>
-                  <th style="padding:10px 12px;font-size:12px;color:#6b7280;text-align:right;font-weight:600;">POINTS</th>
+                  <th style="padding:10px 12px;font-size:12px;color:#6b7280;text-align:right;font-weight:600;">POINTS (GROUP STAGE)</th>
                 </tr>
               </thead>
               <tbody>
@@ -526,10 +598,66 @@ def send_phase_transition_email(sala_id, ronda_patron='group'):
               </tbody>
             </table>
 
-            <p style="margin:20px 0 0;font-size:13px;color:#6b7280;">
-              The knockout round is coming up. Keep predicting!
-            </p>
-            <div style="text-align:center;margin-top:16px;">
+            <!-- New scoring callout EN -->
+            <div style="margin-top:20px;border:1px solid #bfdbfe;border-radius:8px;overflow:hidden;">
+              <div style="background:#1d4ed8;padding:10px 16px;">
+                <p style="margin:0;font-size:13px;font-weight:700;color:white;">&#x1F195; New scoring system — starting from the Round of 16</p>
+              </div>
+              <div style="padding:14px 16px;background:#eff6ff;">
+                <p style="margin:0 0 10px;font-size:12px;color:#1e3a5f;">
+                  From the Round of 16 onwards, the scoring system changes to reward
+                  <strong>real football knowledge</strong>. It's no longer just about picking the winner —
+                  every goal you predict correctly earns you points, even if you miss the overall result:
+                </p>
+                <table style="width:100%;font-size:12px;color:#1e3a5f;border-collapse:collapse;">
+                  <thead>
+                    <tr style="border-bottom:1px solid #bfdbfe;">
+                      <th style="padding:5px 4px 5px 0;text-align:left;font-weight:600;color:#1e40af;">Situation</th>
+                      <th style="padding:5px 0;text-align:left;font-weight:600;color:#1e40af;">Example</th>
+                      <th style="padding:5px 0;text-align:right;font-weight:600;color:#1e40af;">Points</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr style="border-bottom:1px solid #dbeafe;">
+                      <td style="padding:5px 4px 5px 0;">&#x1F3AF; Exact score</td>
+                      <td style="padding:5px 0;color:#6b7280;">Predict 2-1, ends 2-1</td>
+                      <td style="padding:5px 0;text-align:right;font-weight:700;color:#16a34a;">10 pts</td>
+                    </tr>
+                    <tr style="border-bottom:1px solid #dbeafe;">
+                      <td style="padding:5px 4px 5px 0;">&#x1F4CA; Correct goal difference</td>
+                      <td style="padding:5px 0;color:#6b7280;">Predict 3-1, ends 4-2</td>
+                      <td style="padding:5px 0;text-align:right;font-weight:700;color:#16a34a;">8 pts</td>
+                    </tr>
+                    <tr style="border-bottom:1px solid #dbeafe;">
+                      <td style="padding:5px 4px 5px 0;">&#x2705; Correct outcome + one team exact</td>
+                      <td style="padding:5px 0;color:#6b7280;">Predict 2-0, ends 3-0</td>
+                      <td style="padding:5px 0;text-align:right;font-weight:700;color:#16a34a;">6 pts</td>
+                    </tr>
+                    <tr style="border-bottom:1px solid #dbeafe;">
+                      <td style="padding:5px 4px 5px 0;">&#x1F3C6; Correct outcome only</td>
+                      <td style="padding:5px 0;color:#6b7280;">Predict 1-0, ends 3-1</td>
+                      <td style="padding:5px 0;text-align:right;font-weight:700;color:#16a34a;">5 pts</td>
+                    </tr>
+                    <tr style="border-bottom:1px solid #dbeafe;">
+                      <td style="padding:5px 4px 5px 0;">&#x26A0;&#xFE0F; Wrong outcome, but one team exact</td>
+                      <td style="padding:5px 0;color:#6b7280;">Predict 2-1, ends 0-1</td>
+                      <td style="padding:5px 0;text-align:right;font-weight:700;color:#d97706;">1 pt</td>
+                    </tr>
+                    <tr>
+                      <td style="padding:5px 4px 5px 0;">&#x274C; No match at all</td>
+                      <td style="padding:5px 0;color:#6b7280;">Predict 2-0, ends 0-3</td>
+                      <td style="padding:5px 0;text-align:right;font-weight:700;color:#dc2626;">0 pts</td>
+                    </tr>
+                  </tbody>
+                </table>
+                <p style="margin:12px 0 0;font-size:12px;color:#1e40af;font-style:italic;">
+                  The gap between first and last can flip with a single exact score.
+                  Every knockout match counts!
+                </p>
+              </div>
+            </div>
+
+            <div style="text-align:center;margin-top:20px;">
               <a href="{cta_url}" style="background:#1d4ed8;color:white;padding:11px 28px;border-radius:8px;
                  text-decoration:none;font-size:14px;font-weight:700;display:inline-block;">
                 View room &rarr;
