@@ -52,7 +52,10 @@ services:
       db:
         condition: service_healthy
     networks:
-      - bet_network_prod
+      bet_network_prod:
+      bet_network:
+        aliases:
+          - bet_django
 
   # Nginx como reverse proxy
   nginx:
@@ -81,3 +84,5 @@ volumes:
 networks:
   bet_network_prod:
     driver: bridge
+  bet_network:
+    external: true
