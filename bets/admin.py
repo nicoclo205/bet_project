@@ -25,7 +25,39 @@ admin.site.register(ApiJugador)
 admin.site.register(ApiVenue)
 
 # Match models
-admin.site.register(ApiPartido)
+@admin.register(ApiPartido)
+class ApiPartidoAdmin(admin.ModelAdmin):
+    list_display = (
+        '__str__', 'estado', 'fecha', 'is_knockout',
+        'resultado_tiene_tiempo_extra', 'resultado_tiene_penales', 'ganador_penales',
+    )
+    list_filter = ('estado', 'is_knockout', 'id_liga')
+    search_fields = ('equipo_local__nombre', 'equipo_visitante__nombre')
+    fieldsets = (
+        ('General', {
+            'fields': (
+                'id_liga', 'temporada', 'ronda', 'fecha',
+                'equipo_local', 'equipo_visitante',
+                'goles_local', 'goles_visitante',
+                'estado', 'id_venue',
+            )
+        }),
+        ('Knockout', {
+            'fields': (
+                'is_knockout',
+                'resultado_tiene_tiempo_extra',
+                'resultado_tiene_penales',
+                'ganador_penales',
+            ),
+            'classes': ('collapse',),
+            'description': 'Fill these in when entering the final result of a knockout match.',
+        }),
+        ('Tracking', {
+            'fields': ('eventos_cargados', 'alineaciones_cargadas', 'estadisticas_cargadas'),
+            'classes': ('collapse',),
+        }),
+    )
+
 admin.site.register(ApiPartidoEstadisticas)
 admin.site.register(ApiPartidoEvento)
 admin.site.register(ApiPartidoAlineacion)

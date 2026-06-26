@@ -244,6 +244,18 @@ class ApiPartido(models.Model):
     # Knockout phase flag
     is_knockout = models.BooleanField(default=False)
 
+    # Actual knockout result fields (set when match is finalised)
+    resultado_tiene_tiempo_extra = models.BooleanField(null=True, blank=True)
+    resultado_tiene_penales = models.BooleanField(null=True, blank=True)
+    ganador_penales = models.ForeignKey(
+        'ApiEquipo',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='partidos_ganados_penales',
+        db_column='ganador_penales',
+    )
+
     # Tracking fields
     eventos_cargados = models.BooleanField(default=False)
     alineaciones_cargadas = models.BooleanField(default=False)
@@ -392,31 +404,43 @@ class ApuestaFutbol(models.Model):
 
     def calcular_y_actualizar_puntos(self):
         """
-        Calcula los puntos ganados en esta apuesta y actualiza el registro
+        Calcula los puntos ganados en esta apuesta y actualiza el registro.
+
+        For knockout matches, applies extra bonuses on top of the base score:
+          - Non-draw prediction: +1 pt for correctly predicting ET (yes/no)
+          - Draw prediction: +2 pts for correctly predicting the penalty winner
 
         Returns:
             int: Puntos ganados
         """
-        from .points_management.scoring import calcular_puntos_futbol, determinar_estado_apuesta
-        
+        from .points_management.scoring import (
+            calcular_puntos_futbol,
+            calcular_bonus_ko,
+            determinar_estado_apuesta,
+        )
+
         # Verificar que el partido esté finalizado
         if self.id_partido.estado != PartidoStatus.FINALIZADO:
             return 0
-        
-        # Calcular puntos
+
+        # Base score (same logic as group stage)
         puntos = calcular_puntos_futbol(
             self.prediccion_local,
             self.prediccion_visitante,
             self.id_partido.goles_local,
             self.id_partido.goles_visitante,
-            self.reglas_puntuacion
+            self.reglas_puntuacion,
         )
-        
+
+        # Knockout-only bonuses
+        if self.id_partido.is_knockout:
+            puntos += calcular_bonus_ko(self, self.id_partido)
+
         # Actualizar apuesta
         self.puntos_ganados = puntos
         self.estado = determinar_estado_apuesta(puntos)
         self.save()
-        
+
         return puntos
 
     

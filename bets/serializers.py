@@ -355,6 +355,10 @@ class ApuestaFutbolGrupoSerializer(serializers.ModelSerializer):
     is_knockout         = serializers.ReadOnlyField(source='id_partido.is_knockout')
     ganador_ko_nombre   = serializers.ReadOnlyField(source='ganador_ko.nombre', allow_null=True)
     ganador_ko_logo     = serializers.ReadOnlyField(source='ganador_ko.logo_url', allow_null=True)
+    # Actual knockout outcome (set on the match when finalised)
+    resultado_tiene_tiempo_extra = serializers.ReadOnlyField(source='id_partido.resultado_tiene_tiempo_extra')
+    resultado_tiene_penales      = serializers.ReadOnlyField(source='id_partido.resultado_tiene_penales')
+    ganador_penales_nombre       = serializers.ReadOnlyField(source='id_partido.ganador_penales.nombre', allow_null=True)
 
     class Meta:
         model = ApuestaFutbol
@@ -370,6 +374,8 @@ class ApuestaFutbolGrupoSerializer(serializers.ModelSerializer):
             'ronda', 'is_knockout',
             'tiene_tiempo_extra', 'tiene_penales',
             'ganador_ko', 'ganador_ko_nombre', 'ganador_ko_logo',
+            'resultado_tiene_tiempo_extra', 'resultado_tiene_penales',
+            'ganador_penales_nombre',
         ]
 
 
