@@ -48,12 +48,13 @@ services:
       - DB_PORT=3306
       - ALLOWED_HOSTS=${ALLOWED_HOSTS}
       - CORS_ALLOWED_ORIGINS=${CORS_ALLOWED_ORIGINS}
+      - REDIS_HOST=redis
     depends_on:
       db:
         condition: service_healthy
     networks:
       bet_network_prod:
-      bet_network:
+      bet_project_bet_network:
         aliases:
           - bet_django
 
@@ -84,5 +85,5 @@ volumes:
 networks:
   bet_network_prod:
     driver: bridge
-  bet_network:
+  bet_project_bet_network:
     external: true
