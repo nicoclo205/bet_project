@@ -2,6 +2,7 @@ from django.core.mail import send_mail
 from django.conf import settings
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
+from django.db.models import Sum
 import logging
 
 logger = logging.getLogger(__name__)
@@ -348,3 +349,228 @@ def send_match_reminder_email(user_email, username, salas_data, tomorrow_str):
     except Exception as e:
         logger.error(f"Failed to send match reminder to {user_email}: {str(e)}")
         raise
+
+
+def send_phase_transition_email(sala_id, ronda_patron='group'):
+    """
+    Sends a group-stage wrap-up email to every member of the given room.
+
+    Computes final group-stage standings for the room, then dispatches a
+    bilingual (ES + EN) email to each verified member with the top-3 and
+    the point gaps relative to the leader.
+
+    Args:
+        sala_id: Primary key of the Sala to notify.
+        ronda_patron: String fragment used to identify group-stage matches
+                      via a case-insensitive ronda__icontains filter.
+                      Defaults to 'group' (matches "Group Stage - 1", etc.).
+
+    Returns:
+        dict: {'sent': int, 'failed': int}
+    """
+    from django.utils.html import strip_tags as _strip
+    from bets.models import Sala, UsuarioSala, ApuestaFutbol, ApiPartido, ApuestaStatus
+
+    sala = Sala.objects.select_related('id_usuario').get(id_sala=sala_id)
+    members = list(
+        UsuarioSala.objects.filter(id_sala=sala).select_related('id_usuario')
+    )
+
+    if not members:
+        logger.warning(f"send_phase_transition_email: sala {sala_id} has no members")
+        return {'sent': 0, 'failed': 0}
+
+    # Identify all group-stage match IDs scoped to this sala's bets
+    group_match_ids = list(
+        ApiPartido.objects.filter(ronda__icontains=ronda_patron)
+        .values_list('id_partido', flat=True)
+    )
+
+    # Compute standings: total points per user from group-stage bets in this sala
+    standings = []
+    for m in members:
+        pts = (
+            ApuestaFutbol.objects.filter(
+                id_sala=sala,
+                id_usuario=m.id_usuario,
+                id_partido_id__in=group_match_ids,
+                estado=ApuestaStatus.GANADA,
+            ).aggregate(total=Sum('puntos_ganados'))['total']
+            or 0
+        )
+        standings.append({'usuario': m.id_usuario, 'puntos': pts})
+
+    standings.sort(key=lambda x: x['puntos'], reverse=True)
+
+    # Extract top-3 data
+    def _entry(idx):
+        return standings[idx] if idx < len(standings) else None
+
+    first = _entry(0)
+    second = _entry(1)
+    third = _entry(2)
+
+    first_name = first['usuario'].nombre_usuario if first else '—'
+    first_pts = first['puntos'] if first else 0
+    second_name = second['usuario'].nombre_usuario if second else '—'
+    second_gap = (first_pts - second['puntos']) if second else 0
+    third_name = third['usuario'].nombre_usuario if third else '—'
+    third_gap = (first_pts - third['puntos']) if third else 0
+
+    # Render standings table rows (top-N)
+    def _standings_rows(lang):
+        medals = ['🥇', '🥈', '🥉']
+        pts_label = 'pts'
+        rows = ''
+        for i, entry in enumerate(standings):
+            medal = medals[i] if i < 3 else f'{i + 1}.'
+            rows += (
+                f'<tr style="border-bottom:1px solid #e5e7eb;">'
+                f'<td style="padding:8px 12px;font-size:14px;color:#374151;">{medal}</td>'
+                f'<td style="padding:8px 12px;font-size:14px;color:#111827;font-weight:{"700" if i == 0 else "400"};">'
+                f'{entry["usuario"].nombre_usuario}</td>'
+                f'<td style="padding:8px 12px;font-size:14px;color:#16a34a;font-weight:700;text-align:right;">'
+                f'{entry["puntos"]} {pts_label}</td>'
+                f'</tr>'
+            )
+        return rows
+
+    TROPHY = '&#x1F3C6;'
+    BALL = '&#x26BD;'
+    cta_url = getattr(settings, 'FRONTEND_URL', 'https://friendlybet.260569.xyz')
+
+    html_message = f"""
+    <html>
+    <body style="margin:0;padding:0;background:#f3f4f6;font-family:Arial,sans-serif;">
+      <div style="max-width:600px;margin:30px auto;background:#fff;border-radius:12px;
+                  overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+
+        <!-- Header -->
+        <div style="background:linear-gradient(135deg,#1d4ed8,#1e40af);padding:32px 30px;text-align:center;">
+          <h1 style="margin:0;color:white;font-size:24px;font-weight:800;">{TROPHY} FriendlyBet</h1>
+          <p style="margin:8px 0 0;color:rgba(255,255,255,0.9);font-size:16px;font-weight:600;">
+            {sala.nombre}
+          </p>
+        </div>
+
+        <div style="padding:32px 30px;">
+
+          <!-- ===== ESPAÑOL ===== -->
+          <div style="border-bottom:2px solid #e5e7eb;padding-bottom:28px;margin-bottom:28px;">
+            <h2 style="margin:0 0 4px;font-size:20px;color:#111827;">{BALL} Fase de Grupos — Resultados Finales</h2>
+            <p style="margin:0 0 20px;font-size:13px;color:#6b7280;">
+              La fase de grupos ha concluido. Aqui esta la clasificacion final de <strong>{sala.nombre}</strong>:
+            </p>
+
+            <!-- Podium callout -->
+            <div style="background:#fefce8;border:1px solid #fde68a;border-radius:8px;padding:16px 20px;margin-bottom:20px;">
+              <p style="margin:0 0 6px;font-size:15px;font-weight:700;color:#92400e;">
+                🥇 Lider de grupo: <span style="color:#1d4ed8;">{first_name}</span>
+              </p>
+              {"" if not second else f'<p style="margin:0 0 6px;font-size:13px;color:#374151;">🥈 {second_name} &mdash; a {second_gap} punto{"s" if second_gap != 1 else ""} del lider</p>'}
+              {"" if not third else f'<p style="margin:0;font-size:13px;color:#374151;">🥉 {third_name} &mdash; a {third_gap} punto{"s" if third_gap != 1 else ""} del lider</p>'}
+            </div>
+
+            <!-- Full standings table -->
+            <table style="width:100%;border-collapse:collapse;border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;">
+              <thead>
+                <tr style="background:#f9fafb;">
+                  <th style="padding:10px 12px;font-size:12px;color:#6b7280;text-align:left;font-weight:600;">POS</th>
+                  <th style="padding:10px 12px;font-size:12px;color:#6b7280;text-align:left;font-weight:600;">JUGADOR</th>
+                  <th style="padding:10px 12px;font-size:12px;color:#6b7280;text-align:right;font-weight:600;">PUNTOS</th>
+                </tr>
+              </thead>
+              <tbody>
+                {_standings_rows('es')}
+              </tbody>
+            </table>
+
+            <p style="margin:20px 0 0;font-size:13px;color:#6b7280;">
+              La fase eliminatoria comienza pronto. ¡Sigue apostando!
+            </p>
+            <div style="text-align:center;margin-top:16px;">
+              <a href="{cta_url}" style="background:#1d4ed8;color:white;padding:11px 28px;border-radius:8px;
+                 text-decoration:none;font-size:14px;font-weight:700;display:inline-block;">
+                Ver sala &rarr;
+              </a>
+            </div>
+          </div>
+
+          <!-- ===== ENGLISH ===== -->
+          <div>
+            <h2 style="margin:0 0 4px;font-size:20px;color:#111827;">{BALL} Group Stage — Final Standings</h2>
+            <p style="margin:0 0 20px;font-size:13px;color:#6b7280;">
+              The group stage is over. Here are the final standings for <strong>{sala.nombre}</strong>:
+            </p>
+
+            <!-- Podium callout -->
+            <div style="background:#fefce8;border:1px solid #fde68a;border-radius:8px;padding:16px 20px;margin-bottom:20px;">
+              <p style="margin:0 0 6px;font-size:15px;font-weight:700;color:#92400e;">
+                🥇 Group leader: <span style="color:#1d4ed8;">{first_name}</span>
+              </p>
+              {"" if not second else f'<p style="margin:0 0 6px;font-size:13px;color:#374151;">🥈 {second_name} &mdash; {second_gap} point{"s" if second_gap != 1 else ""} behind the leader</p>'}
+              {"" if not third else f'<p style="margin:0;font-size:13px;color:#374151;">🥉 {third_name} &mdash; {third_gap} point{"s" if third_gap != 1 else ""} behind the leader</p>'}
+            </div>
+
+            <!-- Full standings table -->
+            <table style="width:100%;border-collapse:collapse;border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;">
+              <thead>
+                <tr style="background:#f9fafb;">
+                  <th style="padding:10px 12px;font-size:12px;color:#6b7280;text-align:left;font-weight:600;">POS</th>
+                  <th style="padding:10px 12px;font-size:12px;color:#6b7280;text-align:left;font-weight:600;">PLAYER</th>
+                  <th style="padding:10px 12px;font-size:12px;color:#6b7280;text-align:right;font-weight:600;">POINTS</th>
+                </tr>
+              </thead>
+              <tbody>
+                {_standings_rows('en')}
+              </tbody>
+            </table>
+
+            <p style="margin:20px 0 0;font-size:13px;color:#6b7280;">
+              The knockout round is coming up. Keep predicting!
+            </p>
+            <div style="text-align:center;margin-top:16px;">
+              <a href="{cta_url}" style="background:#1d4ed8;color:white;padding:11px 28px;border-radius:8px;
+                 text-decoration:none;font-size:14px;font-weight:700;display:inline-block;">
+                View room &rarr;
+              </a>
+            </div>
+          </div>
+
+        </div>
+
+        <div style="background:#f9fafb;border-top:1px solid #e5e7eb;padding:14px 30px;text-align:center;">
+          <p style="margin:0;font-size:11px;color:#9ca3af;">
+            FriendlyBet &middot; Sports Predictions with Friends
+          </p>
+        </div>
+      </div>
+    </body>
+    </html>
+    """
+
+    subject = f'[FriendlyBet] {sala.nombre} — Fase de Grupos / Group Stage Results'
+    plain_message = _strip(html_message)
+
+    sent = 0
+    failed = 0
+    for m in members:
+        user = m.id_usuario
+        if not user.email_verified:
+            continue
+        try:
+            send_mail(
+                subject=subject,
+                message=plain_message,
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[user.correo],
+                html_message=html_message,
+                fail_silently=False,
+            )
+            logger.info(f"Phase transition email sent to {user.correo} (sala={sala.nombre})")
+            sent += 1
+        except Exception as e:
+            logger.error(f"Failed to send phase transition email to {user.correo}: {e}")
+            failed += 1
+
+    return {'sent': sent, 'failed': failed}
