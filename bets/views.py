@@ -909,6 +909,85 @@ class ApuestaFutbolViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
     @action(detail=False, methods=['get'])
+    def otras_salas_disponibles(self, request):
+        """
+        Devuelve las salas del usuario (distintas a la actual) donde el mismo partido
+        está disponible para apostar y el usuario todavía no ha apostado.
+        Parámetros: partido_id, sala_actual_id
+        """
+        partido_id = request.query_params.get('partido_id')
+        sala_actual_id = request.query_params.get('sala_actual_id')
+
+        if not partido_id:
+            return Response({"error": "Se requiere el ID del partido"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            partido = ApiPartido.objects.get(id_partido=partido_id)
+        except ApiPartido.DoesNotExist:
+            return Response({"error": "El partido especificado no existe"}, status=status.HTTP_404_NOT_FOUND)
+
+        # Si el partido ya comenzó o finalizó, no hay salas disponibles
+        ahora = timezone.now()
+        if partido.fecha <= ahora or partido.estado in [PartidoStatus.FINALIZADO, PartidoStatus.EN_CURSO]:
+            return Response([], status=status.HTTP_200_OK)
+
+        usuario = request.user.perfil
+
+        # Salas donde el usuario es miembro, excluyendo la sala actual
+        salas_ids = UsuarioSala.objects.filter(id_usuario=usuario).values_list('id_sala', flat=True)
+        salas = Sala.objects.filter(id_sala__in=salas_ids)
+        if sala_actual_id:
+            salas = salas.exclude(id_sala=sala_actual_id)
+
+        # Excluir salas donde el usuario ya tiene apuesta para este partido
+        salas_con_apuesta = ApuestaFutbol.objects.filter(
+            id_usuario=usuario,
+            id_partido=partido
+        ).values_list('id_sala', flat=True)
+        salas = salas.exclude(id_sala__in=salas_con_apuesta)
+
+        # Filtrar salas donde el partido está habilitado según el modo de la sala
+        salas_disponibles = []
+        for sala in salas:
+            modo_sala = sala.modo_sala
+            match_disponible = False
+
+            if modo_sala == 'partidos_individuales':
+                match_disponible = SalaPartido.objects.filter(
+                    id_sala=sala, id_partido=partido
+                ).exists()
+
+            elif modo_sala == 'ligas':
+                ligas_habilitadas = SalaLiga.objects.filter(
+                    id_sala=sala
+                ).values_list('id_liga', flat=True)
+                if ligas_habilitadas.exists():
+                    match_disponible = partido.id_liga_id in set(ligas_habilitadas)
+                else:
+                    match_disponible = True
+
+            elif modo_sala == 'mixto':
+                ligas_habilitadas = SalaLiga.objects.filter(
+                    id_sala=sala
+                ).values_list('id_liga', flat=True)
+                partidos_manuales = SalaPartido.objects.filter(
+                    id_sala=sala
+                ).values_list('id_partido', flat=True)
+                if ligas_habilitadas.exists() or partidos_manuales.exists():
+                    match_disponible = (
+                        partido.id_liga_id in set(ligas_habilitadas) or
+                        partido.id_partido in set(partidos_manuales)
+                    )
+                else:
+                    match_disponible = True
+
+            if match_disponible:
+                salas_disponibles.append(sala)
+
+        serializer = SalaSerializer(salas_disponibles, many=True)
+        return Response(serializer.data)
+
+    @action(detail=False, methods=['get'])
     def por_sala(self, request):
         """
         Todas las apuestas de una sala con detalles del partido.
