@@ -52,7 +52,7 @@ INITIAL_ORDER = {
     "L": ["England", "Croatia", "Panama", "Ghana"],
 }
 
-# ── Puntaje ──────────────────────────────────────────────────────────────
+# -- Puntaje --
 PTS_GROUP_EXACT = 3
 PTS_GROUP_QUALIFY = 1
 PTS_THIRD = 1
@@ -82,7 +82,7 @@ def _get_usuario(request):
         return None
 
 
-# ── Resolucion del bracket segun la prediccion del usuario ───────────────
+# -- Resolucion del bracket segun la prediccion del usuario --
 
 def resolve_prediction(group_order, thirds, ko_winners):
     """Calcula los cruces R32 -> Final a partir de la prediccion.
@@ -141,7 +141,7 @@ def resolve_prediction(group_order, thirds, ko_winners):
     return rounds, clean
 
 
-# ── Resultados reales (leidos de ApiPartido, nunca se escribe) ───────────
+# -- Resultados reales (leidos de ApiPartido, nunca se escribe) --
 
 def _wc_liga():
     return ApiLiga.objects.filter(api_id=WC_LIGA_API_ID).first()
@@ -157,10 +157,12 @@ def actual_results():
     - r16/qf/sf/final_teams: sets de nombres con presencia real en esa ronda
     - champion: nombre o None
     - team_info: {nombre: {"id_equipo", "logo"}}
+    - ko_matches: {match_no: {home, away, finished, winner}}
     """
     liga = _wc_liga()
     out = {"group_pos": {}, "thirds": None, "r16": set(), "qf": set(),
-           "sf": set(), "final": set(), "champion": None, "team_info": {}}
+           "sf": set(), "final": set(), "champion": None, "team_info": {},
+           "ko_matches": {}}
     if liga is None:
         return out
 
@@ -239,6 +241,26 @@ def actual_results():
     out["sf"] = round_teams(SF_NOS)
     out["final"] = round_teams([FINAL_NO])
 
+    # Per-match KO results for detailed scoring
+    for no in KO_PICK_NOS:
+        p = by_no.get(no)
+        if not p:
+            continue
+        h = p.equipo_local.nombre if p.equipo_local.api_id != TBD_API_ID else None
+        a = p.equipo_visitante.nombre if p.equipo_visitante.api_id != TBD_API_ID else None
+        match_finished = p.estado == PartidoStatus.FINALIZADO and p.goles_local is not None
+        winner = None
+        if match_finished and h and a:
+            if p.goles_local > p.goles_visitante:
+                winner = h
+            elif p.goles_visitante > p.goles_local:
+                winner = a
+            # draws in KO go to pens; winner might need pen data --
+            # we check presence in next round as fallback
+        out["ko_matches"][no] = {
+            "home": h, "away": a, "finished": match_finished, "winner": winner,
+        }
+
     pf = by_no.get(FINAL_NO)
     if (pf and pf.estado == PartidoStatus.FINALIZADO
             and pf.goles_local is not None
@@ -302,16 +324,7 @@ def score_prediction(pred, actual):
 
 
 def detailed_score(pred, actual):
-    """Granular per-group / per-third scoring for the summary view.
-
-    Returns dict with:
-    - group_detail: {letter: {pos0: {team, pts, status}, ..., subtotal}}
-      status: "exact"|"qualify"|"miss"|"pending"
-    - third_detail: [{group, team, correct: bool|null}]
-      null = not yet resolved
-    - totals: {groups, thirds, knockout, total}
-    - actual_results: {group_pos, thirds}  (what's been resolved so far)
-    """
+    """Granular per-group / per-third / per-ko-match scoring for summary."""
     _, winners = resolve_prediction(
         pred.group_order, pred.thirds, pred.ko_winners)
 
@@ -373,23 +386,70 @@ def detailed_score(pred, actual):
         third_detail.append({"group": g, "team": team, "correct": correct,
                              "pts": pts})
 
-    # Quick KO total (reuse existing function)
-    score = score_prediction(pred, actual)
+    # KO detail per match
+    ko_stages = [
+        ("Round of 32", R32_NOS, actual["r16"], PTS_TO_R16),
+        ("Round of 16", R16_NOS, actual["qf"], PTS_TO_QF),
+        ("Quarter-Final", QF_NOS, actual["sf"], PTS_TO_SF),
+        ("Semi-Final", SF_NOS, actual["final"], PTS_TO_FINAL),
+        ("Final", [FINAL_NO], None, PTS_CHAMPION),
+    ]
+    ko_detail = {}
+    pts_ko_total = 0
+
+    for ronda, nos, advanced, pts_val in ko_stages:
+        for no in nos:
+            pick = winners.get(no)
+            if not pick:
+                ko_detail[no] = {"pick": None, "pts": 0, "status": "no_pick",
+                                 "ronda": ronda}
+                continue
+
+            real_match = actual["ko_matches"].get(no)
+
+            if ronda == "Final":
+                if actual["champion"]:
+                    if pick == actual["champion"]:
+                        ko_detail[no] = {"pick": pick, "pts": PTS_CHAMPION,
+                                         "status": "correct", "ronda": ronda}
+                        pts_ko_total += PTS_CHAMPION
+                    else:
+                        ko_detail[no] = {"pick": pick, "pts": 0,
+                                         "status": "miss", "ronda": ronda}
+                else:
+                    ko_detail[no] = {"pick": pick, "pts": 0,
+                                     "status": "pending", "ronda": ronda}
+                continue
+
+            if advanced and pick in advanced:
+                ko_detail[no] = {"pick": pick, "pts": pts_val,
+                                 "status": "correct", "ronda": ronda}
+                pts_ko_total += pts_val
+            elif real_match and real_match["finished"]:
+                ko_detail[no] = {"pick": pick, "pts": 0,
+                                 "status": "miss", "ronda": ronda}
+            elif real_match and (real_match["home"] or real_match["away"]):
+                ko_detail[no] = {"pick": pick, "pts": 0,
+                                 "status": "pending", "ronda": ronda}
+            else:
+                ko_detail[no] = {"pick": pick, "pts": 0,
+                                 "status": "pending", "ronda": ronda}
 
     return {
         "group_detail": group_detail,
         "third_detail": third_detail,
         "thirds_resolved": thirds_resolved,
+        "ko_detail": {str(k): v for k, v in ko_detail.items()},
         "totals": {
             "groups": pts_groups_total,
             "thirds": pts_thirds_total,
-            "knockout": score["knockout"],
-            "total": score["total"],
+            "knockout": pts_ko_total,
+            "total": pts_groups_total + pts_thirds_total + pts_ko_total,
         },
     }
 
 
-# ── Serializacion del estado ─────────────────────────────────────────────
+# -- Serializacion del estado --
 
 def _progress(pred_groups, thirds, clean_winners):
     groups_done = sum(
@@ -471,7 +531,7 @@ def _team_info_map():
     return info
 
 
-# ── Endpoints ────────────────────────────────────────────────────────────
+# -- Endpoints --
 
 @api_view(["GET", "PUT"])
 @permission_classes([IsAuthenticated])
