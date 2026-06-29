@@ -80,9 +80,8 @@ def _is_locked():
 
 
 def _can_modify():
-    """Window to re-pick QF/SF/Final after predictions close."""
-    now = timezone.now()
-    return now >= PREDICTION_DEADLINE and now < MODIFICATION_DEADLINE
+    """Window to re-pick QF/SF/Final: open until QF starts (July 8)."""
+    return timezone.now() < MODIFICATION_DEADLINE
 
 
 def _get_usuario(request):
@@ -134,7 +133,6 @@ def resolve_prediction(group_order, thirds, ko_winners, trust_picks=None):
         h, a = slot_team(hs), slot_team(as_)
         w = ko_winners.get(str(no))
         if no in trust_picks:
-            # Accept stored pick without bracket validation
             winners[no] = w if w else None
         else:
             if not (w and h and a and w in (h, a)):
@@ -330,8 +328,8 @@ def score_prediction(pred, actual):
     pts_groups = pts_thirds = pts_ko = 0
     exact = 0
 
-    # Use trust_picks for QF+ so modified picks are included in scoring
-    trust = MODIFY_MATCH_NOS if _is_locked() else None
+    # Trust QF+ picks for completed predictions (handles modification case)
+    trust = MODIFY_MATCH_NOS if pred.completed else None
     rounds, winners = resolve_prediction(
         pred.group_order, pred.thirds, pred.ko_winners, trust_picks=trust)
 
@@ -381,7 +379,7 @@ def score_prediction(pred, actual):
 
 def detailed_score(pred, actual):
     """Granular per-group / per-third / per-ko-match scoring for summary."""
-    trust = MODIFY_MATCH_NOS if _is_locked() else None
+    trust = MODIFY_MATCH_NOS if pred.completed else None
     _, winners = resolve_prediction(
         pred.group_order, pred.thirds, pred.ko_winners, trust_picks=trust)
 
@@ -528,7 +526,8 @@ def _state_json(pred, team_info):
     group_order = pred.group_order or {}
     thirds = pred.thirds or []
 
-    trust = MODIFY_MATCH_NOS if _is_locked() else None
+    # Trust QF+ picks for completed predictions so modifications display
+    trust = MODIFY_MATCH_NOS if pred.completed else None
     rounds, clean = resolve_prediction(group_order, thirds, pred.ko_winners,
                                        trust_picks=trust)
 
@@ -552,7 +551,7 @@ def _state_json(pred, team_info):
     actual = actual_results()
     score_detail = detailed_score(pred, actual)
 
-    # Modification window info
+    # Modification window: completed prediction + before QF deadline
     can_modify = _can_modify() and pred.completed
     viable = viable_qf_teams(actual) if can_modify else {}
 
@@ -767,8 +766,11 @@ def game_state(request):
 
         # Limpia picks inconsistentes (si cambio el orden de un grupo o
         # los terceros, los cruces afectados se invalidan en cascada).
+        # Trust QF+ for completed predictions so modifications survive.
+        trust = MODIFY_MATCH_NOS if pred.completed else None
         _, clean = resolve_prediction(
-            pred.group_order, pred.thirds, pred.ko_winners)
+            pred.group_order, pred.thirds, pred.ko_winners,
+            trust_picks=trust)
         pred.ko_winners = {str(no): w for no, w in clean.items()}
 
         prog = _progress(pred.group_order or {}, pred.thirds or [], clean)
@@ -792,7 +794,7 @@ def game_ranking(request):
 
     rows = []
     for pred in preds:
-        trust = MODIFY_MATCH_NOS if _is_locked() else None
+        trust = MODIFY_MATCH_NOS if pred.completed else None
         prog = _progress(pred.group_order or {}, pred.thirds or [],
                          resolve_prediction(pred.group_order, pred.thirds,
                                             pred.ko_winners,
