@@ -918,8 +918,6 @@ class ApuestaFutbolViewSet(viewsets.ModelViewSet):
         partido_id = request.query_params.get('partido_id')
         sala_actual_id = request.query_params.get('sala_actual_id')
 
-        print(f"[otras_salas] partido_id={partido_id} sala_actual_id={sala_actual_id}")
-
         if not partido_id:
             return Response({"error": "Se requiere el ID del partido"}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -928,32 +926,23 @@ class ApuestaFutbolViewSet(viewsets.ModelViewSet):
         except ApiPartido.DoesNotExist:
             return Response({"error": "El partido especificado no existe"}, status=status.HTTP_404_NOT_FOUND)
 
-        # Si el partido ya comenzó o finalizó, no hay salas disponibles
         ahora = timezone.now()
-        print(f"[otras_salas] partido.fecha={partido.fecha} ahora={ahora} estado={partido.estado}")
         if partido.fecha <= ahora or partido.estado in [PartidoStatus.FINALIZADO, PartidoStatus.EN_CURSO]:
-            print(f"[otras_salas] partido ya comenzó/finalizó → retornando []")
             return Response([], status=status.HTTP_200_OK)
 
         usuario = request.user.perfil
 
-        # Salas donde el usuario es miembro, excluyendo la sala actual
-        salas_ids = list(UsuarioSala.objects.filter(id_usuario=usuario).values_list('id_sala', flat=True))
-        print(f"[otras_salas] usuario={usuario} salas_ids={salas_ids}")
+        salas_ids = UsuarioSala.objects.filter(id_usuario=usuario).values_list('id_sala', flat=True)
         salas = Sala.objects.filter(id_sala__in=salas_ids)
         if sala_actual_id:
             salas = salas.exclude(id_sala=sala_actual_id)
-        print(f"[otras_salas] salas candidatas (excl. actual): {list(salas.values_list('id_sala', 'nombre', 'modo_sala'))}")
 
-        # Excluir salas donde el usuario ya tiene apuesta para este partido
-        salas_con_apuesta = list(ApuestaFutbol.objects.filter(
+        salas_con_apuesta = ApuestaFutbol.objects.filter(
             id_usuario=usuario,
             id_partido=partido
-        ).values_list('id_sala', flat=True))
-        print(f"[otras_salas] salas_con_apuesta={salas_con_apuesta}")
+        ).values_list('id_sala', flat=True)
         salas = salas.exclude(id_sala__in=salas_con_apuesta)
 
-        # Filtrar salas donde el partido está habilitado según el modo de la sala
         salas_disponibles = []
         for sala in salas:
             modo_sala = sala.modo_sala
@@ -963,17 +952,12 @@ class ApuestaFutbolViewSet(viewsets.ModelViewSet):
                 match_disponible = SalaPartido.objects.filter(
                     id_sala=sala, id_partido=partido
                 ).exists()
-                print(f"[otras_salas] sala={sala.nombre} modo=partidos_individuales match_disponible={match_disponible}")
 
             elif modo_sala == 'ligas':
                 ligas_habilitadas = list(SalaLiga.objects.filter(
                     id_sala=sala
                 ).values_list('id_liga', flat=True))
-                print(f"[otras_salas] sala={sala.nombre} modo=ligas ligas_habilitadas={ligas_habilitadas} partido.id_liga_id={partido.id_liga_id}")
-                if ligas_habilitadas:
-                    match_disponible = partido.id_liga_id in set(ligas_habilitadas)
-                else:
-                    match_disponible = True
+                match_disponible = partido.id_liga_id in set(ligas_habilitadas) if ligas_habilitadas else True
 
             elif modo_sala == 'mixto':
                 ligas_habilitadas = list(SalaLiga.objects.filter(
@@ -982,7 +966,6 @@ class ApuestaFutbolViewSet(viewsets.ModelViewSet):
                 partidos_manuales = list(SalaPartido.objects.filter(
                     id_sala=sala
                 ).values_list('id_partido', flat=True))
-                print(f"[otras_salas] sala={sala.nombre} modo=mixto ligas={ligas_habilitadas} manuales={partidos_manuales}")
                 if ligas_habilitadas or partidos_manuales:
                     match_disponible = (
                         partido.id_liga_id in set(ligas_habilitadas) or
@@ -990,14 +973,10 @@ class ApuestaFutbolViewSet(viewsets.ModelViewSet):
                     )
                 else:
                     match_disponible = True
-            else:
-                print(f"[otras_salas] sala={sala.nombre} modo_sala desconocido='{modo_sala}'")
 
-            print(f"[otras_salas] sala={sala.nombre} → match_disponible={match_disponible}")
             if match_disponible:
                 salas_disponibles.append(sala)
 
-        print(f"[otras_salas] salas_disponibles finales: {[s.nombre for s in salas_disponibles]}")
         serializer = SalaSerializer(salas_disponibles, many=True)
         return Response(serializer.data)
 
