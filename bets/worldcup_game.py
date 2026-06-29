@@ -32,6 +32,9 @@ from .worldcup_bracket import (
 # 18 de julio de 2026, 12:00 m. hora Colombia (UTC-5)
 PREDICTION_DEADLINE = datetime(2026, 7, 18, 17, 0, tzinfo=dt_tz.utc)
 
+# Fecha limite para modificar QF/SF/Final (8 de julio 2026, 12:00 m. COL)
+MODIFICATION_DEADLINE = datetime(2026, 7, 8, 17, 0, tzinfo=dt_tz.utc)
+
 TBD_API_ID = 9049
 MATCHES_PER_GROUP = 6
 WC_LIGA_API_ID = 9001
@@ -69,10 +72,17 @@ SF_NOS = [101, 102]
 FINAL_NO = 104
 KO_PICK_NOS = R32_NOS + R16_NOS + QF_NOS + SF_NOS + [FINAL_NO]  # sin 103
 TOTAL_PICKS = len(KO_PICK_NOS)  # 31
+MODIFY_MATCH_NOS = set(QF_NOS + SF_NOS + [FINAL_NO])  # 97-100, 101-102, 104
 
 
 def _is_locked():
     return timezone.now() >= PREDICTION_DEADLINE
+
+
+def _can_modify():
+    """Window to re-pick QF/SF/Final after predictions close."""
+    now = timezone.now()
+    return now >= PREDICTION_DEADLINE and now < MODIFICATION_DEADLINE
 
 
 def _get_usuario(request):
@@ -84,14 +94,20 @@ def _get_usuario(request):
 
 # -- Resolucion del bracket segun la prediccion del usuario --
 
-def resolve_prediction(group_order, thirds, ko_winners):
+def resolve_prediction(group_order, thirds, ko_winners, trust_picks=None):
     """Calcula los cruces R32 -> Final a partir de la prediccion.
 
     Devuelve (rounds, clean_winners):
     - rounds: [{ronda, matches: [{match_no, home, away, winner}]}]
       (nombres de equipo o None si aun no se puede resolver)
     - clean_winners: {match_no(int): nombre} solo picks validos/consistentes
+
+    trust_picks: optional set of match_no ints whose ko_winners picks
+    should be accepted without bracket validation (for modification mode).
+    When a QF+ pick comes from actual results rather than the predicted
+    bracket, normal validation would reject it; trust_picks bypasses that.
     """
+    trust_picks = trust_picks or set()
     complete = {g: o for g, o in (group_order or {}).items()
                 if g in GROUPS and isinstance(o, list) and len(o) == 4}
     third_map = {}
@@ -117,10 +133,14 @@ def resolve_prediction(group_order, thirds, ko_winners):
         hs, as_ = R32_TEMPLATE[no]
         h, a = slot_team(hs), slot_team(as_)
         w = ko_winners.get(str(no))
-        if not (w and h and a and w in (h, a)):
-            w = None
-        winners[no] = w
-        r32.append({"match_no": no, "home": h, "away": a, "winner": w})
+        if no in trust_picks:
+            # Accept stored pick without bracket validation
+            winners[no] = w if w else None
+        else:
+            if not (w and h and a and w in (h, a)):
+                w = None
+            winners[no] = w
+        r32.append({"match_no": no, "home": h, "away": a, "winner": winners[no]})
     rounds.append({"ronda": "Round of 32", "matches": r32})
 
     for ronda in ["Round of 16", "Quarter-Final", "Semi-Final", "Final"]:
@@ -131,10 +151,13 @@ def resolve_prediction(group_order, thirds, ko_winners):
             h = winners.get(int(hs[1:])) if hs.startswith("W") else None
             a = winners.get(int(as_[1:])) if as_.startswith("W") else None
             w = ko_winners.get(str(no))
-            if not (w and h and a and w in (h, a)):
-                w = None
-            winners[no] = w
-            ms.append({"match_no": no, "home": h, "away": a, "winner": w})
+            if no in trust_picks:
+                winners[no] = w if w else None
+            else:
+                if not (w and h and a and w in (h, a)):
+                    w = None
+                winners[no] = w
+            ms.append({"match_no": no, "home": h, "away": a, "winner": winners[no]})
         rounds.append({"ronda": ronda, "matches": ms})
 
     clean = {no: w for no, w in winners.items() if w}
@@ -272,12 +295,45 @@ def actual_results():
     return out
 
 
+def viable_qf_teams(actual):
+    """For each QF match, return the two actual teams from R16 winners.
+
+    Returns {qf_match_no: [home_team, away_team]} for each QF where
+    both teams are known.
+    """
+    viable = {}
+    for qf_no in QF_NOS:
+        hs, as_, _ = KO_TEMPLATE[qf_no]
+        h_no = int(hs[1:])
+        a_no = int(as_[1:])
+        home = None
+        away = None
+        # Try R16 match winners first
+        h_match = actual["ko_matches"].get(h_no)
+        a_match = actual["ko_matches"].get(a_no)
+        if h_match and h_match.get("winner"):
+            home = h_match["winner"]
+        if a_match and a_match.get("winner"):
+            away = a_match["winner"]
+        # Fallback: actual QF match data (teams already assigned by FIFA)
+        qf_match = actual["ko_matches"].get(qf_no)
+        if qf_match:
+            home = home or qf_match.get("home")
+            away = away or qf_match.get("away")
+        if home and away:
+            viable[qf_no] = [home, away]
+    return viable
+
+
 def score_prediction(pred, actual):
     """Puntos de una prediccion contra los resultados reales."""
     pts_groups = pts_thirds = pts_ko = 0
     exact = 0
+
+    # Use trust_picks for QF+ so modified picks are included in scoring
+    trust = MODIFY_MATCH_NOS if _is_locked() else None
     rounds, winners = resolve_prediction(
-        pred.group_order, pred.thirds, pred.ko_winners)
+        pred.group_order, pred.thirds, pred.ko_winners, trust_picks=trust)
 
     for g, actual_order in actual["group_pos"].items():
         pred_order = (pred.group_order or {}).get(g)
@@ -325,8 +381,9 @@ def score_prediction(pred, actual):
 
 def detailed_score(pred, actual):
     """Granular per-group / per-third / per-ko-match scoring for summary."""
+    trust = MODIFY_MATCH_NOS if _is_locked() else None
     _, winners = resolve_prediction(
-        pred.group_order, pred.thirds, pred.ko_winners)
+        pred.group_order, pred.thirds, pred.ko_winners, trust_picks=trust)
 
     group_detail = {}
     pts_groups_total = 0
@@ -470,7 +527,10 @@ def _progress(pred_groups, thirds, clean_winners):
 def _state_json(pred, team_info):
     group_order = pred.group_order or {}
     thirds = pred.thirds or []
-    rounds, clean = resolve_prediction(group_order, thirds, pred.ko_winners)
+
+    trust = MODIFY_MATCH_NOS if _is_locked() else None
+    rounds, clean = resolve_prediction(group_order, thirds, pred.ko_winners,
+                                       trust_picks=trust)
 
     groups = []
     for g in sorted(GROUPS):
@@ -492,9 +552,16 @@ def _state_json(pred, team_info):
     actual = actual_results()
     score_detail = detailed_score(pred, actual)
 
+    # Modification window info
+    can_modify = _can_modify() and pred.completed
+    viable = viable_qf_teams(actual) if can_modify else {}
+
     return {
         "deadline": PREDICTION_DEADLINE.isoformat(),
         "locked": _is_locked(),
+        "can_modify": can_modify,
+        "modification_deadline": MODIFICATION_DEADLINE.isoformat(),
+        "viable_qf": viable,
         "groups": groups,
         "thirds": thirds,
         "third_candidates": third_candidates,
@@ -544,13 +611,105 @@ def game_state(request):
     pred, _ = WorldCupPrediction.objects.get_or_create(usuario=usuario)
 
     if request.method == "PUT":
+        data = request.data or {}
+        is_modify = bool(data.get("modify_ko"))
+
+        # ── Modification mode (QF/SF/Final re-picks) ──
+        if is_modify:
+            if not (_can_modify() and pred.completed):
+                return Response(
+                    {"error": "La ventana de modificacion no esta activa "
+                              "o la prediccion no esta completa."},
+                    status=status.HTTP_403_FORBIDDEN)
+
+            incoming = data.get("ko_winners", {})
+            if not isinstance(incoming, dict):
+                return Response({"error": "ko_winners debe ser un objeto"},
+                                status=status.HTTP_400_BAD_REQUEST)
+
+            actual = actual_results()
+            viable = viable_qf_teams(actual)
+            merged = dict(pred.ko_winners or {})
+
+            for no_str, team in incoming.items():
+                try:
+                    no_int = int(no_str)
+                except (TypeError, ValueError):
+                    return Response({"error": f"Partido invalido: {no_str}"},
+                                    status=status.HTTP_400_BAD_REQUEST)
+                if no_int not in MODIFY_MATCH_NOS:
+                    return Response(
+                        {"error": f"Solo se pueden modificar cuartos, "
+                                  f"semis y final (partido {no_int})"},
+                        status=status.HTTP_400_BAD_REQUEST)
+
+                if team is None:
+                    merged.pop(str(no_int), None)
+                    continue
+
+                if not isinstance(team, str):
+                    return Response({"error": "Ganador invalido"},
+                                    status=status.HTTP_400_BAD_REQUEST)
+
+                # Validate QF picks against actual R16 winners
+                if no_int in QF_NOS:
+                    v = viable.get(no_int)
+                    if not v or team not in v:
+                        return Response(
+                            {"error": f"Equipo '{team}' no es viable "
+                                      f"para el partido {no_int}"},
+                            status=status.HTTP_400_BAD_REQUEST)
+                # Validate SF picks against user's QF winners
+                elif no_int in SF_NOS:
+                    hs, as_, _ = KO_TEMPLATE[no_int]
+                    h_pick = merged.get(str(int(hs[1:])))
+                    a_pick = merged.get(str(int(as_[1:])))
+                    if team not in (h_pick, a_pick):
+                        return Response(
+                            {"error": f"Equipo '{team}' no es viable "
+                                      f"para la semifinal {no_int}"},
+                            status=status.HTTP_400_BAD_REQUEST)
+                # Validate Final pick against user's SF winners
+                elif no_int == FINAL_NO:
+                    hs, as_, _ = KO_TEMPLATE[no_int]
+                    h_pick = merged.get(str(int(hs[1:])))
+                    a_pick = merged.get(str(int(as_[1:])))
+                    if team not in (h_pick, a_pick):
+                        return Response(
+                            {"error": f"Equipo '{team}' no es viable "
+                                      f"para la final"},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+                merged[str(no_int)] = team
+
+            # Cascade: if QF pick changed, invalidate dependent SF/Final
+            for sf_no in SF_NOS:
+                sf_pick = merged.get(str(sf_no))
+                if sf_pick:
+                    hs, as_, _ = KO_TEMPLATE[sf_no]
+                    h_team = merged.get(str(int(hs[1:])))
+                    a_team = merged.get(str(int(as_[1:])))
+                    if sf_pick not in (h_team, a_team):
+                        merged.pop(str(sf_no), None)
+
+            f_pick = merged.get(str(FINAL_NO))
+            if f_pick:
+                hs, as_, _ = KO_TEMPLATE[FINAL_NO]
+                h_team = merged.get(str(int(hs[1:])))
+                a_team = merged.get(str(int(as_[1:])))
+                if f_pick not in (h_team, a_team):
+                    merged.pop(str(FINAL_NO), None)
+
+            pred.ko_winners = merged
+            pred.save()
+            return Response(_state_json(pred, _team_info_map()))
+
+        # ── Regular save (before deadline) ──
         if _is_locked():
             return Response(
                 {"error": "Las predicciones cerraron el 18 de julio de "
                           "2026 a las 12:00 (hora Colombia)."},
                 status=status.HTTP_403_FORBIDDEN)
-
-        data = request.data or {}
 
         if "group_order" in data:
             incoming = data["group_order"]
@@ -633,9 +792,11 @@ def game_ranking(request):
 
     rows = []
     for pred in preds:
+        trust = MODIFY_MATCH_NOS if _is_locked() else None
         prog = _progress(pred.group_order or {}, pred.thirds or [],
                          resolve_prediction(pred.group_order, pred.thirds,
-                                            pred.ko_winners)[1])
+                                            pred.ko_winners,
+                                            trust_picks=trust)[1])
         score = score_prediction(pred, actual)
         rows.append({
             "id_usuario": pred.usuario.id_usuario,
