@@ -301,6 +301,94 @@ def score_prediction(pred, actual):
     }
 
 
+def detailed_score(pred, actual):
+    """Granular per-group / per-third scoring for the summary view.
+
+    Returns dict with:
+    - group_detail: {letter: {pos0: {team, pts, status}, ..., subtotal}}
+      status: "exact"|"qualify"|"miss"|"pending"
+    - third_detail: [{group, team, correct: bool|null}]
+      null = not yet resolved
+    - totals: {groups, thirds, knockout, total}
+    - actual_results: {group_pos, thirds}  (what's been resolved so far)
+    """
+    _, winners = resolve_prediction(
+        pred.group_order, pred.thirds, pred.ko_winners)
+
+    group_detail = {}
+    pts_groups_total = 0
+
+    for g in sorted(GROUPS):
+        pred_order = (pred.group_order or {}).get(g)
+        if not (isinstance(pred_order, list) and len(pred_order) == 4):
+            continue
+
+        actual_order = actual["group_pos"].get(g)
+        gd = {"positions": [], "subtotal": 0, "resolved": actual_order is not None}
+
+        if actual_order:
+            top2 = set(actual_order[:2])
+            for i in range(4):
+                team = pred_order[i]
+                pts = 0
+                st = "pending"
+                if i < 2:
+                    if team == actual_order[i]:
+                        pts = PTS_GROUP_EXACT
+                        st = "exact"
+                    elif team in top2:
+                        pts = PTS_GROUP_QUALIFY
+                        st = "qualify"
+                    else:
+                        st = "miss"
+                else:
+                    st = "n/a"  # 3rd/4th not scored individually
+                gd["positions"].append({"team": team, "pos": i + 1,
+                                        "pts": pts, "status": st})
+                gd["subtotal"] += pts
+        else:
+            for i in range(4):
+                gd["positions"].append({"team": pred_order[i], "pos": i + 1,
+                                        "pts": 0, "status": "pending"})
+
+        pts_groups_total += gd["subtotal"]
+        group_detail[g] = gd
+
+    # Thirds detail
+    pred_thirds = pred.thirds or []
+    third_detail = []
+    pts_thirds_total = 0
+    thirds_resolved = actual["thirds"] is not None
+
+    for g in pred_thirds:
+        pred_order = (pred.group_order or {}).get(g)
+        team = pred_order[2] if pred_order and len(pred_order) > 2 else "?"
+        if thirds_resolved:
+            correct = g in actual["thirds"]
+            pts = PTS_THIRD if correct else 0
+        else:
+            correct = None
+            pts = 0
+        pts_thirds_total += pts
+        third_detail.append({"group": g, "team": team, "correct": correct,
+                             "pts": pts})
+
+    # Quick KO total (reuse existing function)
+    score = score_prediction(pred, actual)
+
+    return {
+        "group_detail": group_detail,
+        "third_detail": third_detail,
+        "thirds_resolved": thirds_resolved,
+        "totals": {
+            "groups": pts_groups_total,
+            "thirds": pts_thirds_total,
+            "knockout": score["knockout"],
+            "total": score["total"],
+        },
+    }
+
+
 # ── Serializacion del estado ─────────────────────────────────────────────
 
 def _progress(pred_groups, thirds, clean_winners):
@@ -340,6 +428,10 @@ def _state_json(pred, team_info):
         if isinstance(group_order.get(g), list) and len(group_order[g]) == 4
     ]
 
+    # Include detailed scoring against actual results
+    actual = actual_results()
+    score_detail = detailed_score(pred, actual)
+
     return {
         "deadline": PREDICTION_DEADLINE.isoformat(),
         "locked": _is_locked(),
@@ -361,6 +453,7 @@ def _state_json(pred, team_info):
             "to_final": PTS_TO_FINAL,
             "champion": PTS_CHAMPION,
         },
+        "score_detail": score_detail,
     }
 
 
