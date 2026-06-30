@@ -1,4 +1,6 @@
+from django import forms
 from django.contrib import admin
+from django.core.exceptions import ValidationError
 from .models import (
     Usuario, Sala, UsuarioSala,
     Deporte, ApiPais, ApiLiga, ApiEquipo, ApiJugador, ApiVenue,
@@ -6,7 +8,8 @@ from .models import (
     PartidoTenis, PartidoBaloncesto, CarreraF1,
     ApuestaFutbol, ApuestaTenis, ApuestaBaloncesto, ApuestaF1,
     Ranking, MensajeChat,
-    EmailVerificationToken, PasswordResetToken, LoginEvent
+    EmailVerificationToken, PasswordResetToken, LoginEvent,
+    PartidoStatus,
 )
 
 # User and Room models
@@ -24,9 +27,71 @@ admin.site.register(ApiEquipo)
 admin.site.register(ApiJugador)
 admin.site.register(ApiVenue)
 
+
+class ApiPartidoAdminForm(forms.ModelForm):
+    class Meta:
+        model = ApiPartido
+        fields = '__all__'
+
+    def clean(self):
+        cleaned = super().clean()
+        is_knockout = cleaned.get('is_knockout')
+        estado = cleaned.get('estado')
+        goles_local = cleaned.get('goles_local')
+        goles_visitante = cleaned.get('goles_visitante')
+
+        if not is_knockout or estado != PartidoStatus.FINALIZADO:
+            return cleaned
+
+        # Partido knockout finalizado: los campos ET y penales deben estar definidos
+        tiene_et = cleaned.get('resultado_tiene_tiempo_extra')
+        tiene_pen = cleaned.get('resultado_tiene_penales')
+        ganador_pen = cleaned.get('ganador_penales')
+
+        if goles_local is None or goles_visitante is None:
+            return cleaned
+
+        if goles_local == goles_visitante:
+            # Empate en tiempo normal: obligatorio tiempo extra y penales
+            if tiene_et is None:
+                raise ValidationError(
+                    'Partido knockout empatado: debes indicar si hubo tiempo extra '
+                    '(campo "resultado_tiene_tiempo_extra").'
+                )
+            if tiene_pen is not True:
+                raise ValidationError(
+                    'Partido knockout empatado: siempre hay penales. '
+                    'Marca "resultado_tiene_penales" como Sí.'
+                )
+            if not ganador_pen:
+                raise ValidationError(
+                    'Partido knockout empatado: debes seleccionar el equipo ganador '
+                    'en penales (campo "ganador_penales").'
+                )
+            equipo_local = cleaned.get('equipo_local')
+            equipo_visitante = cleaned.get('equipo_visitante')
+            if ganador_pen not in (equipo_local, equipo_visitante):
+                raise ValidationError(
+                    'El ganador en penales debe ser uno de los dos equipos del partido.'
+                )
+        else:
+            # Hay ganador en tiempo normal o extra: no puede haber ganador en penales
+            if ganador_pen:
+                raise ValidationError(
+                    'Hay un ganador en el marcador: no corresponde registrar ganador en penales.'
+                )
+            if tiene_pen is True and not ganador_pen:
+                raise ValidationError(
+                    'Si hubo penales, debes seleccionar el ganador en penales.'
+                )
+
+        return cleaned
+
+
 # Match models
 @admin.register(ApiPartido)
 class ApiPartidoAdmin(admin.ModelAdmin):
+    form = ApiPartidoAdminForm
     list_display = (
         '__str__', 'estado', 'fecha', 'is_knockout',
         'resultado_tiene_tiempo_extra', 'resultado_tiene_penales', 'ganador_penales',
@@ -49,8 +114,11 @@ class ApiPartidoAdmin(admin.ModelAdmin):
                 'resultado_tiene_penales',
                 'ganador_penales',
             ),
-            'classes': ('collapse',),
-            'description': 'Fill these in when entering the final result of a knockout match.',
+            'description': (
+                'Para partidos knockout finalizados: si el marcador es empate, '
+                'debes indicar tiempo extra, marcar penales = Sí y elegir el ganador. '
+                'Si hay ganador en el marcador, deja ganador_penales vacío.'
+            ),
         }),
         ('Tracking', {
             'fields': ('eventos_cargados', 'alineaciones_cargadas', 'estadisticas_cargadas'),
