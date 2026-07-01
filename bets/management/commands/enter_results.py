@@ -204,10 +204,60 @@ class Command(BaseCommand):
                 partido.goles_local     = gl
                 partido.goles_visitante = gv
                 partido.estado          = PartidoStatus.FINALIZADO
-                partido.save(update_fields=['goles_local', 'goles_visitante', 'estado'])
 
+                # ── Preguntar ET/penales solo en partidos knockout ──────────
+                resultado_et  = None
+                resultado_pen = None
+                ganador_pen   = None
+
+                if partido.is_knockout:
+                    is_draw = (gl == gv)
+                    try:
+                        et_raw = input('  ¿Fue a tiempo extra? (s/n): ').strip().lower()
+                    except (EOFError, KeyboardInterrupt):
+                        et_raw = 'n'
+
+                    if et_raw in ('s', 'si', 'sí', 'y', 'yes'):
+                        resultado_et = True
+                        if is_draw:
+                            # Empate en ET → obligatorio penales
+                            resultado_pen = True
+                            try:
+                                pen_raw = input(
+                                    f'  ¿Quién ganó penales? [1={local[:14]} / 2={visita[:14]}]: '
+                                ).strip()
+                            except (EOFError, KeyboardInterrupt):
+                                pen_raw = ''
+                            if pen_raw == '1':
+                                ganador_pen = partido.equipo_local
+                            elif pen_raw == '2':
+                                ganador_pen = partido.equipo_visitante
+                            else:
+                                self.stdout.write(self.style.WARNING(
+                                    '  ⚠️  Ganador de penales no ingresado — se deja vacío.'
+                                ))
+                        else:
+                            resultado_pen = False  # decidido en ET sin penales
+                    else:
+                        resultado_et  = False
+                        resultado_pen = False
+
+                partido.resultado_tiene_tiempo_extra = resultado_et
+                partido.resultado_tiene_penales      = resultado_pen
+                partido.ganador_penales              = ganador_pen
+                partido.save(update_fields=[
+                    'goles_local', 'goles_visitante', 'estado',
+                    'resultado_tiene_tiempo_extra', 'resultado_tiene_penales', 'ganador_penales',
+                ])
+
+                sufijo = ''
+                if resultado_pen:
+                    ganador_str = ganador_pen.nombre if ganador_pen else '?'
+                    sufijo = f' (Penales: {ganador_str})'
+                elif resultado_et:
+                    sufijo = ' (ET)'
                 self.stdout.write(self.style.SUCCESS(
-                    f'  ✅ Guardado: {local} {gl}-{gv} {visita}'
+                    f'  ✅ Guardado: {local} {gl}-{gv} {visita}{sufijo}'
                 ))
                 updated_total += 1
                 partidos_con_resultado.append(partido)
